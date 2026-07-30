@@ -51,7 +51,7 @@ export type AdminDashboardPayload = {
   shipmentVolumeByWeek?: Array<{ week: string; fcl: number; lcl: number }>;
 };
 
-// ── Customer dashboard payload (per prompt.md brief) ──────────────────────
+// ── Customer dashboard payload ────────────────────────────────────────
 export type CustomerDashboardCards = {
   booking_draft: number;
   booking_submitted: number;

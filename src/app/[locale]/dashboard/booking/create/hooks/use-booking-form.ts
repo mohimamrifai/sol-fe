@@ -14,6 +14,7 @@ import {
   estimateBookingPrice,
   createCustomerBooking,
   createCustomerBookingMultipart,
+  updateCustomerBooking,
   fetchCustomerBookingDetail,
 } from "@/lib/customer-api";
 import { ApiError } from "@/lib/api-client";
@@ -44,12 +45,15 @@ export type CC = {
   is_food?: boolean;
 };
 
-export type DC = { id: number; name: string; code: string };
-type EstimateBreakdown = {
-  base_freight: number;
-  discount_amount: number;
-  additional_services_total: number;
+export type DC = { id: number; name: string; code: string; total_estimated?: number };
+export type EstimateBreakdown = {
+  freight: number;
+  discount: number;
+  additional_services: number;
   total: number;
+  // Optional fields the BE may include for "shipment coverage" breakdowns.
+  pickup?: number;
+  delivery?: number;
 };
 
 /** Stable codes for FCL mandatory add-ons (match by code, not name). */
@@ -59,11 +63,12 @@ const LCL_MANDATORY_CODES = ['FREE_STORAGE_LCL'];
 /** All mandatory codes combined — used to strip them before re-applying. */
 const ALL_MANDATORY_CODES = [...FCL_MANDATORY_CODES, ...LCL_MANDATORY_CODES];
 
-export function useBookingForm() {
+export function useBookingForm(opts?: { editId?: number }) {
+  const editId = opts?.editId;
   const { user } = useAuthStore();
   const userCompany = user?.company as { name?: string; address?: string; phone?: string } | undefined;
   const searchParams = useSearchParams();
-  const rebookId = searchParams.get("rebook");
+  const rebookId = !editId ? searchParams.get("rebook") : null;
 
   // Master Data
   const [locations, setLocations] = useState<Loc[]>([]);
@@ -150,11 +155,12 @@ export function useBookingForm() {
         setAddServices(((asRes as { data: AS[] }).data ?? []) as AS[]);
         setCargoCategories(((ccRes as { data: CC[] }).data ?? []) as CC[]);
         setDgClasses(((dgRes as { data: DC[] }).data ?? []) as DC[]);
-        if (rawModes[0]?.id && !rebookId) setModeId(String(rawModes[0].id));
+        if (rawModes[0]?.id && !rebookId && !editId) setModeId(String(rawModes[0].id));
 
-        // Auto-fill if rebooking
-        if (rebookId) {
-          const detailRes = await fetchCustomerBookingDetail(Number(rebookId));
+        // Pre-fill from an existing booking — rebook (clone for a new booking) or edit (mutate existing).
+        const prefillId = rebookId ? Number(rebookId) : editId ?? null;
+        if (prefillId) {
+          const detailRes = await fetchCustomerBookingDetail(prefillId);
           const bd = (detailRes as { data?: Record<string, unknown> }).data;
           if (bd) {
             setOriginId(bd.origin_location_id ? String(bd.origin_location_id) : "");
@@ -171,21 +177,21 @@ export function useBookingForm() {
             setCbm(bd.estimated_cbm ? String(bd.estimated_cbm) : "");
             setCargo(String(bd.cargo_description ?? ""));
             setCargoCategoryId(bd.cargo_category_id ? String(bd.cargo_category_id) : "");
-            
+
             setShipperName(String(bd.shipper_name ?? ""));
             setShipperAddress(String(bd.shipper_address ?? ""));
             setShipperPhone(String(bd.shipper_phone ?? ""));
-            
+
             setConsigneeName(String(bd.consignee_name ?? ""));
             setConsigneeAddress(String(bd.consignee_address ?? ""));
             setConsigneePhone(String(bd.consignee_phone ?? ""));
-            
+
             setIsDG(Boolean(bd.is_dangerous_goods));
             setDgClassId(bd.dg_class_id ? String(bd.dg_class_id) : "");
             setUnNumber(String(bd.un_number ?? ""));
             setEquipmentCondition(String(bd.equipment_condition ?? ""));
             setTemperature(bd.temperature != null ? String(bd.temperature) : "");
-            
+
             if (bd.additional_services && Array.isArray(bd.additional_services)) {
               setSelectedAddOns(bd.additional_services.map((s: Record<string, unknown>) => Number(s.id)).filter(Boolean));
             }
@@ -198,7 +204,7 @@ export function useBookingForm() {
       }
     })();
     return () => { active = false; };
-  }, [rebookId]);
+  }, [rebookId, editId]);
 
   // Mode change -> update service types
   useEffect(() => {
@@ -372,7 +378,14 @@ export function useBookingForm() {
           }
         });
         fd.append("msds_file", msdsFile);
-        bookingResponse = await createCustomerBookingMultipart(fd) as typeof bookingResponse;
+        if (editId) {
+          bookingResponse = await updateCustomerBooking(editId, fd) as typeof bookingResponse;
+        } else {
+          bookingResponse = await createCustomerBookingMultipart(fd) as typeof bookingResponse;
+        }
+      } else if (editId) {
+        // Edit an existing booking — PATCH-equivalent (Laravel uses POST + _method=PUT).
+        bookingResponse = await updateCustomerBooking(editId, payload as unknown as Record<string, unknown>) as typeof bookingResponse;
       } else {
         // Send as JSON directly — this is the correct way
         bookingResponse = await createCustomerBooking(payload as unknown as Record<string, unknown>) as typeof bookingResponse;
@@ -388,6 +401,8 @@ export function useBookingForm() {
 
       if (prepaid?.invoice?.id) {
         toast.success("Booking pre-paid berhasil dibuat dan invoice sudah terbit.");
+      } else if (editId) {
+        toast.success("Booking berhasil diperbarui.");
       } else {
         toast.success("Booking berhasil dikirim.");
       }
@@ -445,6 +460,7 @@ export function useBookingForm() {
     temperature, setTemperature,
     estimate, estimateBreakdown, error, validationErrors, renderFieldError, loading, submitting, showSuccess, setShowSuccess,
     isFCL, isLCL, selectedCT, selectedCC, showTemp, showProject,
-    onEstimate, onSubmit
+    onEstimate, onSubmit,
+    mode: editId ? ("edit" as const) : ("create" as const),
   };
 }

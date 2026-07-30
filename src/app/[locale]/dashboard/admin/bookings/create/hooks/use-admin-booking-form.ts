@@ -34,9 +34,9 @@ export type CC = {
   is_project_cargo?: boolean;
 };
 export type EstimateBreakdown = {
-  base_freight: number;
-  discount_amount: number;
-  additional_services_total: number;
+  freight: number;
+  discount: number;
+  additional_services: number;
   total: number;
 };
 

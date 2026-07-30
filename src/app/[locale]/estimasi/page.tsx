@@ -86,9 +86,9 @@ export default function PublicEstimatePage() {
   const [selectedAddOns, setSelectedAddOns] = useState<number[]>([]);
   const [estimate, setEstimate] = useState<string | null>(null);
   const [breakdown, setBreakdown] = useState<{
-    base_freight: number;
-    discount_amount: number;
-    additional_services_total: number;
+    freight: number;
+    discount: number;
+    additional_services: number;
     total: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -425,17 +425,17 @@ export default function PublicEstimatePage() {
               <div className="space-y-2 border-t border-zinc-200 pt-4 text-sm">
                 <div className="flex justify-between text-zinc-600">
                   <span>{t("breakdownBase")}</span>
-                  <span>{fmtIdr(breakdown.base_freight)}</span>
+                  <span>{fmtIdr(breakdown.freight)}</span>
                 </div>
-                {breakdown.discount_amount > 0 ? (
+                {breakdown.discount > 0 ? (
                   <div className="flex justify-between text-emerald-700">
                     <span>{t("breakdownDiscount")}</span>
-                    <span>-{fmtIdr(breakdown.discount_amount)}</span>
+                    <span>-{fmtIdr(breakdown.discount)}</span>
                   </div>
                 ) : null}
                 <div className="flex justify-between text-zinc-600">
                   <span>{t("breakdownAddOns")}</span>
-                  <span>{fmtIdr(breakdown.additional_services_total)}</span>
+                  <span>{fmtIdr(breakdown.additional_services)}</span>
                 </div>
                 <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold text-zinc-900">
                   <span>{t("breakdownTotal")}</span>

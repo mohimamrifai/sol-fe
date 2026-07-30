@@ -496,10 +496,8 @@
       "booking": {
         "draft": "Draft",
         "submitted": "Diajukan",
-        "confirmed": "Dikonfirmasi",
         "approved": "Disetujui",
-        "rejected": "Ditolak",
-        "cancelled": "Dibatalkan"
+        "rejected": "Ditolak"
       },
       "shipment": {
         "created": "Dibuat",
@@ -540,6 +538,205 @@
         "description": "Kelola profil perusahaan, profil pengguna, dan keamanan akun.",
         "comingSoon": "Pengaturan lanjutan profil perusahaan dan pengguna dapat ditambahkan di sini."
       }
+    }
+  },
+  "Bookings": {
+    "title": "My Bookings",
+    "subtitle": "Histori pemesanan kargo Anda.",
+    "createButton": "Buat Booking",
+    "table": {
+      "title": "Histori Booking",
+      "description": "Daftar semua permintaan booking yang telah Anda ajukan.",
+      "empty": "Belum ada data booking.",
+      "columns": {
+        "number": "No",
+        "bookingNo": "Booking #",
+        "bookingDate": "Tanggal Booking",
+        "origin": "Origin",
+        "destination": "Destination",
+        "service": "Service",
+        "coverage": "Coverage",
+        "status": "Status",
+        "action": "Aksi"
+      },
+      "actionDetail": "Detail"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Pencarian",
+      "searchPlaceholder": "Cari nomor booking / shipper / consignee…",
+      "status": "Status",
+      "allStatus": "Semua status",
+      "serviceType": "Service Type",
+      "allServiceTypes": "Semua service",
+      "coverage": "Shipment Coverage",
+      "allCoverages": "Semua coverage",
+      "bookingDate": "Tanggal Booking",
+      "dateFrom": "Dari tanggal",
+      "dateTo": "Sampai tanggal"
+    },
+    "stats": {
+      "draft": "Booking belum disubmit.",
+      "submitted": "Menunggu review internal.",
+      "approved": "Disetujui dan siap diproses menjadi Shipment.",
+      "rejected": "Booking ditolak."
+    },
+    "coverage": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
+    },
+    "actions": {
+      "edit": "Edit",
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "view": "View",
+      "duplicate": "Duplicate"
+    },
+    "cancelDialog": {
+      "title": "Batalkan Booking?",
+      "description": "Apakah Anda yakin ingin membatalkan permintaan booking ini? Tindakan ini tidak dapat dibatalkan.",
+      "reasonLabel": "Pilih Alasan Pembatalan",
+      "reasonPlaceholder": "Pilih alasan...",
+      "otherLabel": "Alasan Spesifik",
+      "otherPlaceholder": "Ketikkan alasan pembatalan Anda...",
+      "confirm": "Ya, Batalkan",
+      "back": "Kembali",
+      "reasons": {
+        "wrongService": "Salah pilih layanan / rute",
+        "noShipment": "Kargo tidak jadi dikirim",
+        "competitor": "Mendapat harga lebih murah di tempat lain",
+        "incomplete": "Ingin mengubah detail yang tidak bisa diedit",
+        "other": "Lainnya"
+      },
+      "errorReason": "Alasan pembatalan wajib diisi.",
+      "success": "Booking berhasil dibatalkan.",
+      "error": "Gagal membatalkan booking."
+    },
+    "duplicateSuccess": "Booking berhasil diduplikasi.",
+    "submitSuccess": "Booking berhasil disubmit.",
+    "loadError": "Gagal memuat data booking.",
+    "pagination": {
+      "summary": "Halaman {current} dari {last} · Total {total} booking",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya"
+    },
+    "create": {
+      "pageTitle": "Buat Booking Baru",
+      "pageSubtitle": "Silakan melengkapi detail pengiriman Anda di bawah ini.",
+      "loadingForm": "Menyiapkan formulir booking…",
+      "saveAsDraft": "Simpan sebagai Draft",
+      "saveAsDraftSuccess": "Draft booking berhasil disimpan.",
+      "submitNow": "Kirim Booking Sekarang",
+      "submitNowSuccess": "Booking berhasil dikirim!",
+      "submitSuccessDesc": "Permintaan pengiriman Anda telah diterima oleh sistem. Tim kami akan segera memverifikasi kargo dan jadwal Anda.",
+      "viewList": "Lihat My Bookings",
+      "noEstimate": "Silakan klik tombol estimasi untuk melihat perkiraan harga.",
+      "estimateNote": "* Harga di atas bersifat estimasi dan akan dikonfirmasi kembali oleh operasional.",
+      "editPageTitle": "Edit Booking",
+      "editPageSubtitle": "Perbarui detail pengiriman Anda di bawah ini.",
+      "estimateButton": "Hitung Estimasi",
+      "estimateLabel": "Informasi Biaya",
+      "freight": "Base Freight",
+      "discount": "Diskon",
+      "additionalServices": "Layanan Tambahan",
+      "pickup": "Pickup",
+      "delivery": "Delivery",
+      "total": "Total"
+    },
+    "detail": {
+      "header": {
+        "title": "Detail Booking",
+        "createdDateLabel": "Tanggal Dibuat"
+      },
+      "actions": {
+        "edit": "Edit",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "view": "View",
+        "duplicate": "Duplicate",
+        "backToList": "Kembali ke daftar booking"
+      },
+      "rejection": {
+        "title": "Alasan Penolakan",
+        "titleShort": "Alasan"
+      },
+      "section1": {
+        "title": "Informasi Booking",
+        "bookingNumber": "Nomor Booking",
+        "status": "Status",
+        "createdAt": "Dibuat Pada",
+        "departureDate": "Tanggal Keberangkatan",
+        "shipmentCoverage": "Shipment Coverage",
+        "shipper": "Shipper (Pengirim)",
+        "consignee": "Consignee (Penerima)",
+        "phone": "Telepon",
+        "address": "Alamat",
+        "notes": "Catatan"
+      },
+      "section2": {
+        "title": "Informasi Kargo",
+        "noItems": "Belum ada detail kargo.",
+        "lclTitle": "Package (LCL)",
+        "fclTitle": "Container (FCL)",
+        "sequence": "Item",
+        "packageType": "Tipe",
+        "containerType": "Tipe Kontainer",
+        "containerNumber": "Nomor Kontainer",
+        "sealNumber": "Nomor Segel",
+        "dimensions": "Dimensi (cm)",
+        "weight": "Berat",
+        "volume": "Volume",
+        "pieces": "Jumlah",
+        "dg": "Dangerous Goods",
+        "dgClass": "DG Class",
+        "unNumber": "UN Number",
+        "msds": "MSDS/SDS",
+        "viewMsds": "Lihat MSDS",
+        "equipmentCondition": "Kondisi Equipment",
+        "temperature": "Suhu",
+        "autoMetrics": "Perhitungan Otomatis",
+        "autoVolume": "Volume (CBM)",
+        "autoVolumeWeight": "Volume Weight",
+        "autoChargeable": "Chargeable Weight"
+      },
+      "section3": {
+        "title": "Estimasi Biaya",
+        "waiting": "Waiting for cost estimation.",
+        "freight": "Freight",
+        "pickup": "Pickup",
+        "delivery": "Delivery",
+        "discount": "Discount",
+        "additionalServices": "Layanan Tambahan",
+        "total": "Total Estimation",
+        "noChargeable": "—"
+      },
+      "section4": {
+        "title": "Lampiran",
+        "empty": "Belum ada lampiran.",
+        "uploadButton": "Unggah Lampiran",
+        "uploading": "Mengunggah…",
+        "uploadError": "Gagal mengunggah lampiran.",
+        "delete": "Hapus",
+        "deleteConfirm": "Hapus lampiran ini?",
+        "fileSize": "Ukuran",
+        "uploadedBy": "Diupload oleh",
+        "uploadedAt": "Diupload pada"
+      },
+      "section5": {
+        "title": "Timeline Booking",
+        "performedBy": "Pelaku",
+        "actorCustomer": "Customer",
+        "actorInternal": "Internal",
+        "actorSystem": "Sistem"
+      },
+      "section6": {
+        "title": "Activity Log"
+      },
+      "loadError": "Gagal memuat detail booking.",
+      "notFound": "Booking tidak ditemukan."
     }
   }
 }

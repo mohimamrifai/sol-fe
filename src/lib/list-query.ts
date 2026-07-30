@@ -14,6 +14,14 @@ export type ListQueryParams = {
   /** User list filter */
   userType?: string;
   role?: string;
+  /** Bookings list — service type filter */
+  serviceTypeId?: number;
+  /** Bookings list — shipment coverage filter (port_to_port, etc.) */
+  shipmentCoverage?: string;
+  /** Bookings list — booking date lower bound (YYYY-MM-DD) */
+  dateFrom?: string;
+  /** Bookings list — booking date upper bound (YYYY-MM-DD) */
+  dateTo?: string;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -35,6 +43,13 @@ export function buildListQuery(params?: ListQueryParams): string {
   if (ut) q.set("user_type", ut);
   const rl = params?.role?.trim();
   if (rl) q.set("role", rl);
+  if (params?.serviceTypeId != null) q.set("service_type_id", String(params.serviceTypeId));
+  const cov = params?.shipmentCoverage?.trim();
+  if (cov) q.set("shipment_coverage", cov);
+  const df = params?.dateFrom?.trim();
+  if (df) q.set("date_from", df);
+  const dt = params?.dateTo?.trim();
+  if (dt) q.set("date_to", dt);
   const str = q.toString();
   return str ? `?${str}` : "";
 }

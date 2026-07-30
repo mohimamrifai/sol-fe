@@ -54,6 +54,13 @@ export async function fetchCustomerBookings(
   );
 }
 
+export async function fetchCustomerBookingStats() {
+  return apiFetch<{ data: { draft: number; submitted: number; approved: number; rejected: number } }>(
+    `/customer/bookings/stats`,
+    { method: "GET" }
+  );
+}
+
 export async function fetchCustomerMasterLocations() {
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(
     `/customer/master/locations?per_page=500`,
@@ -122,10 +129,48 @@ export async function fetchCustomerBookingDetail(bookingId: number) {
   });
 }
 
+/** Alias matching the spec — single booking fetch. */
+export const fetchCustomerBooking = fetchCustomerBookingDetail;
+
 export async function cancelCustomerBooking(bookingId: number, reason: string) {
   return apiFetch(`/customer/bookings/${bookingId}/cancel`, {
     method: "POST",
     body: JSON.stringify({ reason }),
+  });
+}
+
+export async function submitCustomerBooking(bookingId: number) {
+  return apiFetch(`/customer/bookings/${bookingId}/submit`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function duplicateCustomerBooking(bookingId: number) {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/bookings/${bookingId}/duplicate`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function fetchCustomerBookingActivities(bookingId: number) {
+  return apiFetch<{ data: Array<Record<string, unknown>> }>(`/customer/bookings/${bookingId}/activities`, {
+    method: "GET",
+  });
+}
+
+export async function uploadCustomerBookingAttachment(bookingId: number, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/bookings/${bookingId}/attachments`, {
+    method: "POST",
+    body: form,
+  });
+}
+
+export async function deleteCustomerBookingAttachment(bookingId: number, attachmentId: number) {
+  return apiFetch(`/customer/bookings/${bookingId}/attachments/${attachmentId}`, {
+    method: "DELETE",
   });
 }
 

@@ -1,451 +1,498 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "@/i18n/routing";
+import { useSearchParams as useNextSearchParams, useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+  fetchCustomerBookings,
+  fetchCustomerBookingStats,
+  fetchCustomerMasterServiceTypes,
+} from "@/lib/customer-api";
+import { BOOKING_STATUS_META, BOOKING_STATUS_KEYS, SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import { formatShortDate } from "@/components/dashboard/format";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SearchableCombobox, type ComboboxOption } from "@/components/searchable-combobox";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { PaginationBar } from "@/components/data-table/pagination-bar";
-import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ClipboardList, Trash2, Eye, Pencil, MoreHorizontal, RefreshCw } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  BOOKING_STATUS_KEYS,
-  bookingStatusBadgeClass,
-  bookingStatusLabelFromApi,
-} from "@/lib/booking-status";
-import { fetchCustomerBookings, cancelCustomerBooking } from "@/lib/customer-api";
+  FileText,
+  CheckCircle2,
+  XCircle,
+  Send,
+  Plus,
+  Search,
+  Calendar,
+  Eye,
+  ClipboardList,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import type { LaravelPaginated } from "@/lib/types-api";
-import { ApiError } from "@/lib/api-client";
-import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
-import { useRouter } from "@/i18n/routing";
-import { useQuery } from "@tanstack/react-query";
-import { BookingDetailDialog } from "@/components/dashboard/admin/bookings/booking-detail-dialog";
-import { BookingEditDialog } from "@/components/dashboard/admin/bookings/booking-edit-dialog";
-import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
-import { updateCustomerBooking, fetchCustomerBookingDetail } from "@/lib/customer-api";
 
-type Row = Record<string, unknown>;
+type BookingRow = {
+  id: number;
+  booking_number: string;
+  booking_date?: string | null;
+  created_at?: string | null;
+  origin?: { name?: string; code?: string } | string | null;
+  destination?: { name?: string; code?: string } | string | null;
+  origin_name?: string | null;
+  destination_name?: string | null;
+  service_type?: { name?: string; code?: string; id?: number } | null;
+  shipment_coverage?: string | null;
+  status: string;
+};
 
-const STATUS_FILTERS = [
-  { value: "all", label: "Semua status" },
-  ...BOOKING_STATUS_KEYS.map((k) => ({
-    value: k,
-    label: bookingStatusLabelFromApi(k),
-  })),
-];
+const STATUS_ICONS: Record<string, typeof FileText> = {
+  draft: FileText,
+  submitted: Send,
+  approved: CheckCircle2,
+  rejected: XCircle,
+};
 
-const CANCEL_REASONS = [
-  "Salah pilih layanan / rute",
-  "Kargo tidak jadi dikirim",
-  "Mendapat harga lebih murah di tempat lain",
-  "Ingin mengubah detail yang tidak bisa diedit",
-  "Lainnya"
-];
+const ALL = "__all__";
 
-export default function MyBookingsPage() {
+export default function CustomerBookingsListPage() {
+  const t = useTranslations("Bookings");
+  const tStat = useTranslations("Bookings.stats");
   const router = useRouter();
-  const PER_PAGE = 10;
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebouncedValue(searchInput, 400);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const pathname = usePathname();
+  const search = useNextSearchParams();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? "id";
 
-  const [cancellingId, setCancellingId] = useState<number | null>(null);
-  const [cancelReasonType, setCancelReasonType] = useState<string>("");
-  const [cancelReasonOther, setCancelReasonOther] = useState("");
-  const [submittingCancel, setSubmittingCancel] = useState(false);
+  const searchTerm = search.get("search") ?? "";
+  const statusFilter = search.get("status") ?? "";
+  const serviceTypeFilter = search.get("service_type") ?? "";
+  const coverageFilter = search.get("coverage") ?? "";
+  const dateFrom = search.get("date_from") ?? "";
+  const dateTo = search.get("date_to") ?? "";
+  const page = Math.max(1, Number(search.get("page") ?? "1") || 1);
 
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [detailId, setDetailId] = useState<number | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailData, setDetailData] = useState<BookingDetail | null>(null);
-
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [submittingEdit, setSubmittingEdit] = useState(false);
-
-  const {
-    data: paginatedBookings,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["customerBookings", page, debouncedSearch, statusFilter],
-    queryFn: async ({ signal }) => {
-      const res = await fetchCustomerBookings(
-        {
-          page,
-          perPage: PER_PAGE,
-          search: debouncedSearch.trim() || undefined,
-          status: statusFilter === "all" ? undefined : statusFilter,
-        },
-        signal
-      );
-      return res as LaravelPaginated<Row>;
-    },
-    placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60 * 5, // 5 minutes stale time
-  });
-
-  const rows = paginatedBookings?.data ?? [];
-  const meta = paginatedBookings;
-  const loading = isLoading;
-  const loadError = error
-    ? error instanceof ApiError
-      ? error.message
-      : error instanceof Error
-        ? error.message
-        : "Gagal memuat data booking."
-    : null;
+  const [searchInput, setSearchInput] = useState(searchTerm);
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
+  const debouncedSearch = useDebouncedValue(searchInput, 300);
 
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, statusFilter]);
+    if (debouncedSearch === searchTerm) return;
+    updateUrl({ search: debouncedSearch, page: "1" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
-  const handleCancelRequest = async () => {
-    if (!cancellingId) return;
-    const finalReason = cancelReasonType === "Lainnya" ? cancelReasonOther : cancelReasonType;
-    if (!finalReason.trim()) {
-      toast.error("Alasan pembatalan wajib diisi.");
-      return;
+  function updateUrl(patch: Record<string, string | null>) {
+    const sp = new URLSearchParams(Array.from(search.entries()));
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null || v === "") sp.delete(k);
+      else sp.set(k, v);
     }
-    setSubmittingCancel(true);
-    try {
-      await cancelCustomerBooking(cancellingId, finalReason.trim());
-      toast.success("Booking berhasil dibatalkan.");
-      void refetch();
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Gagal membatalkan booking.");
-    } finally {
-      setSubmittingCancel(false);
-      setCancellingId(null);
-      setCancelReasonType("");
-      setCancelReasonOther("");
-    }
-  };
+    const qs = sp.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }
 
-  const handleOpenDetail = async (id: number) => {
-    setDetailId(id);
-    setDetailDialogOpen(true);
-    setDetailLoading(true);
-    setDetailData(null);
-    try {
-      const res = await fetchCustomerBookingDetail(id);
-      setDetailData((res as { data: BookingDetail }).data);
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memuat detail booking.");
-      setDetailDialogOpen(false);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
+  const { data: serviceTypesData } = useQuery({
+    queryKey: ["customer", "master", "serviceTypes"],
+    queryFn: () => fetchCustomerMasterServiceTypes(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const serviceTypes = useMemo(
+    () =>
+      (serviceTypesData as { data?: Array<{ id: number; name: string; code?: string }> } | undefined)?.data ?? [],
+    [serviceTypesData],
+  );
 
-  const handleOpenEdit = async (id: number) => {
-    setDetailId(id);
-    setEditDialogOpen(true);
-    setDetailLoading(true);
-    setDetailData(null);
-    try {
-      const res = await fetchCustomerBookingDetail(id);
-      setDetailData((res as { data: BookingDetail }).data);
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memuat detail booking.");
-      setEditDialogOpen(false);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
+  const { data: statsData } = useQuery({
+    queryKey: ["customer", "bookings", "stats"],
+    queryFn: () => fetchCustomerBookingStats(),
+    staleTime: 30_000,
+  });
+  const stats = (statsData as { data?: Record<string, number> } | undefined)?.data ?? {};
 
-  const handleSaveEdit = async (payload: FormData) => {
-    if (!detailId) return;
-    setSubmittingEdit(true);
-    try {
-      await updateCustomerBooking(detailId, payload);
-      toast.success("Booking berhasil diperbarui.");
-      void refetch();
-    } catch (e) {
-      throw e;
-    } finally {
-      setSubmittingEdit(false);
-    }
-  };
+  const { data: listData, isLoading: listLoading } = useQuery({
+    queryKey: ["customer", "bookings", "list", {
+      search: searchTerm, status: statusFilter, serviceType: serviceTypeFilter,
+      coverage: coverageFilter, dateFrom, dateTo, page,
+    }],
+    queryFn: ({ signal }) =>
+      fetchCustomerBookings({
+        search: searchTerm || undefined,
+        status: statusFilter || undefined,
+        serviceTypeId: serviceTypeFilter ? Number(serviceTypeFilter) : undefined,
+        shipmentCoverage: coverageFilter || undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        page,
+        perPage: 20,
+      }, signal),
+    placeholderData: (prev) => prev as LaravelPaginated<BookingRow> | undefined,
+  });
+
+  const list = listData as LaravelPaginated<BookingRow> | undefined;
+  const rows = useMemo(() => (list?.data ?? []) as BookingRow[], [list?.data]);
+
+  const statusOptions: ComboboxOption[] = useMemo(
+    () => [
+      { value: ALL, label: t("filter.allStatus") },
+      ...BOOKING_STATUS_KEYS.map((k) => ({ value: k, label: bookingStatusLabelFromApi(k) })),
+    ],
+    [t],
+  );
+  const serviceTypeOptions: ComboboxOption[] = useMemo(
+    () => [
+      { value: ALL, label: t("filter.allServiceTypes") },
+      ...serviceTypes.map((st) => ({ value: String(st.id), label: st.name })),
+    ],
+    [serviceTypes, t],
+  );
+  const coverageOptions: ComboboxOption[] = useMemo(
+    () => [
+      { value: ALL, label: t("filter.allCoverages") },
+      ...Object.entries(SHIPMENT_COVERAGE_LABELS).map(([value, label]) => ({ value, label })),
+    ],
+    [t],
+  );
+
+  const hasActiveFilter =
+    !!searchTerm || !!statusFilter || !!serviceTypeFilter || !!coverageFilter || !!dateFrom || !!dateTo;
+
+  function clearFilters() {
+    setSearchInput("");
+    updateUrl({
+      search: null,
+      status: null,
+      service_type: null,
+      coverage: null,
+      date_from: null,
+      date_to: null,
+      page: "1",
+    });
+  }
 
   return (
-    <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2">
-      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900/5 text-zinc-900">
-            <ClipboardList className="h-4 w-4" />
+    <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-lg">
+            <ClipboardList className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">My Bookings</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Histori pemesanan kargo Anda.</p>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl uppercase">{t("title")}</h1>
+            <p className="mt-1 text-sm text-balance text-muted-foreground">{t("subtitle")}</p>
           </div>
         </div>
+        <Button
+          type="button"
+          onClick={() => router.push("/dashboard/booking/create")}
+          className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-md"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          {t("createButton")}
+        </Button>
       </div>
 
-      {loadError ? (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{loadError}</p>
-      ) : null}
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {BOOKING_STATUS_KEYS.map((key) => {
+          const meta = BOOKING_STATUS_META[key];
+          const Icon = STATUS_ICONS[key] ?? FileText;
+          const value = Number(stats?.[key] ?? 0);
+          return (
+            <BookingStatCard
+              key={key}
+              label={t("table.title")}
+              description={tStat(key)}
+              value={value}
+              icon={<Icon className={`h-5 w-5 ${meta.iconColor}`} />}
+              iconBg={meta.iconBg}
+            />
+          );
+        })}
+      </div>
 
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader className="space-y-1">
-          <CardTitle>Histori Booking</CardTitle>
-          <CardDescription>Daftar semua permintaan booking yang telah Anda ajukan.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 overflow-x-auto">
-          <TableToolbar
-            searchPlaceholder="Cari nomor booking…"
-            searchValue={searchInput}
-            onSearchChange={setSearchInput}
-            filterLabel="Status"
-            filterValue={statusFilter}
-            onFilterChange={setStatusFilter}
-            filterOptions={STATUS_FILTERS}
-          />
-          {loading ? (
-            <div className="space-y-3">
-              {[...Array(PER_PAGE)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                  </div>
-                </div>
-              ))}
+      {/* Filter bar — Search takes its own row so dropdowns can share a single grid below */}
+      <Card className="border-zinc-200 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)]">
+        <CardContent className="p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span>{t("filter.title")}</span>
             </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-14">No</TableHead>
-                    <TableHead>Booking #</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Rute</TableHead>
-                    <TableHead>Service</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-20 text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((booking, index) => {
-                    const st = String(booking.status ?? "");
-                    const origin = (booking.origin_location ?? booking.originLocation) as { name?: string; code?: string } | undefined;
-                    const dest = (booking.destination_location ?? booking.destinationLocation) as { name?: string; code?: string } | undefined;
-                    const svc = (booking.service_type ?? booking.serviceType) as { name?: string } | undefined;
-                    const bNum = String(booking.booking_number ?? "");
-                    const canEdit = st === "submitted";
-                    const canCancel = st === "submitted" || (st === "approved" && !booking.shipment);
+            {hasActiveFilter ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="h-7 gap-1 px-2 text-xs text-zinc-600 hover:text-zinc-900"
+              >
+                <X className="h-3.5 w-3.5" />
+                {t("filter.clear")}
+              </Button>
+            ) : null}
+          </div>
 
-                    return (
-                      <TableRow key={booking.id as number}>
-                        <TableCell className="tabular-nums text-muted-foreground">
-                          {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs font-medium">{bNum}</TableCell>
-                        <TableCell className="text-xs">
-                          {booking.created_at ? new Date(booking.created_at as string).toLocaleDateString("id-ID") : "—"}
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          <div className="flex flex-col">
-                            <span className="font-medium">{origin?.code ?? "—"}</span>
-                            <span className="text-[10px] text-muted-foreground">→ {dest?.code ?? "—"}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{svc?.name ?? "—"}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={bookingStatusBadgeClass(st)}>
-                            {bookingStatusLabelFromApi(st)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => handleOpenDetail(Number(booking.id))}
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                Detail
-                              </DropdownMenuItem>
-                              
-                              {canEdit && (
-                                <DropdownMenuItem
-                                  className="cursor-pointer"
-                                  onClick={() => handleOpenEdit(Number(booking.id))}
-                                >
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                              )}
+          {/* Row 1 — full-width search */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t("filter.searchPlaceholder")}
+              className="h-10 pl-9"
+            />
+          </div>
 
-                              {st === "cancelled" && (
-                                <DropdownMenuItem
-                                  className="cursor-pointer"
-                                  onClick={() => router.push(`/dashboard/booking/create?rebook=${booking.id}`)}
-                                >
-                                  <RefreshCw className="mr-2 h-4 w-4" />
-                                  Ajukan Ulang
-                                </DropdownMenuItem>
-                              )}
+          {/* Row 2 — Status / Service Type / Coverage share a 3-col grid */}
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <FilterField label={t("filter.status")}>
+              <SearchableCombobox
+                value={statusFilter || ALL}
+                onChange={(v) => updateUrl({ status: v === ALL ? null : v, page: "1" })}
+                options={statusOptions}
+                placeholder={t("filter.allStatus")}
+                searchPlaceholder={t("filter.searchPlaceholder")}
+                aria-label={t("filter.status")}
+              />
+            </FilterField>
 
-                              {canCancel && (
-                                <DropdownMenuItem
-                                  className="cursor-pointer text-red-600 focus:text-red-700"
-                                  onClick={() => setCancellingId(booking.id as number)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Batalkan
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-                {rows.length === 0 && (
-                  <TableCaption className="text-xs py-4">Belum ada data booking.</TableCaption>
-                )}
-              </Table>
-              {meta && (
-                <PaginationBar
-                  currentPage={meta.current_page}
-                  lastPage={meta.last_page}
-                  total={meta.total}
-                  from={meta.from}
-                  to={meta.to}
-                  onPageChange={setPage}
-                />
-              )}
-            </>
-          )}
+            <FilterField label={t("filter.serviceType")}>
+              <SearchableCombobox
+                value={serviceTypeFilter || ALL}
+                onChange={(v) => updateUrl({ service_type: v === ALL ? null : v, page: "1" })}
+                options={serviceTypeOptions}
+                placeholder={t("filter.allServiceTypes")}
+                searchPlaceholder={t("filter.searchPlaceholder")}
+                aria-label={t("filter.serviceType")}
+              />
+            </FilterField>
+
+            <FilterField label={t("filter.coverage")}>
+              <SearchableCombobox
+                value={coverageFilter || ALL}
+                onChange={(v) => updateUrl({ coverage: v === ALL ? null : v, page: "1" })}
+                options={coverageOptions}
+                placeholder={t("filter.allCoverages")}
+                searchPlaceholder={t("filter.searchPlaceholder")}
+                aria-label={t("filter.coverage")}
+              />
+            </FilterField>
+          </div>
+
+          {/* Row 3 — Date range gets its own full-width row so each input
+              has enough horizontal space for dd/mm/yyyy + calendar icon */}
+          <div className="mt-3">
+            <FilterField label={t("filter.bookingDate")}>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="relative">
+                  <Calendar className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => updateUrl({ date_from: e.target.value || null, page: "1" })}
+                    aria-label={t("filter.dateFrom")}
+                    placeholder={t("filter.dateFrom")}
+                    className="h-10 pl-9"
+                  />
+                </div>
+                <div className="relative">
+                  <Calendar className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => updateUrl({ date_to: e.target.value || null, page: "1" })}
+                    aria-label={t("filter.dateTo")}
+                    placeholder={t("filter.dateTo")}
+                    className="h-10 pl-9"
+                  />
+                </div>
+              </div>
+            </FilterField>
+          </div>
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!cancellingId} onOpenChange={(o) => {
-        if (!o) {
-          setCancellingId(null);
-          setCancelReasonType("");
-          setCancelReasonOther("");
-        }
-      }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Batalkan Booking?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Apakah Anda yakin ingin membatalkan permintaan booking ini? Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cancel-reason-type" className="text-xs font-medium">Pilih Alasan Pembatalan</Label>
-              <Select value={cancelReasonType} onValueChange={(val) => setCancelReasonType(val || "")} disabled={submittingCancel}>
-                <SelectTrigger id="cancel-reason-type" className="w-full">
-                  <SelectValue placeholder="Pilih alasan..." />
-                </SelectTrigger>
-                <SelectContent className="w-full">
-                  {CANCEL_REASONS.map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {cancelReasonType === "Lainnya" && (
-              <div className="space-y-2">
-                <Label htmlFor="cancel-reason-other" className="text-xs font-medium">Alasan Spesifik</Label>
-                <Input
-                  id="cancel-reason-other"
-                  placeholder="Ketikkan alasan pembatalan Anda..."
-                  value={cancelReasonOther}
-                  onChange={(e) => setCancelReasonOther(e.target.value)}
-                  disabled={submittingCancel}
-                />
-              </div>
-            )}
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={submittingCancel}>Kembali</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={(e) => {
-                e.preventDefault();
-                void handleCancelRequest();
-              }}
-              disabled={submittingCancel}
+      {/* Table — matches dashboard styling (Table primitives, no outer Card) */}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="min-w-[140px]">{t("table.columns.bookingNo")}</TableHead>
+            <TableHead>{t("table.columns.bookingDate")}</TableHead>
+            <TableHead>{t("table.columns.origin")}</TableHead>
+            <TableHead>{t("table.columns.destination")}</TableHead>
+            <TableHead>{t("table.columns.service")}</TableHead>
+            <TableHead>{t("table.columns.coverage")}</TableHead>
+            <TableHead>{t("table.columns.status")}</TableHead>
+            <TableHead className="w-20 text-right">{t("table.columns.action")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {listLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <TableRow key={i}>
+                {Array.from({ length: 8 }).map((__, j) => (
+                  <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="h-32 text-center text-sm text-zinc-500">
+                {t("table.empty")}
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((row) => {
+              const originName = readLocationName(row.origin) ?? row.origin_name ?? "—";
+              const destName = readLocationName(row.destination) ?? row.destination_name ?? "—";
+              const serviceLabel = row.service_type?.name ?? "—";
+              const coverage = row.shipment_coverage ? SHIPMENT_COVERAGE_LABELS[row.shipment_coverage] ?? "—" : "—";
+              const bookingDate = row.booking_date ?? row.created_at ?? null;
+              return (
+                <TableRow key={row.id}>
+                  <TableCell>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/dashboard/booking/${row.id}`)}
+                      className="font-mono text-xs text-zinc-700 hover:text-zinc-900 hover:underline"
+                    >
+                      {row.booking_number}
+                    </button>
+                  </TableCell>
+                  <TableCell className="text-sm tabular-nums text-zinc-600">
+                    {bookingDate ? formatShortDate(bookingDate, locale) : "—"}
+                  </TableCell>
+                  <TableCell className="text-sm text-zinc-700">{originName}</TableCell>
+                  <TableCell className="text-sm text-zinc-700">{destName}</TableCell>
+                  <TableCell className="text-sm text-zinc-600">{serviceLabel}</TableCell>
+                  <TableCell className="text-sm text-zinc-700">{coverage}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={bookingStatusBadgeClass(row.status)}
+                    >
+                      {bookingStatusLabelFromApi(row.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => router.push(`/dashboard/booking/${row.id}`)}
+                      aria-label={t("table.actionDetail")}
+                      className="text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
+
+      {/* Pagination */}
+      {list && (list.last_page ?? 1) > 1 ? (
+        <div className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50/40 px-4 py-3 text-xs text-zinc-500">
+          <span>
+            {t("pagination.summary", {
+              current: list.current_page ?? 1,
+              last: list.last_page ?? 1,
+              total: list.total ?? 0,
+            })}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={!list.prev_page_url}
+              onClick={() => updateUrl({ page: String(Math.max(1, (list.current_page ?? 1) - 1)) })}
             >
-              {submittingCancel ? "Membatalkan…" : "Ya, Batalkan"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <BookingDetailDialog
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        loading={detailLoading}
-        data={detailData}
-      />
-
-      <BookingEditDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        loading={detailLoading}
-        saving={submittingEdit}
-        data={detailData}
-        onSave={handleSaveEdit}
-      />
+              {t("pagination.prev")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={!list.next_page_url}
+              onClick={() => updateUrl({ page: String((list.current_page ?? 1) + 1) })}
+            >
+              {t("pagination.next")}
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function readLocationName(loc: BookingRow["origin"] | BookingRow["destination"]): string | undefined {
+  if (!loc) return undefined;
+  if (typeof loc === "string") return loc;
+  return loc.name;
+}
+
+function FilterField({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function BookingStatCard({
+  label,
+  description,
+  value,
+  icon,
+  iconBg,
+}: {
+  label: string;
+  description: string;
+  value: number;
+  icon: React.ReactNode;
+  iconBg: string;
+}) {
+  return (
+    <Card className="border-zinc-200 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)]">
+      <CardContent className="flex items-start gap-4 p-5">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">{label}</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900">{value}</p>
+          <p className="mt-0.5 text-xs text-zinc-500">{description}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
