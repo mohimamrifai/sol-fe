@@ -1,0 +1,18 @@
+{
+  "LandingFaq": {
+    "eyebrow": "FAQ",
+    "title": "Pertanyaan yang sering diajukan",
+    "q1Q": "Apa itu FCL dan LCL?",
+    "q1A": "FCL (Full Container Load) adalah layanan pengiriman di mana Anda menyewa satu kontainer penuh. LCL (Less Container Load) memungkinkan Anda mengirim barang tanpa harus menyewa kontainer penuh — ideal untuk volume kecil hingga sedang.",
+    "q2Q": "Bagaimana cara mendaftar sebagai perusahaan?",
+    "q2A": "Klik tombol \"Daftar\" di halaman utama, isi data perusahaan (nama, NPWP, NIB, alamat) dan data PIC. Tim kami akan mereview dan mengaktifkan akun Anda dalam waktu 1×24 jam kerja.",
+    "q3Q": "Berapa lama proses verifikasi akun?",
+    "q3A": "Umumnya verifikasi akun selesai dalam 1×24 jam kerja setelah data lengkap diterima. Kami akan mengirimkan notifikasi saat akun sudah aktif.",
+    "q4Q": "Metode pembayaran apa saja yang tersedia?",
+    "q4A": "Kami menerima pembayaran melalui Virtual Account, Bank Transfer, QRIS, dan Kartu Kredit — semuanya diproses melalui payment gateway Midtrans yang aman.",
+    "q5Q": "Apakah bisa melacak pengiriman tanpa login?",
+    "q5A": "Ya! Halaman tracking publik kami memungkinkan siapa pun melacak pengiriman hanya dengan nomor waybill — tidak perlu membuat akun.",
+    "q6Q": "Bagaimana billing cycle bekerja?",
+    "q6A": "Invoice diterbitkan per shipment. Perusahaan dapat memilih billing cycle: 1-15, 16-akhir bulan, keduanya, atau akhir bulan. Pembayaran bisa dilakukan langsung (Pay Now) atau sebelum due date (Pay Later)."
+  }
+}

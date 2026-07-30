@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams as useNextSearchParams, useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   fetchCustomerBookings,
   fetchCustomerBookingStats,

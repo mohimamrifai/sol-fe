@@ -1,0 +1,19 @@
+{
+  "Login": {
+    "title": "Login to Your Account",
+    "subtitle": "Continue booking process and manage your shipments",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "login": "Login Now",
+    "or": "or",
+    "noAccount": "Don't have an account?",
+    "register": "Register Partner",
+    "welcome": "Welcome Back",
+    "welcomeSubtitle": "Login to manage shipments and track your logistics",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email address",
+    "passwordRequired": "Password is required",
+    "passwordMin": "Password must be at least 8 characters"
+  }
+}

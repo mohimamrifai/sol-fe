@@ -8,7 +8,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
-import type { Company, Loc, TM, ST } from "../hooks/use-admin-booking-form";
+import type { Company, Loc, TM, ST } from "@/hooks/use-admin-booking-form";
 
 type ComboOption = { value: string; label: string };
 

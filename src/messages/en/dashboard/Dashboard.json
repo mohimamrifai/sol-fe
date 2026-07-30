@@ -1,0 +1,160 @@
+{
+  "Dashboard": {
+    "menu": {
+      "dashboard": "Dashboard",
+      "createBooking": "Create Booking",
+      "myBookings": "My Bookings",
+      "myShipments": "My Shipments",
+      "shipmentTracking": "Shipment Tracking",
+      "invoices": "Invoices",
+      "payments": "Payments",
+      "companySettings": "Company Settings",
+      "customerManagement": "Customer Management",
+      "bookingManagement": "Booking Management",
+      "shipmentManagement": "Shipment Management",
+      "invoiceManagement": "Invoice Management",
+      "paymentManagement": "Payment Management",
+      "masterOperational": "Master Operational",
+      "vendorPricing": "Vendor & Pricing",
+      "roleManagement": "Role & Permissions",
+      "internalUsers": "Internal Users",
+      "logout": "Logout"
+    },
+    "roleTitles": {
+      "super_admin": "Super Admin Dashboard",
+      "operations": "Operations Dashboard",
+      "finance": "Finance Dashboard",
+      "sales": "Sales Dashboard",
+      "company_admin": "Company Dashboard",
+      "ops_pic": "Ops PIC Dashboard",
+      "finance_pic": "Finance PIC Dashboard",
+      "default": "Dashboard"
+    },
+    "profile": "Profile",
+    "account": "Account",
+    "notifications": {
+      "bookingSubmitted": "Booking {number} was submitted.",
+      "bookingApproved": "Booking {number} has been approved.",
+      "shipmentDeparted": "Shipment {number} has departed.",
+      "shipmentArrived": "Shipment {number} has arrived at {destination}.",
+      "shipmentArrivedNoDest": "Shipment {number} has arrived.",
+      "invoiceIssued": "Invoice {number} has been issued.",
+      "paymentReceived": "Payment for Invoice {number} was received."
+    },
+    "loading": "Loading dashboard…",
+    "cards": {
+      "bookingDraft": "Booking (Draft)",
+      "bookingDraftHint": "Bookings that have not been submitted yet",
+      "bookingSubmitted": "Submitted Bookings",
+      "bookingSubmittedHint": "Waiting for internal review",
+      "shipmentActive": "Active Shipments",
+      "shipmentActiveHint": "Shipments currently in progress",
+      "shipmentCompleted": "Completed Shipments",
+      "shipmentCompletedHint": "Total shipments that have completed",
+      "invoiceUnpaid": "Unpaid Invoices",
+      "invoiceUnpaidHint": "Invoices that have not been paid",
+      "invoiceOutstanding": "Outstanding Amount",
+      "invoiceOutstandingHint": "Total amount still due"
+    },
+    "sections": {
+      "shipmentTracking": {
+        "title": "Shipment Tracking",
+        "description": "Your active shipments in progress.",
+        "viewAll": "View all shipments"
+      },
+      "recentBooking": {
+        "title": "Recent Bookings",
+        "description": "Your most recent bookings.",
+        "viewAll": "View all bookings",
+        "create": "Create Booking"
+      },
+      "outstandingInvoice": {
+        "title": "Outstanding Invoices",
+        "description": "Invoices awaiting payment.",
+        "viewAll": "View all invoices"
+      },
+      "recentPayment": {
+        "title": "Recent Payments",
+        "description": "Latest payment history."
+      },
+      "recentNotifications": {
+        "title": "Recent Notifications",
+        "description": "Latest activity on your account.",
+        "viewAll": "View all notifications"
+      }
+    },
+    "table": {
+      "shipmentNo": "Shipment No.",
+      "bookingNo": "Booking No.",
+      "invoiceNo": "Invoice No.",
+      "route": "Route",
+      "service": "Service",
+      "currentStatus": "Current Status",
+      "eta": "ETA",
+      "bookingDate": "Booking Date",
+      "dueDate": "Due Date",
+      "amount": "Amount",
+      "outstanding": "Outstanding",
+      "paymentDate": "Payment Date",
+      "method": "Method",
+      "status": "Status",
+      "view": "View",
+      "payNow": "Pay Now",
+      "viewAll": "View all"
+    },
+    "quickAction": {
+      "title": "Quick Actions",
+      "createBooking": "Create Booking",
+      "trackShipment": "Track Shipment",
+      "viewInvoice": "View Invoices",
+      "payInvoice": "Pay Invoice"
+    },
+    "status": {
+      "booking": {
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "shipment": {
+        "created": "Created",
+        "survey_completed": "Survey completed",
+        "cargo_received": "Cargo received",
+        "stuffing_container": "Stuffing container",
+        "container_sealed": "Container sealed",
+        "departed": "Departed",
+        "arrived": "Arrived",
+        "unloading": "Unloading",
+        "ready_for_pickup": "Ready for pickup",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "invoice": {
+        "unpaid": "Unpaid",
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "cancelled": "Cancelled"
+      },
+      "payment": {
+        "success": "Success",
+        "pending": "Pending",
+        "failed": "Failed",
+        "expired": "Expired"
+      }
+    },
+    "empty": {
+      "shipments": "No active shipments yet.",
+      "bookings": "No bookings yet.",
+      "invoices": "No outstanding invoices.",
+      "payments": "No payments yet.",
+      "notifications": "No recent activity."
+    },
+    "customer": {
+      "settings": {
+        "title": "Company Settings",
+        "description": "Manage your company profile, user profile, and account security.",
+        "comingSoon": "Advanced company profile and user settings can be added here."
+      }
+    }
+  }
+}

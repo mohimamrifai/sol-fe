@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { ClipboardList, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useBookingForm } from "@/app/[locale]/dashboard/booking/create/hooks/use-booking-form";
+import { useBookingForm } from "@/hooks/use-booking-form";
 import { fetchCustomerBooking } from "@/lib/customer-api";
 import { RouteServiceSection } from "@/app/[locale]/dashboard/booking/create/components/sections/route-service-section";
 import { PartyInfoSection } from "@/app/[locale]/dashboard/booking/create/components/sections/party-info-section";

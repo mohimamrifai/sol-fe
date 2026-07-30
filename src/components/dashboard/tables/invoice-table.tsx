@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, Eye } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { formatIdr, formatShortDate } from "../format";
-import { useTWithFallback } from "../use-t-fallback";
+import { useTWithFallback } from "@/hooks/use-t-fallback";
 import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
 import type { CustomerDashboardInvoice } from "@/lib/dashboard-api";
 

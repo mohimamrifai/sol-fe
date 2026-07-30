@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, Package, Truck, Wrench, Settings } from "lucide-react";
-import { AS } from "../../hooks/use-booking-form";
+import { AS } from "@/hooks/use-booking-form";
 
 interface AddOnServiceSectionProps {
   isFCL: boolean;

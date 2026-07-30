@@ -52,7 +52,7 @@ import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { ensureMidtransSnapLoaded, openMidtransSnap } from "@/lib/midtrans-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 const PER_PAGE = 10;
 const STATS_CAP = 1000;

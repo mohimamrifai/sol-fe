@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import { Download, Package, Plus } from "lucide-react";
-import { useShipmentDetail } from "./hooks/use-shipment-detail";
+import { useShipmentDetail } from "@/hooks/use-shipment-detail";
 import { ShipmentHeader } from "./components/shipment-header";
 import { ShipmentSummaryCard } from "./components/sections/shipment-summary-card";
 import { TrackingTimelineCard } from "./components/sections/tracking-timeline-card";

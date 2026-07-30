@@ -38,7 +38,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuthStore } from "@/lib/store";
 import { getDashboardUiRole } from "@/lib/auth-role";
 import { performLogout } from "@/lib/auth-actions";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useRouter } from "@/i18n/routing";
 import { useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";

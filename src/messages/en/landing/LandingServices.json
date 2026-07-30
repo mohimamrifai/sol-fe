@@ -1,0 +1,15 @@
+{
+  "LandingServices": {
+    "eyebrow": "Our services",
+    "title": "The right shipping solution for your business",
+    "lead": "Choose a service that fits your cargo needs — from full containers to add-on services.",
+    "fclTitle": "Full Container Load",
+    "fclBody": "A full container exclusively for your cargo. Ideal for large volumes with maximum security.",
+    "lclTitle": "Less Container Load",
+    "lclBody": "Ship without renting a full container. Save costs with our rack management system.",
+    "railTitle": "Rail Cargo Port-to-Port",
+    "railBody": "Shipping via railway between major ports. Efficient, reliable, and eco-friendly.",
+    "addonTitle": "Additional Services",
+    "addonBody": "Pickup, packing (palletizing, wooden crate), and special handling (forklift, fragile, heavy cargo)."
+  }
+}

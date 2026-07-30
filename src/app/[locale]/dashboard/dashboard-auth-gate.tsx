@@ -5,7 +5,7 @@ import { useRouter } from "@/i18n/routing";
 import { useAuthStore, syncAuthTokenWithStore } from "@/lib/store";
 import { getStoredToken } from "@/lib/api-client";
 import { profileRequest } from "@/lib/auth-api";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 
 const PROFILE_CACHE_KEY = "sol_profile_cached_at";
 const PROFILE_REVALIDATE_MS = 5 * 60 * 1000; // 5 menit

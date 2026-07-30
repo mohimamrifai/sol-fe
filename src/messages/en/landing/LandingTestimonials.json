@@ -1,0 +1,15 @@
+{
+  "LandingTestimonials": {
+    "eyebrow": "Testimonials",
+    "title": "What our clients say",
+    "t1Quote": "SOL Logistics simplified our entire logistics process. From booking to payment, everything in one place. Our operations team is far more productive.",
+    "t1Name": "Andi Prasetyo",
+    "t1Role": "Operations Director, PT Maju Logistik",
+    "t2Quote": "Real-time tracking with photo evidence really helps us monitor cargo without having to call the vendor constantly.",
+    "t2Name": "Siti Rahayu",
+    "t2Role": "Supply Chain Manager, Nusantara Freight",
+    "t3Quote": "Payment process is much easier now. Per-shipment invoicing and online payment options make our finance team more efficient.",
+    "t3Name": "Budi Santoso",
+    "t3Role": "Finance Director, Indo Cargo Express"
+  }
+}

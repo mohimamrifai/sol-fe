@@ -1,0 +1,15 @@
+{
+  "LandingServices": {
+    "eyebrow": "Layanan kami",
+    "title": "Pilih layanan yang pas untuk bisnis Anda",
+    "lead": "Mau kirim kontainer penuh atau cuma beberapa palet? Kami punya solusinya.",
+    "fclTitle": "Full Container Load",
+    "fclBody": "Kontainer penuh eksklusif untuk kargo Anda. Cocok untuk pengiriman besar yang butuh keamanan maksimal.",
+    "lclTitle": "Less Container Load",
+    "lclBody": "Kirim tanpa harus sewa kontainer penuh. Lebih hemat dengan sistem pengelolaan rak kami.",
+    "railTitle": "Kargo Kereta Antar Pelabuhan",
+    "railBody": "Jalur kereta api antar pelabuhan utama — efisien, tepat waktu, dan lebih ramah lingkungan.",
+    "addonTitle": "Layanan Tambahan",
+    "addonBody": "Jemput barang, pengemasan profesional, hingga penanganan khusus untuk kargo berat dan rapuh."
+  }
+}

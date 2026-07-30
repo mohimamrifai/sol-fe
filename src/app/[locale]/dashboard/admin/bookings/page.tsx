@@ -22,7 +22,7 @@ import { TableToolbar } from "@/components/data-table/table-toolbar";
 import { bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import {
   fetchAdminBooking,
   fetchAdminBookings,
@@ -32,7 +32,7 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   ClipboardList,
   Plus,

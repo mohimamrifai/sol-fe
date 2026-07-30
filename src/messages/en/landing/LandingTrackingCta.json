@@ -1,0 +1,8 @@
+{
+  "LandingTrackingCta": {
+    "title": "Track your shipment now",
+    "lead": "Just enter a Consignment Note (CN) number — no login required. Get real-time status, timeline, and photo evidence.",
+    "placeholder": "Enter Consignment Note (CN) number…",
+    "cta": "Track"
+  }
+}

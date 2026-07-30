@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ClipboardList, CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
-import { useBookingForm } from "./hooks/use-booking-form";
+import { useBookingForm } from "@/hooks/use-booking-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { createCustomerBooking } from "@/lib/customer-api";
 import { ApiError } from "@/lib/api-client";

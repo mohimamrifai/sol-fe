@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CT, CC, DC } from "../../hooks/use-booking-form";
+import { CT, CC, DC } from "@/hooks/use-booking-form";
 import { cn } from "@/lib/utils";
 import {
   Combobox,

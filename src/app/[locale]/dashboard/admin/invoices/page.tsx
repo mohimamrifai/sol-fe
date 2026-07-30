@@ -32,7 +32,7 @@ import { TableToolbar } from "@/components/data-table/table-toolbar";
 import { invoiceStatusBadgeClass, invoiceStatusLabelFromApi } from "@/lib/invoice-status";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import {
   AlertCircle,
   CheckCircle2,
@@ -68,7 +68,7 @@ import {
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 const PER_PAGE = 10;
 const STATS_CAP = 1000;

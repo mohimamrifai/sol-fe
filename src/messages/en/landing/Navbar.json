@@ -1,0 +1,11 @@
+{
+  "Navbar": {
+    "home": "Home",
+    "services": "Services",
+    "information": "Information",
+    "estimate": "Price estimate",
+    "track": "Track",
+    "login": "Login",
+    "language": "Language"
+  }
+}

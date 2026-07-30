@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ChevronDown, Package, Truck, Wrench, Settings } from "lucide-react";
-import type { AS } from "../hooks/use-admin-booking-form";
+import type { AS } from "@/hooks/use-admin-booking-form";
 
 interface AddOnServiceSectionProps {
   isFCL: boolean;

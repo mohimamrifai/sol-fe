@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Loc, TM, ST } from "../../hooks/use-booking-form";
+import { Loc, TM, ST } from "@/hooks/use-booking-form";
 import { cn } from "@/lib/utils";
 import {
   Combobox,

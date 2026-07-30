@@ -18,7 +18,7 @@ import { ShipperConsigneeSection } from "@/components/dashboard/admin/bookings/c
 import { RouteServiceSection } from "./components/route-service-section";
 import { CargoDetailSection } from "./components/cargo-detail-section";
 import { AddOnServiceSection } from "./components/add-on-service-section";
-import { useAdminBookingForm } from "./hooks/use-admin-booking-form";
+import { useAdminBookingForm } from "@/hooks/use-admin-booking-form";
 
 export default function AdminCreateBookingPage() {
   const router = useRouter();

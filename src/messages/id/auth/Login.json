@@ -1,0 +1,19 @@
+{
+  "Login": {
+    "title": "Masuk ke Akun Anda",
+    "subtitle": "Lanjutkan proses booking dan kelola pengiriman Anda",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Lupa password?",
+    "login": "Masuk Sekarang",
+    "or": "atau",
+    "noAccount": "Belum memiliki akun?",
+    "register": "Daftar Partner",
+    "welcome": "Selamat Datang Kembali",
+    "welcomeSubtitle": "Masuk untuk mengelola pengiriman dan melacak logistik Anda",
+    "emailRequired": "Email wajib diisi",
+    "emailInvalid": "Alamat email tidak valid",
+    "passwordRequired": "Password wajib diisi",
+    "passwordMin": "Password minimal 8 karakter"
+  }
+}

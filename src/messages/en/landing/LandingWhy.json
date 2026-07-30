@@ -1,0 +1,19 @@
+{
+  "LandingWhy": {
+    "eyebrow": "Why SOL Logistics",
+    "title": "One platform, all your logistics needs",
+    "lead": "We built SOL Logistics to simplify B2B logistics complexity — transparent, efficient, and ready to scale with your business.",
+    "w1Title": "Unified platform",
+    "w1Body": "Booking, tracking, invoicing, and payments in one digital ecosystem.",
+    "w2Title": "Transparent pricing",
+    "w2Body": "Instant price estimates before booking. No hidden costs.",
+    "w3Title": "Tracking with photo proof",
+    "w3Body": "Every shipment stage includes photos and notes — from loading to unloading.",
+    "w4Title": "Flexible payments",
+    "w4Body": "Pay now or later before due date via VA, QRIS, or credit card.",
+    "w5Title": "Multi-role portal",
+    "w5Body": "One portal for Company Admin, Ops PIC, and Finance PIC — each with appropriate access.",
+    "w6Title": "Multimodal-ready to scale",
+    "w6Body": "Architecture ready for trucking, sea freight, and air cargo without rebuilding the foundation."
+  }
+}

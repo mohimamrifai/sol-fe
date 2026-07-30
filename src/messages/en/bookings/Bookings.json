@@ -1,0 +1,201 @@
+{
+  "Bookings": {
+    "title": "My Bookings",
+    "subtitle": "Your cargo booking history.",
+    "createButton": "Create Booking",
+    "table": {
+      "title": "Booking History",
+      "description": "List of every booking you have submitted.",
+      "empty": "No bookings yet.",
+      "columns": {
+        "number": "#",
+        "bookingNo": "Booking #",
+        "bookingDate": "Booking Date",
+        "origin": "Origin",
+        "destination": "Destination",
+        "service": "Service",
+        "coverage": "Coverage",
+        "status": "Status",
+        "action": "Action"
+      },
+      "actionDetail": "Detail"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search booking number / shipper / consignee…",
+      "status": "Status",
+      "allStatus": "All statuses",
+      "serviceType": "Service Type",
+      "allServiceTypes": "All services",
+      "coverage": "Shipment Coverage",
+      "allCoverages": "All coverages",
+      "bookingDate": "Booking Date",
+      "dateFrom": "From date",
+      "dateTo": "To date"
+    },
+    "stats": {
+      "draft": "Booking not yet submitted.",
+      "submitted": "Waiting for internal review.",
+      "approved": "Approved and ready to convert to a Shipment.",
+      "rejected": "Booking was rejected."
+    },
+    "coverage": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
+    },
+    "actions": {
+      "edit": "Edit",
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "view": "View",
+      "duplicate": "Duplicate"
+    },
+    "cancelDialog": {
+      "title": "Cancel Booking?",
+      "description": "Are you sure you want to cancel this booking request? This action cannot be undone.",
+      "reasonLabel": "Cancellation Reason",
+      "reasonPlaceholder": "Select a reason...",
+      "otherLabel": "Specific Reason",
+      "otherPlaceholder": "Type your cancellation reason...",
+      "confirm": "Yes, Cancel",
+      "back": "Back",
+      "reasons": {
+        "wrongService": "Wrong service / route selected",
+        "noShipment": "Cargo is no longer being shipped",
+        "competitor": "Found a better price elsewhere",
+        "incomplete": "Need to change details that cannot be edited",
+        "other": "Other"
+      },
+      "errorReason": "Cancellation reason is required.",
+      "success": "Booking cancelled.",
+      "error": "Failed to cancel the booking."
+    },
+    "duplicateSuccess": "Booking duplicated.",
+    "submitSuccess": "Booking submitted.",
+    "loadError": "Failed to load bookings.",
+    "pagination": {
+      "summary": "Page {current} of {last} · {total} bookings total",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "create": {
+      "pageTitle": "Create New Booking",
+      "pageSubtitle": "Please complete your shipment details below.",
+      "loadingForm": "Preparing booking form…",
+      "saveAsDraft": "Save as Draft",
+      "saveAsDraftSuccess": "Draft saved.",
+      "submitNow": "Submit Booking Now",
+      "submitNowSuccess": "Booking Submitted!",
+      "submitSuccessDesc": "Your shipment request has been received. Our team will verify your cargo and schedule shortly.",
+      "viewList": "View My Bookings",
+      "noEstimate": "Click the estimate button to preview the price.",
+      "estimateNote": "* The price above is an estimate and will be confirmed by operations.",
+      "editPageTitle": "Edit Booking",
+      "editPageSubtitle": "Update your shipment details below.",
+      "estimateButton": "Estimate",
+      "estimateLabel": "Cost Information",
+      "freight": "Base Freight",
+      "discount": "Discount",
+      "additionalServices": "Additional Services",
+      "pickup": "Pickup",
+      "delivery": "Delivery",
+      "total": "Total"
+    },
+    "detail": {
+      "header": {
+        "title": "Booking Detail",
+        "createdDateLabel": "Created Date"
+      },
+      "actions": {
+        "edit": "Edit",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "view": "View",
+        "duplicate": "Duplicate",
+        "backToList": "Back to booking list"
+      },
+      "rejection": {
+        "title": "Rejection Reason",
+        "titleShort": "Reason"
+      },
+      "section1": {
+        "title": "Booking Information",
+        "bookingNumber": "Booking Number",
+        "status": "Status",
+        "createdAt": "Created At",
+        "departureDate": "Departure Date",
+        "shipmentCoverage": "Shipment Coverage",
+        "shipper": "Shipper",
+        "consignee": "Consignee",
+        "phone": "Phone",
+        "address": "Address",
+        "notes": "Notes"
+      },
+      "section2": {
+        "title": "Cargo Information",
+        "noItems": "No cargo details yet.",
+        "lclTitle": "Package (LCL)",
+        "fclTitle": "Container (FCL)",
+        "sequence": "Item",
+        "packageType": "Type",
+        "containerType": "Container Type",
+        "containerNumber": "Container Number",
+        "sealNumber": "Seal Number",
+        "dimensions": "Dimensions (cm)",
+        "weight": "Weight",
+        "volume": "Volume",
+        "pieces": "Pieces",
+        "dg": "Dangerous Goods",
+        "dgClass": "DG Class",
+        "unNumber": "UN Number",
+        "msds": "MSDS/SDS",
+        "viewMsds": "View MSDS",
+        "equipmentCondition": "Equipment Condition",
+        "temperature": "Temperature",
+        "autoMetrics": "Auto-calculated Metrics",
+        "autoVolume": "Volume (CBM)",
+        "autoVolumeWeight": "Volume Weight",
+        "autoChargeable": "Chargeable Weight"
+      },
+      "section3": {
+        "title": "Cost Estimation",
+        "waiting": "Waiting for cost estimation.",
+        "freight": "Freight",
+        "pickup": "Pickup",
+        "delivery": "Delivery",
+        "discount": "Discount",
+        "additionalServices": "Additional Services",
+        "total": "Total Estimation",
+        "noChargeable": "—"
+      },
+      "section4": {
+        "title": "Attachments",
+        "empty": "No attachments yet.",
+        "uploadButton": "Upload Attachment",
+        "uploading": "Uploading…",
+        "uploadError": "Failed to upload attachment.",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this attachment?",
+        "fileSize": "Size",
+        "uploadedBy": "Uploaded by",
+        "uploadedAt": "Uploaded at"
+      },
+      "section5": {
+        "title": "Booking Timeline",
+        "performedBy": "Performed by",
+        "actorCustomer": "Customer",
+        "actorInternal": "Internal",
+        "actorSystem": "System"
+      },
+      "section6": {
+        "title": "Activity Log"
+      },
+      "loadError": "Failed to load booking detail.",
+      "notFound": "Booking not found."
+    }
+  }
+}

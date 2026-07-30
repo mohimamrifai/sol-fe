@@ -23,7 +23,7 @@ import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
 import { useAuthStore } from "@/lib/store";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { toast } from "sonner";
 import { BranchManagement } from "@/components/dashboard/admin/customers/branch-management";
 import { DiscountManagement } from "@/components/dashboard/admin/customers/discount-management";

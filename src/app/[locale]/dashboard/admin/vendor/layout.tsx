@@ -1,4 +1,4 @@
-import { VendorLayoutShell } from "./_components/vendor-layout-shell";
+import { VendorLayoutShell } from "@/components/shared/vendor-layout-shell";
 
 export default function AdminVendorLayout({ children }: { children: React.ReactNode }) {
   return <VendorLayoutShell>{children}</VendorLayoutShell>;

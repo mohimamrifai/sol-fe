@@ -1,0 +1,30 @@
+{
+  "Estimate": {
+    "title": "Shipping cost estimate",
+    "subtitle": "Enter route and service to see an indicative price. No login — company discounts are not applied here.",
+    "loading": "Loading data…",
+    "loadError": "Failed to load master data. Check connectivity and API configuration.",
+    "estimateError": "Could not compute the estimate. Check route and service selections.",
+    "formTitle": "Shipment parameters",
+    "formDescription": "Pick locations, mode, and service. For FCL choose a container type; for LCL fill weight or CBM.",
+    "origin": "Origin",
+    "destination": "Destination",
+    "transportMode": "Transport mode",
+    "serviceType": "Service type",
+    "containerType": "Container type (optional)",
+    "containerCount": "Container count",
+    "weight": "Estimated weight (kg)",
+    "cbm": "Estimated volume (CBM)",
+    "addOns": "Additional services",
+    "estimateCta": "Calculate estimate",
+    "estimating": "Calculating…",
+    "registerHint": "Register to book & unlock discounts",
+    "goTracking": "Track waybill",
+    "resultTitle": "Indicative total",
+    "resultNote": "Indicative figure from sell rates and routes in the system. Final pricing follows operational confirmation.",
+    "breakdownBase": "Base freight",
+    "breakdownDiscount": "Discount",
+    "breakdownAddOns": "Additional services",
+    "breakdownTotal": "Total"
+  }
+}

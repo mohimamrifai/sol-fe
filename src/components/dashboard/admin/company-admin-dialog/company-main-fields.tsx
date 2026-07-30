@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BILLING_CYCLE_OPTIONS, billingCycleLabel } from "@/lib/billing-cycle-labels";
-import type { CompanyDialogMode } from "./types";
+import type { CompanyDialogMode } from "@/components/dashboard/admin/company-admin-dialog/types";
 
 type Props = {
   mode: CompanyDialogMode;

@@ -21,13 +21,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { deleteAdminVendor, fetchAdminVendor, fetchAdminVendors } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { VendorFormDialog } from "@/components/dashboard/admin/vendor-form-dialog";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { VendorFormDialog } from "@/components/dashboard/admin/vendor/vendor-form-dialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import {
   DropdownMenu,

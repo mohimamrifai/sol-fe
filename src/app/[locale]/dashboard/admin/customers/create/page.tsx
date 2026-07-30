@@ -20,7 +20,7 @@ import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
 import { useAuthStore } from "@/lib/store";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { toast } from "sonner";
 
 const BUSINESS_ENTITY_OPTIONS = [

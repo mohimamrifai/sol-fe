@@ -1,0 +1,25 @@
+{
+  "Landing": {
+    "featuresTitle": "Everything you need, in one platform",
+    "featuresLead": "From company onboarding to payment — every step of your logistics, simplified.",
+    "f1Title": "Bookings & price estimates",
+    "f1Body": "Create orders by choosing origin, destination, and service type. See the estimated price instantly before confirming.",
+    "f2Title": "Rail cargo between ports",
+    "f2Body": "Railway cargo service for port-to-port routes — fast, reliable, and ready to expand to other transport modes.",
+    "f3Title": "Track with a Consignment Note (CN) number",
+    "f3Body": "Check status, timeline, and photo evidence anytime. Publicly accessible — no login required.",
+    "f4Title": "Invoices & online payments",
+    "f4Body": "Automatic invoicing per shipment. Pay directly via Virtual Account, QRIS, or credit card.",
+    "f5Title": "A portal for your team",
+    "f5Body": "Decide who manages bookings, who monitors shipments, and who handles finance — all in one portal.",
+    "f6Title": "Ready to grow with you",
+    "f6Body": "Start with rail, then expand to trucking, sea, or air — without switching platforms.",
+    "footerBrand": "SOL Logistics",
+    "footerTagline": "Unified logistics platform to manage your business bookings and shipments.",
+    "footerEstimasi": "Cost Estimate",
+    "footerTracking": "Track Shipment",
+    "footerLogin": "Log In",
+    "footerRegister": "Register",
+    "footerRights": "© IDNVers Karya Nusantara. All rights reserved."
+  }
+}

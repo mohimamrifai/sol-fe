@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
-import type { Row } from "./types";
+import type { Row } from "@/components/dashboard/admin/company-admin-dialog/types";
 
 type Props = {
   open: boolean;

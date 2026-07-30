@@ -16,23 +16,23 @@ import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { deleteAdminAdditionalService, fetchAdminAdditionalServices } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { MasterRowActions } from "../_components/master-row-actions";
-import { MasterTableShell } from "../_components/master-table-shell";
-import { MasterActiveBadge } from "../_components/master-active-badge";
-import { actionsCellClass, actionsHeadClass } from "../_components/master-table-classes";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { MasterRowActions } from "@/components/shared/master-row-actions";
+import { MasterTableShell } from "@/components/shared/master-table-shell";
+import { MasterActiveBadge } from "@/components/shared/master-active-badge";
+import { actionsCellClass, actionsHeadClass } from "@/components/shared/master-table-classes";
 import {
   ADDITIONAL_CATEGORY_FILTER_OPTIONS,
   STATUS_FILTER_OPTIONS,
-} from "../_components/master-filters";
-import { MasterAdditionalServiceDialog } from "../_components/master-additional-service-dialog";
-import { useMasterOpenCreateFromQuery } from "../_components/use-master-open-create-from-query";
-import type { SimpleDialogMode } from "../_components/master-transport-mode-dialog";
+} from "@/components/shared/master-filters";
+import { MasterAdditionalServiceDialog } from "@/components/dashboard/admin/master/master-additional-service-dialog";
+import { useMasterOpenCreateFromQuery } from "@/hooks/use-master-open-create-from-query";
+import type { SimpleDialogMode } from "@/components/dashboard/admin/master/master-transport-mode-dialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import { Plus } from "lucide-react";
 

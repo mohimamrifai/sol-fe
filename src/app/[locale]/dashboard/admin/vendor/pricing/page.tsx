@@ -44,19 +44,19 @@ import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { VendorPricingDialog } from "@/components/dashboard/admin/vendor-pricing-dialog";
-import { VendorServiceDialog } from "@/components/dashboard/admin/vendor-service-dialog";
+import { VendorPricingDialog } from "@/components/dashboard/admin/vendor/vendor-pricing-dialog";
+import { VendorServiceDialog } from "@/components/dashboard/admin/vendor/vendor-service-dialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import { fetchAdminVendor, fetchAdminVendors, deleteAdminPricing } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import {
   buildPricingRowsFromVendorDetail,
   priceTypeLabel,
   type PricingRow,
-} from "../_components/build-pricing-rows";
+} from "@/components/shared/build-pricing-rows";
 
 type VendorRow = Record<string, unknown>;
 

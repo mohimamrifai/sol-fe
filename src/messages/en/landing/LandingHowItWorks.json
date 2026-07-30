@@ -1,0 +1,15 @@
+{
+  "LandingHowItWorks": {
+    "eyebrow": "How it works",
+    "title": "Start shipping in 4 easy steps",
+    "lead": "From registration to delivery — all in one platform.",
+    "s1Title": "Register & Verify",
+    "s1Body": "Register your company. Our team will review and activate your account promptly.",
+    "s2Title": "Create a Booking",
+    "s2Body": "Choose a route, FCL or LCL service, and get an instant price estimate before confirming.",
+    "s3Title": "Track Real-Time",
+    "s3Body": "Monitor shipment status with photo evidence — from loading to delivery at destination.",
+    "s4Title": "Pay Online",
+    "s4Body": "Receive per-shipment invoices, pay via Virtual Account, QRIS, or bank transfer."
+  }
+}

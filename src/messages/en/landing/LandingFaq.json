@@ -1,0 +1,18 @@
+{
+  "LandingFaq": {
+    "eyebrow": "FAQ",
+    "title": "Frequently asked questions",
+    "q1Q": "What is FCL and LCL?",
+    "q1A": "FCL (Full Container Load) is a service where you rent an entire container. LCL (Less Container Load) lets you ship goods without renting a full container — ideal for small to medium volumes.",
+    "q2Q": "How do I register as a company?",
+    "q2A": "Click the \"Register\" button on the homepage, fill in company details (name, NPWP, NIB, address) and PIC data. Our team will review and activate your account within 1 business day.",
+    "q3Q": "How long does account verification take?",
+    "q3A": "Verification typically completes within 1 business day after complete data is received. We'll notify you once your account is active.",
+    "q4Q": "What payment methods are available?",
+    "q4A": "We accept payments via Virtual Account, Bank Transfer, QRIS, and Credit Card — all processed through Midtrans, a secure payment gateway.",
+    "q5Q": "Can I track a shipment without logging in?",
+    "q5A": "Yes! Our public tracking page allows anyone to track a shipment using just the waybill number — no account needed.",
+    "q6Q": "How does the billing cycle work?",
+    "q6A": "Invoices are issued per shipment. Companies can choose a billing cycle: 1st-15th, 16th-end of month, both, or end of month. Payment can be made immediately (Pay Now) or before the due date (Pay Later)."
+  }
+}

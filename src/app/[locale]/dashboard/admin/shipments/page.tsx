@@ -10,12 +10,12 @@ import {
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
 import { SHIPMENT_STATUS_KEYS, shipmentStatusLabel } from "@/lib/shipment-status";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { PackageSearch } from "lucide-react";
 import { fetchAdminShipments } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { ShipmentStatsCards } from "./components/shipment-stats-cards";
 import { ShipmentTable } from "./components/shipment-table";
 

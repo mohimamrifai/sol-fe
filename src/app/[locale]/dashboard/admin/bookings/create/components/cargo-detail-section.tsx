@@ -11,7 +11,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { DangerousGoodsSection } from "@/components/dashboard/admin/bookings/create/dangerous-goods-section";
-import type { CT, CC, DC } from "../hooks/use-admin-booking-form";
+import type { CT, CC, DC } from "@/hooks/use-admin-booking-form";
 
 type ComboOption = { value: string; label: string };
 

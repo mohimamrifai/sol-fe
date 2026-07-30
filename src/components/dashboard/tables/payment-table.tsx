@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatIdr, formatShortDate } from "../format";
-import { useTWithFallback } from "../use-t-fallback";
+import { useTWithFallback } from "@/hooks/use-t-fallback";
 import type { CustomerDashboardPayment } from "@/lib/dashboard-api";
 
 interface Props {

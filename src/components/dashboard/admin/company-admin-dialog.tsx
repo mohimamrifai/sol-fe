@@ -21,7 +21,7 @@ import { CompanyRelatedSections } from "./company-admin-dialog/company-related-s
 import { BranchDialog } from "./company-admin-dialog/branch-dialog";
 import { DiscountDialog } from "./company-admin-dialog/discount-dialog";
 import { RejectDialog } from "./company-admin-dialog/reject-dialog";
-import { useCompanyAdminDialog } from "./company-admin-dialog/use-company-admin-dialog";
+import { useCompanyAdminDialog } from "@/hooks/use-company-admin-dialog";
 
 export function CompanyAdminDialog({
   open,

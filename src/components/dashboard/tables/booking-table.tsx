@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatShortDate } from "../format";
-import { useTWithFallback } from "../use-t-fallback";
+import { useTWithFallback } from "@/hooks/use-t-fallback";
 import type { CustomerDashboardBooking } from "@/lib/dashboard-api";
 
 interface Props {

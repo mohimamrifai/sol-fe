@@ -1,0 +1,11 @@
+{
+  "Navbar": {
+    "home": "Beranda",
+    "services": "Layanan",
+    "information": "Informasi",
+    "estimate": "Estimasi Biaya",
+    "track": "Lacak",
+    "login": "Masuk",
+    "language": "Bahasa"
+  }
+}

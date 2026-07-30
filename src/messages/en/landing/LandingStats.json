@@ -1,0 +1,12 @@
+{
+  "LandingStats": {
+    "s1Value": "500+",
+    "s1Label": "Shipments managed",
+    "s2Value": "50+",
+    "s2Label": "Registered companies",
+    "s3Value": "15+",
+    "s3Label": "Active routes",
+    "s4Value": "99.5%",
+    "s4Label": "On-time delivery"
+  }
+}

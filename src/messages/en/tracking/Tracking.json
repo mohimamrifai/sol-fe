@@ -1,0 +1,17 @@
+{
+  "Tracking": {
+    "title": "Track Your Shipment",
+    "subtitle": "Enter your Consignment Note (CN) number to see real-time shipment status — no login required.",
+    "placeholder": "Enter Consignment Note (CN) number…",
+    "cta": "Track",
+    "notFound": "Shipment not found. Please check your Consignment Note (CN) number.",
+    "waybillLabel": "Consignment Note (CN) Number",
+    "origin": "Origin",
+    "destination": "Destination",
+    "estDeparture": "Est. Departure",
+    "estArrival": "Est. Arrival",
+    "timeline": "Shipment Timeline",
+    "emptyState": "Enter a waybill number above to start tracking your shipment.",
+    "goEstimate": "Calculate shipping estimate"
+  }
+}

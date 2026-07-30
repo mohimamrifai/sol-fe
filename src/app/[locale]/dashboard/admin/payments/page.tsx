@@ -22,7 +22,7 @@ import { TableToolbar } from "@/components/data-table/table-toolbar";
 import { paymentStatusBadgeClass, paymentStatusLabelFromApi } from "@/lib/payment-status";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
-import { useAuthPersistHydrated } from "@/lib/use-auth-hydrated";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import {
   CreditCard,
 } from "lucide-react";
@@ -32,7 +32,7 @@ import {
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 import { PaymentStats } from "@/components/dashboard/admin/payments/payment-stats";
 import { PaymentActionsMenu } from "@/components/dashboard/admin/payments/payment-actions-menu";

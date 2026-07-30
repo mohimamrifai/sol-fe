@@ -1,0 +1,30 @@
+{
+  "Estimate": {
+    "title": "Estimasi biaya pengiriman",
+    "subtitle": "Isi rute dan layanan untuk melihat perkiraan harga. Tanpa login — diskon perusahaan tidak diterapkan di sini.",
+    "loading": "Memuat data…",
+    "loadError": "Gagal memuat data master. Periksa koneksi dan pengaturan API.",
+    "estimateError": "Gagal menghitung estimasi. Pastikan rute dan layanan sudah benar.",
+    "formTitle": "Parameter pengiriman",
+    "formDescription": "Pilih lokasi, moda, dan layanan. Untuk FCL pilih tipe kontainer; untuk LCL isi berat atau CBM.",
+    "origin": "Lokasi asal",
+    "destination": "Lokasi tujuan",
+    "transportMode": "Moda angkut",
+    "serviceType": "Jenis layanan",
+    "containerType": "Tipe kontainer (opsional)",
+    "containerCount": "Jumlah kontainer",
+    "weight": "Berat estimasi (kg)",
+    "cbm": "Volume estimasi (CBM)",
+    "addOns": "Layanan tambahan",
+    "estimateCta": "Hitung estimasi",
+    "estimating": "Menghitung…",
+    "registerHint": "Daftar untuk booking & diskon",
+    "goTracking": "Ke lacak waybill",
+    "resultTitle": "Perkiraan total",
+    "resultNote": "Angka indikatif berdasarkan tarif jual & rute di sistem. Harga final mengikuti konfirmasi operasional.",
+    "breakdownBase": "Freight dasar",
+    "breakdownDiscount": "Diskon",
+    "breakdownAddOns": "Layanan tambahan",
+    "breakdownTotal": "Total"
+  }
+}

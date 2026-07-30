@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { formatShortDate } from "../format";
-import { useTWithFallback } from "../use-t-fallback";
+import { useTWithFallback } from "@/hooks/use-t-fallback";
 import { shipmentStatusBadgeClass } from "@/lib/shipment-status";
 import type { CustomerDashboardShipment } from "@/lib/dashboard-api";
 

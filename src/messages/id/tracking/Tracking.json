@@ -1,0 +1,17 @@
+{
+  "Tracking": {
+    "title": "Lacak Pengiriman Anda",
+    "subtitle": "Masukkan nomor Consignment Note (CN) untuk melihat status pengiriman secara real-time — tanpa perlu login.",
+    "placeholder": "Masukkan nomor Consignment Note (CN)…",
+    "cta": "Lacak",
+    "notFound": "Pengiriman tidak ditemukan. Periksa kembali nomor Consignment Note (CN) Anda.",
+    "waybillLabel": "Nomor Consignment Note (CN)",
+    "origin": "Asal",
+    "destination": "Tujuan",
+    "estDeparture": "Est. Berangkat",
+    "estArrival": "Est. Tiba",
+    "timeline": "Timeline Pengiriman",
+    "emptyState": "Masukkan nomor waybill di atas untuk mulai melacak pengiriman Anda.",
+    "goEstimate": "Hitung estimasi biaya"
+  }
+}

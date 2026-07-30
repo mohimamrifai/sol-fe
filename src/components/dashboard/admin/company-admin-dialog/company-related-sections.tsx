@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
-import type { Row } from "./types";
+import type { Row } from "@/components/dashboard/admin/company-admin-dialog/types";
 
 type Props = {
   capabilities: AdminCustomerCapabilities;

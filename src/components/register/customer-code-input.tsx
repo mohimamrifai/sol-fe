@@ -6,7 +6,7 @@ import { Check, Loader2, XCircle, AlertCircle } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { checkCompanyCodeRequest } from "@/lib/auth-api";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { fieldClass, useRegisterT } from "./types";
 import type { RegisterFormValues } from "./types";
 

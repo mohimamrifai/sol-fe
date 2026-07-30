@@ -1,0 +1,160 @@
+{
+  "Dashboard": {
+    "menu": {
+      "dashboard": "Dashboard",
+      "createBooking": "Buat Booking",
+      "myBookings": "Booking Saya",
+      "myShipments": "Pengiriman Saya",
+      "shipmentTracking": "Lacak Pengiriman",
+      "invoices": "Tagihan",
+      "payments": "Pembayaran",
+      "companySettings": "Pengaturan Perusahaan",
+      "customerManagement": "Manajemen Pelanggan",
+      "bookingManagement": "Manajemen Booking",
+      "shipmentManagement": "Manajemen Pengiriman",
+      "invoiceManagement": "Manajemen Invoice",
+      "paymentManagement": "Manajemen Pembayaran",
+      "masterOperational": "Master Operasional",
+      "vendorPricing": "Vendor & Harga",
+      "roleManagement": "Manajemen Hak Akses",
+      "internalUsers": "Pengguna Internal",
+      "logout": "Keluar"
+    },
+    "roleTitles": {
+      "super_admin": "Dashboard Super Admin",
+      "operations": "Dashboard Operations",
+      "finance": "Dashboard Finance",
+      "sales": "Dashboard Sales",
+      "company_admin": "Dashboard Perusahaan",
+      "ops_pic": "Dashboard Ops PIC",
+      "finance_pic": "Dashboard Finance PIC",
+      "default": "Dashboard"
+    },
+    "profile": "Profil",
+    "account": "Akun",
+    "notifications": {
+      "bookingSubmitted": "Booking {number} berhasil disubmit.",
+      "bookingApproved": "Booking {number} telah disetujui.",
+      "shipmentDeparted": "Shipment {number} telah berangkat.",
+      "shipmentArrived": "Shipment {number} telah tiba di {destination}.",
+      "shipmentArrivedNoDest": "Shipment {number} telah tiba.",
+      "invoiceIssued": "Invoice {number} telah diterbitkan.",
+      "paymentReceived": "Pembayaran Invoice {number} berhasil diterima."
+    },
+    "loading": "Memuat dashboard…",
+    "cards": {
+      "bookingDraft": "Booking (Draft)",
+      "bookingDraftHint": "Booking yang belum disubmit",
+      "bookingSubmitted": "Booking Diajukan",
+      "bookingSubmittedHint": "Menunggu review internal",
+      "shipmentActive": "Shipment Aktif",
+      "shipmentActiveHint": "Pengiriman yang sedang berjalan",
+      "shipmentCompleted": "Shipment Selesai",
+      "shipmentCompletedHint": "Total shipment yang telah selesai",
+      "invoiceUnpaid": "Invoice Belum Lunas",
+      "invoiceUnpaidHint": "Invoice yang belum dibayar",
+      "invoiceOutstanding": "Total Tagihan",
+      "invoiceOutstandingHint": "Total nominal yang belum dibayar"
+    },
+    "sections": {
+      "shipmentTracking": {
+        "title": "Shipment Tracking",
+        "description": "Shipment Anda yang sedang berjalan.",
+        "viewAll": "Lihat semua shipment"
+      },
+      "recentBooking": {
+        "title": "Booking Terbaru",
+        "description": "Booking yang baru saja Anda buat.",
+        "viewAll": "Lihat semua booking",
+        "create": "Buat Booking"
+      },
+      "outstandingInvoice": {
+        "title": "Outstanding Invoice",
+        "description": "Invoice yang menunggu pembayaran.",
+        "viewAll": "Lihat semua invoice"
+      },
+      "recentPayment": {
+        "title": "Pembayaran Terbaru",
+        "description": "Riwayat pembayaran terbaru."
+      },
+      "recentNotifications": {
+        "title": "Notifikasi Terbaru",
+        "description": "Aktivitas terbaru di akun Anda.",
+        "viewAll": "Lihat semua notifikasi"
+      }
+    },
+    "table": {
+      "shipmentNo": "No. Shipment",
+      "bookingNo": "No. Booking",
+      "invoiceNo": "No. Invoice",
+      "route": "Rute",
+      "service": "Layanan",
+      "currentStatus": "Status Saat Ini",
+      "eta": "ETA",
+      "bookingDate": "Tanggal Booking",
+      "dueDate": "Jatuh Tempo",
+      "amount": "Jumlah",
+      "outstanding": "Sisa",
+      "paymentDate": "Tanggal Bayar",
+      "method": "Metode",
+      "status": "Status",
+      "view": "Lihat",
+      "payNow": "Bayar Sekarang",
+      "viewAll": "Lihat semua"
+    },
+    "quickAction": {
+      "title": "Aksi Cepat",
+      "createBooking": "Buat Booking",
+      "trackShipment": "Lacak Shipment",
+      "viewInvoice": "Lihat Invoice",
+      "payInvoice": "Bayar Invoice"
+    },
+    "status": {
+      "booking": {
+        "draft": "Draft",
+        "submitted": "Diajukan",
+        "approved": "Disetujui",
+        "rejected": "Ditolak"
+      },
+      "shipment": {
+        "created": "Dibuat",
+        "survey_completed": "Survey selesai",
+        "cargo_received": "Kargo diterima",
+        "stuffing_container": "Stuffing kontainer",
+        "container_sealed": "Kontainer disegel",
+        "departed": "Berangkat",
+        "arrived": "Tiba",
+        "unloading": "Bongkar muat",
+        "ready_for_pickup": "Siap diambil",
+        "completed": "Selesai",
+        "cancelled": "Dibatalkan"
+      },
+      "invoice": {
+        "unpaid": "Belum bayar",
+        "paid": "Lunas",
+        "overdue": "Jatuh tempo",
+        "cancelled": "Dibatalkan"
+      },
+      "payment": {
+        "success": "Berhasil",
+        "pending": "Menunggu",
+        "failed": "Gagal",
+        "expired": "Kedaluwarsa"
+      }
+    },
+    "empty": {
+      "shipments": "Belum ada shipment aktif.",
+      "bookings": "Belum ada booking.",
+      "invoices": "Tidak ada invoice yang belum dibayar.",
+      "payments": "Belum ada pembayaran.",
+      "notifications": "Belum ada aktivitas terbaru."
+    },
+    "customer": {
+      "settings": {
+        "title": "Pengaturan Perusahaan",
+        "description": "Kelola profil perusahaan, profil pengguna, dan keamanan akun.",
+        "comingSoon": "Pengaturan lanjutan profil perusahaan dan pengguna dapat ditambahkan di sini."
+      }
+    }
+  }
+}

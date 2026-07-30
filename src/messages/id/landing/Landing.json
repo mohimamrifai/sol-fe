@@ -1,0 +1,25 @@
+{
+  "Landing": {
+    "featuresTitle": "Semua yang Anda butuhkan, dalam satu platform",
+    "featuresLead": "Dari registrasi perusahaan hingga pembayaran — setiap langkah logistik Anda kami permudah.",
+    "f1Title": "Booking & estimasi harga",
+    "f1Body": "Buat pesanan dengan memilih asal, tujuan, dan jenis layanan. Lihat perkiraan harga langsung sebelum mengonfirmasi.",
+    "f2Title": "Kargo kereta antar pelabuhan",
+    "f2Body": "Layanan angkutan kereta untuk rute pelabuhan ke pelabuhan — cepat, andal, dan siap berkembang ke moda lain.",
+    "f3Title": "Lacak dengan nomor Consignment Note (CN)",
+    "f3Body": "Cek status, timeline, dan foto bukti pengiriman kapan saja. Bisa diakses publik tanpa perlu login.",
+    "f4Title": "Invoice & pembayaran online",
+    "f4Body": "Tagihan otomatis per pengiriman. Bayar langsung melalui Virtual Account, QRIS, atau kartu kredit.",
+    "f5Title": "Portal untuk tim Anda",
+    "f5Body": "Atur siapa yang mengelola booking, siapa yang memantau pengiriman, dan siapa yang mengurus keuangan — dalam satu portal.",
+    "f6Title": "Siap untuk berkembang",
+    "f6Body": "Mulai dari kereta, lalu ekspansi ke trucking, kapal, atau pesawat — tanpa perlu ganti platform.",
+    "footerBrand": "SOL Logistics",
+    "footerTagline": "Platform logistik terpadu untuk mengelola booking dan pengiriman bisnis Anda.",
+    "footerEstimasi": "Estimasi Biaya",
+    "footerTracking": "Lacak Pengiriman",
+    "footerLogin": "Masuk",
+    "footerRegister": "Daftar",
+    "footerRights": "© IDNVerse Karya Nusantara. Seluruh hak cipta dilindungi."
+  }
+}
