@@ -67,7 +67,9 @@ export function RouteServiceSection({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Rute & Layanan</h3>
+      <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">
+        Rute & Layanan
+      </h3>
       <div className="grid gap-5 sm:grid-cols-2 bg-white p-5 rounded-xl border shadow-sm">
         <div className="space-y-2 sm:col-span-2">
           <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Customer</Label>
@@ -102,7 +104,10 @@ export function RouteServiceSection({
             onValueChange={(next) => setOriginId(next?.value ?? "")}
           >
             <ComboboxInput
-              className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.origin_location_id && "[&_input]:border-red-500")}
+              className={cn(
+                "w-full h-10 bg-zinc-50/50",
+                validationErrors?.origin_location_id && "[&_input]:border-red-500"
+              )}
               placeholder="Pilih origin..."
             />
             <ComboboxContent>
@@ -126,7 +131,10 @@ export function RouteServiceSection({
             onValueChange={(next) => setDestId(next?.value ?? "")}
           >
             <ComboboxInput
-              className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.destination_location_id && "[&_input]:border-red-500")}
+              className={cn(
+                "w-full h-10 bg-zinc-50/50",
+                validationErrors?.destination_location_id && "[&_input]:border-red-500"
+              )}
               placeholder="Pilih destination..."
             />
             <ComboboxContent>
@@ -150,7 +158,10 @@ export function RouteServiceSection({
             onValueChange={(next) => setModeId(next?.value ?? "")}
           >
             <ComboboxInput
-              className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.transport_mode_id && "[&_input]:border-red-500")}
+              className={cn(
+                "w-full h-10 bg-zinc-50/50",
+                validationErrors?.transport_mode_id && "[&_input]:border-red-500"
+              )}
               placeholder="Pilih moda..."
             />
             <ComboboxContent>

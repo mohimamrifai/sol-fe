@@ -3,8 +3,16 @@ import type { LaravelPaginated } from "./types-api";
 
 /** Master data & estimasi untuk pengunjung (tanpa token). */
 export async function fetchPublicMasterLocations() {
+  return fetchPublicMasterLocationsWithQuery();
+}
+
+export async function fetchPublicMasterLocationsWithQuery(input?: { type?: string; perPage?: number; search?: string }) {
+  const qs = new URLSearchParams();
+  qs.set("per_page", String(input?.perPage ?? 500));
+  if (input?.type) qs.set("type", input.type);
+  if (input?.search) qs.set("search", input.search);
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(
-    `/public/master/locations?per_page=500`,
+    `/public/master/locations?${qs.toString()}`,
     { method: "GET", token: null }
   );
 }
@@ -47,6 +55,13 @@ export async function fetchPublicMasterCargoCategories() {
 
 export async function fetchPublicMasterDgClasses() {
   return apiFetch<{ data: unknown[] }>(`/public/master/dg-classes`, {
+    method: "GET",
+    token: null,
+  });
+}
+
+export async function fetchPublicMasterShipmentCoverages() {
+  return apiFetch<{ data: Array<{ value: string }> }>(`/public/master/shipment-coverages`, {
     method: "GET",
     token: null,
   });

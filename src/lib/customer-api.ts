@@ -61,9 +61,13 @@ export async function fetchCustomerBookingStats() {
   );
 }
 
-export async function fetchCustomerMasterLocations() {
+export async function fetchCustomerMasterLocations(input?: { type?: string; perPage?: number; search?: string }) {
+  const qs = new URLSearchParams();
+  qs.set("per_page", String(input?.perPage ?? 500));
+  if (input?.type) qs.set("type", input.type);
+  if (input?.search) qs.set("search", input.search);
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(
-    `/customer/master/locations?per_page=500`,
+    `/customer/master/locations?${qs.toString()}`,
     { method: "GET" }
   );
 }
@@ -91,6 +95,14 @@ export async function fetchCustomerMasterCargoCategories() {
 
 export async function fetchCustomerMasterDgClasses() {
   return apiFetch<{ data: unknown[] }>(`/customer/master/dg-classes`, { method: "GET" });
+}
+
+export async function fetchCustomerMasterShipmentCoverages() {
+  return apiFetch<{ data: Array<{ value: string }> }>(`/customer/master/shipment-coverages`, { method: "GET" });
+}
+
+export async function fetchCustomerBranches() {
+  return apiFetch<{ data: unknown[] }>(`/customer/branches`, { method: "GET" });
 }
 
 export async function estimateBookingPrice(payload: Record<string, unknown>) {

@@ -9,10 +9,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useBookingForm } from "@/hooks/use-booking-form";
 import { fetchCustomerBooking } from "@/lib/customer-api";
-import { RouteServiceSection } from "@/app/[locale]/dashboard/booking/create/components/sections/route-service-section";
-import { PartyInfoSection } from "@/app/[locale]/dashboard/booking/create/components/sections/party-info-section";
-import { CargoDetailSection } from "@/app/[locale]/dashboard/booking/create/components/sections/cargo-detail-section";
-import { AddOnServiceSection } from "@/app/[locale]/dashboard/booking/create/components/sections/add-on-service-section";
+import { RouteServiceSection } from "@/components/dashboard/booking/create/route-service-section";
+import { PartyInfoSection } from "@/components/dashboard/booking/create/party-info-section";
+import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
+import { AddOnServiceSection } from "@/components/dashboard/booking/create/add-on-service-section";
 import { ApiError } from "@/lib/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -77,6 +77,8 @@ export default function EditBookingPage() {
     intlRouter.push("/dashboard/booking");
   };
 
+  const showDeliveryNotes = f.shipmentCoverage === "port_to_door" || f.shipmentCoverage === "door_to_door";
+
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -117,6 +119,7 @@ export default function EditBookingPage() {
             locations={f.locations}
             modes={f.modes}
             serviceTypes={f.serviceTypes}
+            coverages={f.coverages}
             originId={f.originId}
             setOriginId={f.setOriginId}
             destId={f.destId}
@@ -125,30 +128,73 @@ export default function EditBookingPage() {
             setModeId={f.setModeId}
             serviceTypeId={f.serviceTypeId}
             setServiceTypeId={f.setServiceTypeId}
+            shipmentCoverage={f.shipmentCoverage}
+            setShipmentCoverage={f.setShipmentCoverage}
+            pickupDate={f.pickupDate}
+            setPickupDate={f.setPickupDate}
+            pickupTime={f.pickupTime}
+            setPickupTime={f.setPickupTime}
+            pickupNotes={f.pickupNotes}
+            setPickupNotes={f.setPickupNotes}
             renderFieldError={f.renderFieldError}
           />
 
           <PartyInfoSection
-            type="Shipper"
-            name={f.shipperName}
-            setName={f.setShipperName}
-            phone={f.shipperPhone}
+            kind="shipper"
+            branches={f.branches}
+            branchId={f.shipperBranchId}
+            setBranchId={f.setShipperBranchId}
+            company={f.shipperName}
+            setCompany={f.setShipperName}
+            picName={f.shipperPicName}
+            setPicName={f.setShipperPicName}
+            picEmail={f.shipperPicEmail}
+            setPicEmail={f.setShipperPicEmail}
+            picMobile={f.shipperPicMobile}
+            setPicMobile={f.setShipperPicMobile}
             setPhone={f.setShipperPhone}
+            provinceId={f.shipperProvinceId}
+            setProvinceId={f.setShipperProvinceId}
+            cityId={f.shipperCityId}
+            setCityId={f.setShipperCityId}
+            districtId={f.shipperDistrictId}
+            setDistrictId={f.setShipperDistrictId}
+            postalCode={f.shipperPostalCode}
+            setPostalCode={f.setShipperPostalCode}
             address={f.shipperAddress}
             setAddress={f.setShipperAddress}
-            isSameAsAccount={f.isShipperSameAsAccount}
-            setIsSameAsAccount={f.setIsShipperSameAsAccount}
             renderFieldError={f.renderFieldError}
           />
 
           <PartyInfoSection
-            type="Consignee"
-            name={f.consigneeName}
-            setName={f.setConsigneeName}
-            phone={f.consigneePhone}
+            kind="consignee"
+            branches={f.branches}
+            branchId={f.consigneeBranchId}
+            setBranchId={f.setConsigneeBranchId}
+            destinationType={f.consigneeType}
+            setDestinationType={f.setConsigneeType}
+            showDeliveryNotes={showDeliveryNotes}
+            company={f.consigneeName}
+            setCompany={f.setConsigneeName}
+            picName={f.consigneePicName}
+            setPicName={f.setConsigneePicName}
+            picEmail={f.consigneePicEmail}
+            setPicEmail={f.setConsigneePicEmail}
+            picMobile={f.consigneePicMobile}
+            setPicMobile={f.setConsigneePicMobile}
             setPhone={f.setConsigneePhone}
+            provinceId={f.consigneeProvinceId}
+            setProvinceId={f.setConsigneeProvinceId}
+            cityId={f.consigneeCityId}
+            setCityId={f.setConsigneeCityId}
+            districtId={f.consigneeDistrictId}
+            setDistrictId={f.setConsigneeDistrictId}
+            postalCode={f.consigneePostalCode}
+            setPostalCode={f.setConsigneePostalCode}
             address={f.consigneeAddress}
             setAddress={f.setConsigneeAddress}
+            deliveryNotes={f.deliveryNotes}
+            setDeliveryNotes={f.setDeliveryNotes}
             renderFieldError={f.renderFieldError}
           />
 
@@ -158,41 +204,24 @@ export default function EditBookingPage() {
             containerTypes={f.containerTypes}
             cargoCategories={f.cargoCategories}
             dgClasses={f.dgClasses}
-            containerTypeId={f.containerTypeId}
-            setContainerTypeId={f.setContainerTypeId}
-            containerCount={f.containerCount}
-            setContainerCount={f.setContainerCount}
-            weight={f.weight}
-            setWeight={f.setWeight}
-            cbm={f.cbm}
-            setCbm={f.setCbm}
-            itemLength={f.itemLength}
-            setItemLength={f.setItemLength}
-            itemWidth={f.itemWidth}
-            setItemWidth={f.setItemWidth}
-            itemHeight={f.itemHeight}
-            setItemHeight={f.setItemHeight}
             departureDate={f.departureDate}
             setDepartureDate={f.setDepartureDate}
             cargoCategoryId={f.cargoCategoryId}
             setCargoCategoryId={f.setCargoCategoryId}
             cargo={f.cargo}
             setCargo={f.setCargo}
-            selectedCT={f.selectedCT}
-            selectedCC={f.selectedCC}
-            isDG={f.isDG}
-            dgClassId={f.dgClassId}
-            setDgClassId={f.setDgClassId}
-            unNumber={f.unNumber}
-            setUnNumber={f.setUnNumber}
-            msdsFile={f.msdsFile}
-            setMsdsFile={f.setMsdsFile}
             equipmentCondition={f.equipmentCondition}
             setEquipmentCondition={f.setEquipmentCondition}
             temperature={f.temperature}
             setTemperature={f.setTemperature}
             showTemp={f.showTemp}
             showProject={f.showProject}
+            containerResponsibility={f.containerResponsibility}
+            setContainerResponsibility={f.setContainerResponsibility}
+            packages={f.packages}
+            setPackages={f.setPackages}
+            containers={f.containers}
+            setContainers={f.setContainers}
             renderFieldError={f.renderFieldError}
           />
 

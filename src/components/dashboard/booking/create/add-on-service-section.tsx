@@ -1,12 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, Package, Truck, Wrench, Settings } from "lucide-react";
 import { AS } from "@/hooks/use-booking-form";
@@ -19,19 +17,8 @@ interface AddOnServiceSectionProps {
   setSelectedAddOns: (v: number[] | ((prev: number[]) => number[])) => void;
 }
 
-const fclMandatoryNames = [
-  "Free Storage 5 Hari (Origin & Destination)",
-  "LOLO (Lift On-Lift Off)",
-  "Container Rent",
-];
-const lclMandatoryNames = ["Free Storage 1 Hari (Origin & Destination)"];
-
-const CATEGORIES = [
-  { key: "pickup", label: "Pickup", icon: Truck },
-  { key: "packing", label: "Packing", icon: Package },
-  { key: "handling", label: "Handling", icon: Wrench },
-  { key: "other", label: "Lainnya", icon: Settings },
-];
+const FCL_MANDATORY_CODES = ["FREE_STORAGE_FCL", "LOLO", "CONTAINER_RENT"];
+const LCL_MANDATORY_CODES = ["FREE_STORAGE_LCL"];
 
 export function AddOnServiceSection({
   isFCL,
@@ -40,15 +27,26 @@ export function AddOnServiceSection({
   selectedAddOns,
   setSelectedAddOns,
 }: AddOnServiceSectionProps) {
+  const tForm = useTranslations("Bookings.create.form");
+  const categories = useMemo(
+    () => [
+      { key: "pickup", label: tForm("addOnCategoryPickup"), icon: Truck },
+      { key: "packing", label: tForm("addOnCategoryPacking"), icon: Package },
+      { key: "handling", label: tForm("addOnCategoryHandling"), icon: Wrench },
+      { key: "other", label: tForm("addOnCategoryOther"), icon: Settings },
+    ],
+    [tForm]
+  );
+
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>Layanan Tambahan</CardTitle>
-        <CardDescription>Pilih layanan pendukung lainnya seperti pickup atau asuransi.</CardDescription>
+        <CardTitle>{tForm("addOnTitle")}</CardTitle>
+        <CardDescription>{tForm("addOnSubtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const svcs = addServices.filter((s) => (s.category || "other") === cat.key);
             if (svcs.length === 0) return null;
 
@@ -73,7 +71,7 @@ export function AddOnServiceSection({
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-bold text-zinc-900 leading-tight">{cat.label}</span>
                           <span className="text-xs text-zinc-500 leading-tight truncate max-w-[120px]">
-                            {activeCount > 0 ? activeNames : "Pilih layanan"}
+                            {activeCount > 0 ? activeNames : tForm("addOnChooseServices")}
                           </span>
                         </div>
                       </div>
@@ -85,8 +83,8 @@ export function AddOnServiceSection({
                   <div className="flex flex-col gap-1">
                     {svcs.map((a) => {
                       const isMandatory =
-                        (isFCL && fclMandatoryNames.includes(a.name)) ||
-                        (isLCL && lclMandatoryNames.includes(a.name));
+                        (isFCL && a.code != null && FCL_MANDATORY_CODES.includes(a.code)) ||
+                        (isLCL && a.code != null && LCL_MANDATORY_CODES.includes(a.code));
                       return (
                         <label
                           key={a.id}
@@ -99,17 +97,23 @@ export function AddOnServiceSection({
                               if (isMandatory) return;
                               const on = v === true;
                               setSelectedAddOns((prev) =>
-                                on
-                                  ? prev.includes(a.id) ? prev : [...prev, a.id]
-                                  : prev.filter((x) => x !== a.id)
+                                on ? (prev.includes(a.id) ? prev : [...prev, a.id]) : prev.filter((x) => x !== a.id)
                               );
                             }}
                           />
                           <div className="flex flex-col">
-                            <span className={isMandatory ? "text-zinc-500 font-semibold italic" : "font-normal group-hover:text-zinc-900"}>
+                            <span
+                              className={
+                                isMandatory
+                                  ? "text-zinc-500 font-semibold italic"
+                                  : "font-normal group-hover:text-zinc-900"
+                              }
+                            >
                               {a.name}
                             </span>
-                            {isMandatory && <span className="text-[10px] text-zinc-400 font-medium">Bawaan (Default Terpilih)</span>}
+                            {isMandatory && (
+                              <span className="text-[10px] text-zinc-400 font-medium">{tForm("addOnIncludedDefault")}</span>
+                            )}
                           </div>
                         </label>
                       );

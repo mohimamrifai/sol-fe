@@ -13,24 +13,26 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardList, CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useBookingForm } from "@/hooks/use-booking-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { createCustomerBooking } from "@/lib/customer-api";
 import { ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
 
 // Section Components
-import { RouteServiceSection } from "./components/sections/route-service-section";
-import { PartyInfoSection } from "./components/sections/party-info-section";
-import { CargoDetailSection } from "./components/sections/cargo-detail-section";
-import { AddOnServiceSection } from "./components/sections/add-on-service-section";
+import { RouteServiceSection } from "@/components/dashboard/booking/create/route-service-section";
+import { PartyInfoSection } from "@/components/dashboard/booking/create/party-info-section";
+import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
+import { AddOnServiceSection } from "@/components/dashboard/booking/create/add-on-service-section";
+import { AttachmentSection } from "@/components/dashboard/booking/create/attachment-section";
 
 export default function CreateBookingPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const t = useTranslations("Bookings.create");
+  const tForm = useTranslations("Bookings.create.form");
   const tCommon = useTranslations("Bookings");
   const f = useBookingForm();
   const locale = useLocale();
@@ -41,6 +43,51 @@ export default function CreateBookingPage() {
   }
 
   const isAnySubmitting = f.submitting || draftSubmitting;
+  const showDeliveryNotes = f.shipmentCoverage === "port_to_door" || f.shipmentCoverage === "door_to_door";
+  const showPickupFields = f.shipmentCoverage === "door_to_port" || f.shipmentCoverage === "door_to_door";
+  const coverageLabel = f.shipmentCoverage ? tCommon(`coverage.${f.shipmentCoverage}`) : "—";
+  const originLabel = f.locations.find((x) => String(x.id) === f.originId)?.name ?? "—";
+  const destinationLabel = f.locations.find((x) => String(x.id) === f.destId)?.name ?? "—";
+  const serviceTypeLabel = f.serviceTypes.find((x) => String(x.id) === f.serviceTypeId)?.code ?? "—";
+
+  const cargoSummaryLcl = (() => {
+    const totalPackages = f.packages.length;
+    const totalWeight = f.packages.reduce((acc, p) => acc + (Number(p.weight_kg) || 0), 0);
+    const totalVolume = f.packages.reduce((acc, p) => {
+      const l = Number(p.length_cm) || 0;
+      const w = Number(p.width_cm) || 0;
+      const h = Number(p.height_cm) || 0;
+      const qty = Number(p.piece_count) || 1;
+      if (!l || !w || !h) return acc;
+      return acc + ((l * w * h) / 1_000_000) * qty;
+    }, 0);
+    const totalChargeable = f.packages.reduce((acc, p) => {
+      const l = Number(p.length_cm) || 0;
+      const w = Number(p.width_cm) || 0;
+      const h = Number(p.height_cm) || 0;
+      const qty = Number(p.piece_count) || 1;
+      const volumeWeight = l && w && h ? ((l * w * h) / 5000) * qty : 0;
+      const actual = Number(p.weight_kg) || 0;
+      return acc + Math.max(actual, volumeWeight);
+    }, 0);
+    return { totalPackages, totalWeight, totalVolume, totalChargeable };
+  })();
+
+  const includedServices = (() => {
+    const rows: string[] = [];
+    if (showPickupFields) rows.push(tForm("includedPickup"));
+    rows.push(tForm("includedRail"));
+    rows.push(tForm("includedLiftOnOrigin"));
+    rows.push(tForm("includedLiftOffOrigin"));
+    rows.push(tForm("includedLiftOnDestination"));
+    rows.push(tForm("includedLiftOffDestination"));
+    if (showDeliveryNotes) rows.push(tForm("includedDelivery"));
+    if (f.isFCL) {
+      rows.push(tForm("includedFreeStorageOrigin"));
+      rows.push(tForm("includedFreeStorageDestination"));
+    }
+    return rows;
+  })();
 
   const handleSaveAsDraft = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -48,37 +95,7 @@ export default function CreateBookingPage() {
     if (isAnySubmitting) return;
     setDraftSubmitting(true);
     try {
-      // Rebuild the same payload the hook builds, with is_draft: true.
-      const payload: Record<string, unknown> = {
-        origin_location_id: f.originId ? Number(f.originId) : null,
-        destination_location_id: f.destId ? Number(f.destId) : null,
-        transport_mode_id: f.modeId ? Number(f.modeId) : null,
-        service_type_id: f.serviceTypeId ? Number(f.serviceTypeId) : null,
-        cargo_category_id: f.cargoCategoryId ? Number(f.cargoCategoryId) : null,
-        container_type_id: !f.isLCL && f.containerTypeId ? Number(f.containerTypeId) : null,
-        container_count: !f.isLCL ? Number(f.containerCount) || 1 : null,
-        estimated_weight: f.weight ? Number(f.weight) : null,
-        estimated_cbm: f.cbm ? Number(f.cbm) : null,
-        length: f.isLCL && f.itemLength ? Number(f.itemLength) : null,
-        width: f.isLCL && f.itemWidth ? Number(f.itemWidth) : null,
-        height: f.isLCL && f.itemHeight ? Number(f.itemHeight) : null,
-        departure_date: f.departureDate || null,
-        cargo_description: f.cargo || null,
-        is_dangerous_goods: f.isDG ? 1 : 0,
-        dg_class_id: f.isDG && f.dgClassId ? Number(f.dgClassId) : null,
-        un_number: f.isDG && f.unNumber ? f.unNumber : null,
-        equipment_condition: f.showProject && f.equipmentCondition ? f.equipmentCondition : null,
-        temperature: f.showTemp && f.temperature ? Number(f.temperature) : null,
-        shipper_name: f.shipperName || null,
-        shipper_address: f.shipperAddress || null,
-        shipper_phone: f.shipperPhone || null,
-        consignee_name: f.consigneeName || null,
-        consignee_address: f.consigneeAddress || null,
-        consignee_phone: f.consigneePhone || null,
-        additional_services: f.selectedAddOns.map((id) => ({ id })),
-        is_draft: true,
-      };
-      await createCustomerBooking(payload);
+      await f.submitDraft();
       toast.success(t("saveAsDraftSuccess"));
       void queryClient.invalidateQueries({ queryKey: ["customer", "bookings", "stats"] });
       router.push("/dashboard/booking?status=draft");
@@ -131,6 +148,7 @@ export default function CreateBookingPage() {
             locations={f.locations}
             modes={f.modes}
             serviceTypes={f.serviceTypes}
+            coverages={f.coverages}
             originId={f.originId}
             setOriginId={f.setOriginId}
             destId={f.destId}
@@ -139,31 +157,74 @@ export default function CreateBookingPage() {
             setModeId={f.setModeId}
             serviceTypeId={f.serviceTypeId}
             setServiceTypeId={f.setServiceTypeId}
+            shipmentCoverage={f.shipmentCoverage}
+            setShipmentCoverage={f.setShipmentCoverage}
+            pickupDate={f.pickupDate}
+            setPickupDate={f.setPickupDate}
+            pickupTime={f.pickupTime}
+            setPickupTime={f.setPickupTime}
+            pickupNotes={f.pickupNotes}
+            setPickupNotes={f.setPickupNotes}
             renderFieldError={f.renderFieldError}
           />
 
           {/* Section 2: Parties */}
           <PartyInfoSection
-            type="Shipper"
-            name={f.shipperName}
-            setName={f.setShipperName}
-            phone={f.shipperPhone}
+            kind="shipper"
+            branches={f.branches}
+            branchId={f.shipperBranchId}
+            setBranchId={f.setShipperBranchId}
+            company={f.shipperName}
+            setCompany={f.setShipperName}
+            picName={f.shipperPicName}
+            setPicName={f.setShipperPicName}
+            picEmail={f.shipperPicEmail}
+            setPicEmail={f.setShipperPicEmail}
+            picMobile={f.shipperPicMobile}
+            setPicMobile={f.setShipperPicMobile}
             setPhone={f.setShipperPhone}
+            provinceId={f.shipperProvinceId}
+            setProvinceId={f.setShipperProvinceId}
+            cityId={f.shipperCityId}
+            setCityId={f.setShipperCityId}
+            districtId={f.shipperDistrictId}
+            setDistrictId={f.setShipperDistrictId}
+            postalCode={f.shipperPostalCode}
+            setPostalCode={f.setShipperPostalCode}
             address={f.shipperAddress}
             setAddress={f.setShipperAddress}
-            isSameAsAccount={f.isShipperSameAsAccount}
-            setIsSameAsAccount={f.setIsShipperSameAsAccount}
             renderFieldError={f.renderFieldError}
           />
 
           <PartyInfoSection
-            type="Consignee"
-            name={f.consigneeName}
-            setName={f.setConsigneeName}
-            phone={f.consigneePhone}
+            kind="consignee"
+            branches={f.branches}
+            branchId={f.consigneeBranchId}
+            setBranchId={f.setConsigneeBranchId}
+            destinationType={f.consigneeType}
+            setDestinationType={f.setConsigneeType}
+            showDeliveryNotes={showDeliveryNotes}
+            company={f.consigneeName}
+            setCompany={f.setConsigneeName}
+            picName={f.consigneePicName}
+            setPicName={f.setConsigneePicName}
+            picEmail={f.consigneePicEmail}
+            setPicEmail={f.setConsigneePicEmail}
+            picMobile={f.consigneePicMobile}
+            setPicMobile={f.setConsigneePicMobile}
             setPhone={f.setConsigneePhone}
+            provinceId={f.consigneeProvinceId}
+            setProvinceId={f.setConsigneeProvinceId}
+            cityId={f.consigneeCityId}
+            setCityId={f.setConsigneeCityId}
+            districtId={f.consigneeDistrictId}
+            setDistrictId={f.setConsigneeDistrictId}
+            postalCode={f.consigneePostalCode}
+            setPostalCode={f.setConsigneePostalCode}
             address={f.consigneeAddress}
             setAddress={f.setConsigneeAddress}
+            deliveryNotes={f.deliveryNotes}
+            setDeliveryNotes={f.setDeliveryNotes}
             renderFieldError={f.renderFieldError}
           />
 
@@ -174,41 +235,24 @@ export default function CreateBookingPage() {
             containerTypes={f.containerTypes}
             cargoCategories={f.cargoCategories}
             dgClasses={f.dgClasses}
-            containerTypeId={f.containerTypeId}
-            setContainerTypeId={f.setContainerTypeId}
-            containerCount={f.containerCount}
-            setContainerCount={f.setContainerCount}
-            weight={f.weight}
-            setWeight={f.setWeight}
-            cbm={f.cbm}
-            setCbm={f.setCbm}
-            itemLength={f.itemLength}
-            setItemLength={f.setItemLength}
-            itemWidth={f.itemWidth}
-            setItemWidth={f.setItemWidth}
-            itemHeight={f.itemHeight}
-            setItemHeight={f.setItemHeight}
             departureDate={f.departureDate}
             setDepartureDate={f.setDepartureDate}
             cargoCategoryId={f.cargoCategoryId}
             setCargoCategoryId={f.setCargoCategoryId}
             cargo={f.cargo}
             setCargo={f.setCargo}
-            selectedCT={f.selectedCT}
-            selectedCC={f.selectedCC}
-            isDG={f.isDG}
-            dgClassId={f.dgClassId}
-            setDgClassId={f.setDgClassId}
-            unNumber={f.unNumber}
-            setUnNumber={f.setUnNumber}
-            msdsFile={f.msdsFile}
-            setMsdsFile={f.setMsdsFile}
             equipmentCondition={f.equipmentCondition}
             setEquipmentCondition={f.setEquipmentCondition}
             temperature={f.temperature}
             setTemperature={f.setTemperature}
             showTemp={f.showTemp}
             showProject={f.showProject}
+            containerResponsibility={f.containerResponsibility}
+            setContainerResponsibility={f.setContainerResponsibility}
+            packages={f.packages}
+            setPackages={f.setPackages}
+            containers={f.containers}
+            setContainers={f.setContainers}
             renderFieldError={f.renderFieldError}
           />
 
@@ -220,9 +264,135 @@ export default function CreateBookingPage() {
             selectedAddOns={f.selectedAddOns}
             setSelectedAddOns={f.setSelectedAddOns}
           />
+
+          <AttachmentSection attachments={f.attachments} setAttachments={f.setAttachments} />
         </div>
 
         <div className="flex flex-col gap-6 p-6 bg-zinc-50 border border-zinc-200 rounded-2xl shadow-inner">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{tForm("reviewTitle")}</p>
+              <div className="rounded-xl border bg-white">
+                <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("shipmentInfoTitle")}</div>
+                <div className="grid gap-0 text-sm">
+                  <div className="flex justify-between gap-4 px-4 py-2">
+                    <span className="text-muted-foreground">{tForm("originStation")}</span>
+                    <span className="font-medium">{originLabel}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 px-4 py-2">
+                    <span className="text-muted-foreground">{tForm("destinationStation")}</span>
+                    <span className="font-medium">{destinationLabel}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 px-4 py-2">
+                    <span className="text-muted-foreground">{tForm("serviceType")}</span>
+                    <span className="font-medium">{serviceTypeLabel}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 px-4 py-2">
+                    <span className="text-muted-foreground">{tForm("shipmentCoverage")}</span>
+                    <span className="font-medium">{coverageLabel}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border bg-white">
+                <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("shipperTitle")}</div>
+                <div className="space-y-1 px-4 py-3 text-sm">
+                  <p className="font-medium">{f.shipperName || "—"}</p>
+                  <p className="text-muted-foreground">{f.shipperPicName || "—"}</p>
+                  <p className="text-muted-foreground">{f.shipperPicMobile || "—"}</p>
+                  <p className="text-muted-foreground whitespace-pre-line">{f.shipperAddress || "—"}</p>
+                </div>
+              </div>
+              <div className="rounded-xl border bg-white">
+                <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("consigneeTitle")}</div>
+                <div className="space-y-1 px-4 py-3 text-sm">
+                  <p className="font-medium">{f.consigneeName || "—"}</p>
+                  <p className="text-muted-foreground">{f.consigneePicName || "—"}</p>
+                  <p className="text-muted-foreground">{f.consigneePicMobile || "—"}</p>
+                  <p className="text-muted-foreground whitespace-pre-line">{f.consigneeAddress || "—"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-white">
+              <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("cargoSummaryTitle")}</div>
+              <div className="px-4 py-3 text-sm">
+                {f.isLCL ? (
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">{tForm("totalPackage")}</p>
+                      <p className="font-semibold tabular-nums">{cargoSummaryLcl.totalPackages}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{tForm("totalActualWeight")}</p>
+                      <p className="font-semibold tabular-nums">{formatNumber(cargoSummaryLcl.totalWeight)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{tForm("totalVolume")}</p>
+                      <p className="font-semibold tabular-nums">{formatNumber(cargoSummaryLcl.totalVolume)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{tForm("totalChargeableWeight")}</p>
+                      <p className="font-semibold tabular-nums">{formatNumber(cargoSummaryLcl.totalChargeable)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {f.containers.length ? (
+                      <div className="grid gap-2">
+                        {f.containers.map((c, idx) => (
+                          <div key={idx} className="flex justify-between gap-4">
+                            <span className="text-muted-foreground">
+                              {c.container_type_id ? f.containerTypes.find((x) => String(x.id) === c.container_type_id)?.name : "—"}
+                            </span>
+                            <span className="font-medium tabular-nums">
+                              {c.quantity} × {c.cargo_description || "—"} · {formatNumber(Number(c.gross_weight_kg) || 0)} kg
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">{tForm("containersEmpty")}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-white">
+              <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("includedServicesTitle")}</div>
+              <div className="grid gap-2 px-4 py-3 text-sm">
+                {includedServices.map((x) => (
+                  <div key={x} className="flex items-start gap-2">
+                    <span className="mt-0.5 text-emerald-600">✓</span>
+                    <span>{x}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-white">
+              <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("termsTitle")}</div>
+              <div className="px-4 py-3">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={f.confirmBooking}
+                    onCheckedChange={(v) => f.setConfirmBooking(v === true)}
+                    aria-invalid={!f.confirmBooking}
+                  />
+                  <div className="space-y-1">
+                    <p className="text-sm">{tForm("confirmBookingLabel")}</p>
+                    {f.renderFieldError("confirm_booking") ? (
+                      <p className="text-[11px] font-medium text-red-500">{f.renderFieldError("confirm_booking")}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{t("estimateLabel")}</p>
@@ -257,7 +427,7 @@ export default function CreateBookingPage() {
               ) : null}
               <Button
                 type="submit"
-                disabled={isAnySubmitting}
+                disabled={isAnySubmitting || !f.confirmBooking}
                 className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-md"
               >
                 {f.submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -336,3 +506,6 @@ function formatIdrLocale(value: number, locale: string): string {
   }).format(Number.isFinite(value) ? value : 0);
 }
 
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 4 }).format(Number.isFinite(value) ? value : 0);
+}

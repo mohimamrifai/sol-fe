@@ -11,7 +11,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { DangerousGoodsSection } from "@/components/dashboard/admin/bookings/create/dangerous-goods-section";
-import type { CT, CC, DC } from "@/hooks/use-admin-booking-form";
+import type { CC, CT, DC } from "@/hooks/use-admin-booking-form";
 
 type ComboOption = { value: string; label: string };
 
@@ -21,7 +21,7 @@ interface CargoDetailSectionProps {
   containerTypes: CT[];
   cargoCategories: CC[];
   dgClasses: DC[];
-  
+
   containerTypeId: string;
   setContainerTypeId: (v: string) => void;
   containerCount: string;
@@ -42,7 +42,7 @@ interface CargoDetailSectionProps {
   setCargoCategoryId: (v: string) => void;
   cargo: string;
   setCargo: (v: string) => void;
-  
+
   isDg: boolean;
   dgClassId: string;
   setDgClassId: (v: string) => void;
@@ -50,17 +50,17 @@ interface CargoDetailSectionProps {
   setUnNumber: (v: string) => void;
   msdsFile: File | null;
   setMsdsFile: (v: File | null) => void;
-  
+
   equipmentCondition: string;
   setEquipmentCondition: (v: string) => void;
   temperature: string;
   setTemperature: (v: string) => void;
-  
+
   selectedContainerType?: CT;
   selectedCargoCategory?: CC;
   showTemp?: boolean;
   showProject?: boolean;
-  
+
   validationErrors: Record<string, string[]> | null;
   renderError: (field: string) => React.ReactNode;
 }
@@ -71,22 +71,37 @@ export function CargoDetailSection({
   containerTypes,
   cargoCategories,
   dgClasses,
-  containerTypeId, setContainerTypeId,
-  containerCount, setContainerCount,
-  weight, setWeight,
-  cbm, setCbm,
-  itemLength, setItemLength,
-  itemWidth, setItemWidth,
-  itemHeight, setItemHeight,
-  pickupDate, setPickupDate,
-  cargoCategoryId, setCargoCategoryId,
-  cargo, setCargo,
+  containerTypeId,
+  setContainerTypeId,
+  containerCount,
+  setContainerCount,
+  weight,
+  setWeight,
+  cbm,
+  setCbm,
+  itemLength,
+  setItemLength,
+  itemWidth,
+  setItemWidth,
+  itemHeight,
+  setItemHeight,
+  pickupDate,
+  setPickupDate,
+  cargoCategoryId,
+  setCargoCategoryId,
+  cargo,
+  setCargo,
   isDg,
-  dgClassId, setDgClassId,
-  unNumber, setUnNumber,
-  msdsFile, setMsdsFile,
-  equipmentCondition, setEquipmentCondition,
-  temperature, setTemperature,
+  dgClassId,
+  setDgClassId,
+  unNumber,
+  setUnNumber,
+  msdsFile,
+  setMsdsFile,
+  equipmentCondition,
+  setEquipmentCondition,
+  temperature,
+  setTemperature,
   selectedContainerType,
   selectedCargoCategory,
   showTemp,
@@ -102,7 +117,9 @@ export function CargoDetailSection({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Detail Kargo & Pengiriman</h3>
+      <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">
+        Detail Kargo & Pengiriman
+      </h3>
       <div className="grid gap-5 sm:grid-cols-2 bg-white p-5 rounded-xl border shadow-sm">
         {!isLCL ? (
           <>
@@ -196,7 +213,7 @@ export function CargoDetailSection({
             </p>
           </div>
         )}
-        
+
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Berat Estimasi (kg)</Label>
           <Input
@@ -205,7 +222,11 @@ export function CargoDetailSection({
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             disabled={!isLCL && !!selectedContainerType}
-            className={cn("h-10 bg-zinc-50/50", !isLCL && selectedContainerType && "bg-zinc-100 italic", validationErrors?.estimated_weight && "border-red-500")}
+            className={cn(
+              "h-10 bg-zinc-50/50",
+              !isLCL && selectedContainerType && "bg-zinc-100 italic",
+              validationErrors?.estimated_weight && "border-red-500"
+            )}
           />
           {renderError("estimated_weight")}
         </div>
@@ -217,12 +238,18 @@ export function CargoDetailSection({
             value={cbm}
             onChange={(e) => setCbm(e.target.value)}
             disabled={!!selectedContainerType || isLCL}
-            className={cn("h-10 bg-zinc-50/50", (selectedContainerType || isLCL) && "bg-zinc-100 italic", validationErrors?.estimated_cbm && "border-red-500")}
+            className={cn(
+              "h-10 bg-zinc-50/50",
+              (selectedContainerType || isLCL) && "bg-zinc-100 italic",
+              validationErrors?.estimated_cbm && "border-red-500"
+            )}
           />
           {renderError("estimated_cbm")}
         </div>
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Tanggal keberangkatan (est.)</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+            Tanggal keberangkatan (est.)
+          </Label>
           <Input
             type="date"
             value={pickupDate}
@@ -259,7 +286,13 @@ export function CargoDetailSection({
         <div className="space-y-2 sm:col-span-2">
           <Label className="flex justify-between items-center text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
             <span>Deskripsi barang</span>
-            <span className={selectedCargoCategory?.code === "MIX" ? "text-[10px] text-red-500 font-bold" : "text-[10px] text-zinc-400 normal-case"}>
+            <span
+              className={
+                selectedCargoCategory?.code === "MIX"
+                  ? "text-[10px] text-red-500 font-bold"
+                  : "text-[10px] text-zinc-400 normal-case"
+              }
+            >
               {selectedCargoCategory?.code === "MIX" ? "(Wajib untuk Mixed Cargo)" : "(Opsional)"}
             </span>
           </Label>
@@ -276,9 +309,14 @@ export function CargoDetailSection({
 
         {showProject ? (
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Kondisi Mesin / Unit <span className="text-red-500">*</span></Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+              Kondisi Mesin / Unit <span className="text-red-500">*</span>
+            </Label>
             <select
-              className={cn("flex h-10 w-full rounded-md border border-input bg-zinc-50/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", validationErrors?.equipment_condition && "border-red-500")}
+              className={cn(
+                "flex h-10 w-full rounded-md border border-input bg-zinc-50/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                validationErrors?.equipment_condition && "border-red-500"
+              )}
               value={equipmentCondition}
               onChange={(e) => setEquipmentCondition(e.target.value)}
               required
@@ -294,7 +332,9 @@ export function CargoDetailSection({
 
         {showTemp ? (
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Kebutuhan Suhu (Opsional)</Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+              Kebutuhan Suhu (Opsional)
+            </Label>
             <Input
               type="text"
               placeholder="Contoh: -18°C, 2-8°C"
@@ -318,8 +358,8 @@ export function CargoDetailSection({
         dgClasses={dgClasses}
         validationErrors={validationErrors ?? undefined}
         renderError={(field) => {
-            const err = renderError(field);
-            return err ? String(err) : null;
+          const err = renderError(field);
+          return err ? String(err) : null;
         }}
       />
     </div>

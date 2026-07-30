@@ -6,21 +6,23 @@ import { Calculator, ArrowRight, Search, Loader2 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import {
-  fetchPublicMasterLocations,
+  fetchPublicMasterLocationsWithQuery,
   fetchPublicMasterTransportModes,
   fetchPublicMasterServiceTypes,
   fetchPublicMasterContainerTypes,
   fetchPublicMasterAdditionalServices,
   fetchPublicMasterCargoCategories,
   fetchPublicMasterDgClasses,
+  fetchPublicMasterShipmentCoverages,
   publicEstimateBookingPrice,
 } from "@/lib/public-api";
 import { ApiError } from "@/lib/api-client";
 import type { LaravelPaginated } from "@/lib/types-api";
+import type { ContainerRow, PackageRow } from "@/hooks/use-booking-form";
 
-import { RouteServiceSection } from "../dashboard/booking/create/components/sections/route-service-section";
-import { CargoDetailSection } from "../dashboard/booking/create/components/sections/cargo-detail-section";
-import { AddOnServiceSection } from "../dashboard/booking/create/components/sections/add-on-service-section";
+import { RouteServiceSection } from "@/components/dashboard/booking/create/route-service-section";
+import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
+import { AddOnServiceSection } from "@/components/dashboard/booking/create/add-on-service-section";
 
 type Loc = { id: number; name: string; code?: string };
 type TM = { id: number; name: string; code?: string };
@@ -46,6 +48,7 @@ type CC = {
   is_food?: boolean;
 };
 type DC = { id: number; name: string; code: string };
+type Coverage = { value: string };
 
 const FCL_MANDATORY_CODES = ["FREE_STORAGE_FCL", "LOLO", "CONTAINER_RENT"];
 const LCL_MANDATORY_CODES = ["FREE_STORAGE_LCL"];
@@ -60,28 +63,24 @@ export default function PublicEstimatePage() {
   const [addServices, setAddServices] = useState<AS[]>([]);
   const [cargoCategories, setCargoCategories] = useState<CC[]>([]);
   const [dgClasses, setDgClasses] = useState<DC[]>([]);
+  const [coverages, setCoverages] = useState<Coverage[]>([]);
 
   const [originId, setOriginId] = useState("");
   const [destId, setDestId] = useState("");
   const [modeId, setModeId] = useState("");
   const [serviceTypeId, setServiceTypeId] = useState("");
-  const [containerTypeId, setContainerTypeId] = useState("");
-  const [containerCount, setContainerCount] = useState("1");
-  const [weight, setWeight] = useState("");
-  const [cbm, setCbm] = useState("");
+  const [shipmentCoverage, setShipmentCoverage] = useState("");
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+  const [pickupNotes, setPickupNotes] = useState("");
   const [cargoCategoryId, setCargoCategoryId] = useState("");
-  
-  const [isDG, setIsDG] = useState(false);
-  const [dgClassId, setDgClassId] = useState("");
-  const [unNumber, setUnNumber] = useState("");
+  const [containerResponsibility, setContainerResponsibility] = useState("");
+  const [packages, setPackages] = useState<PackageRow[]>([]);
+  const [containers, setContainers] = useState<ContainerRow[]>([]);
   const [equipmentCondition, setEquipmentCondition] = useState("");
   const [temperature, setTemperature] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [cargo, setCargo] = useState("");
-  
-  const [itemLength, setItemLength] = useState("");
-  const [itemWidth, setItemWidth] = useState("");
-  const [itemHeight, setItemHeight] = useState("");
   
   const [selectedAddOns, setSelectedAddOns] = useState<number[]>([]);
   const [estimate, setEstimate] = useState<string | null>(null);
@@ -99,13 +98,14 @@ export default function PublicEstimatePage() {
     let c = false;
     (async () => {
       try {
-        const [locRes, mRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
-          fetchPublicMasterLocations(),
+        const [locRes, mRes, ctRes, asRes, ccRes, dgRes, covRes] = await Promise.all([
+          fetchPublicMasterLocationsWithQuery({ type: "station" }),
           fetchPublicMasterTransportModes(),
           fetchPublicMasterContainerTypes(),
           fetchPublicMasterAdditionalServices(),
           fetchPublicMasterCargoCategories(),
           fetchPublicMasterDgClasses(),
+          fetchPublicMasterShipmentCoverages(),
         ]);
         if (c) return;
         setLocations(((locRes as LaravelPaginated<Loc>).data ?? []) as Loc[]);
@@ -116,6 +116,9 @@ export default function PublicEstimatePage() {
         setAddServices(((asRes as { data: AS[] }).data ?? []) as AS[]);
         setCargoCategories(((ccRes as { data: CC[] }).data ?? []) as CC[]);
         setDgClasses(((dgRes as { data: DC[] }).data ?? []) as DC[]);
+        const rawCoverages = (covRes as { data: Coverage[] }).data ?? [];
+        setCoverages(rawCoverages);
+        if (rawCoverages[0]?.value) setShipmentCoverage(String(rawCoverages[0].value));
         const defaultMode = (railFirst[0] ?? rawModes[0])?.id;
         if (defaultMode) setModeId(String(defaultMode));
       } catch {
@@ -149,7 +152,6 @@ export default function PublicEstimatePage() {
   const selectedST = serviceTypes.find((s) => String(s.id) === serviceTypeId);
   const isFCL = selectedST?.code === "FCL";
   const isLCL = selectedST?.code === "LCL";
-  const selectedCT = containerTypes.find((c) => String(c.id) === containerTypeId);
   // const selectedOrigin = locations.find((l) => String(l.id) === originId);
   // const selectedDest = locations.find((l) => String(l.id) === destId);
   // const selectedMode = modes.find((m) => String(m.id) === modeId);
@@ -202,33 +204,6 @@ export default function PublicEstimatePage() {
     }
   }, [serviceTypeId, addServices, isFCL, isLCL]);
 
-  useEffect(() => {
-    if (!isLCL && selectedCT) {
-      const qty = Number(containerCount) || 1;
-      setWeight(String((selectedCT.capacity_weight || 0) * qty));
-      setCbm(String((selectedCT.capacity_cbm || 0) * qty));
-    }
-  }, [containerTypeId, containerCount, selectedCT, isLCL]);
-
-  useEffect(() => {
-    if (isLCL) {
-      const l = Number(itemLength) || 0;
-      const w = Number(itemWidth) || 0;
-      const h = Number(itemHeight) || 0;
-      if (l && w && h) {
-        setCbm(String((l * w * h) / 1000000));
-      }
-    }
-  }, [isLCL, itemLength, itemWidth, itemHeight]);
-
-  useEffect(() => {
-    if (equipmentCondition === "RESIDUAL" || selectedCC?.code === "DG") {
-      setIsDG(true);
-    } else {
-      setIsDG(false);
-    }
-  }, [equipmentCondition, selectedCC]);
-
   const fmtIdr = (n: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(n);
 
@@ -238,22 +213,76 @@ export default function PublicEstimatePage() {
     setBreakdown(null);
     setEstimating(true);
     try {
+      const pkgTotalCbm = packages.reduce((acc, p) => {
+        const qty = Number(p.piece_count) || 1;
+        const l = Number(p.length_cm) || 0;
+        const w = Number(p.width_cm) || 0;
+        const h = Number(p.height_cm) || 0;
+        if (!l || !w || !h) return acc;
+        return acc + ((l * w * h) / 1_000_000) * qty;
+      }, 0);
+      const pkgTotalWeight = packages.reduce((acc, p) => acc + (Number(p.weight_kg) || 0), 0);
+
+      const ctrTotalQty = containers.reduce((acc, c) => acc + (Number(c.quantity) || 1), 0);
+      const ctrFirstType = containers[0]?.container_type_id;
+      const ctrTotalWeight = containers.reduce(
+        (acc, c) => acc + (Number(c.gross_weight_kg) || 0) * (Number(c.quantity) || 1),
+        0
+      );
+      const anyItemDg = packages.some((p) => p.is_dangerous_goods) || containers.some((c) => c.is_dangerous_goods);
+
       const payload = {
         origin_location_id: Number(originId),
         destination_location_id: Number(destId),
         transport_mode_id: Number(modeId),
         service_type_id: Number(serviceTypeId),
+        shipment_coverage: shipmentCoverage || null,
+        pickup_date: pickupDate || null,
+        pickup_time: pickupTime || null,
+        pickup_notes: pickupNotes || null,
         cargo_category_id: cargoCategoryId ? Number(cargoCategoryId) : null,
-        container_type_id: !isLCL && containerTypeId ? Number(containerTypeId) : null,
-        container_count: !isLCL ? (Number(containerCount) || 1) : null,
-        estimated_weight: weight ? Number(weight) : null,
-        estimated_cbm: cbm ? Number(cbm) : null,
-        is_dangerous_goods: isDG ? 1 : 0,
-        dg_class_id: isDG && dgClassId ? Number(dgClassId) : null,
-        un_number: isDG && unNumber ? unNumber : null,
+        container_responsibility: containerResponsibility || null,
+        container_type_id: !isLCL && ctrFirstType ? Number(ctrFirstType) : null,
+        container_count: !isLCL ? ctrTotalQty : null,
+        estimated_weight: isLCL ? (pkgTotalWeight || null) : ctrTotalWeight || null,
+        estimated_cbm: isLCL ? (pkgTotalCbm || null) : null,
+        is_dangerous_goods: anyItemDg ? 1 : 0,
+        dg_class_id: null,
+        un_number: null,
         equipment_condition: showProject && equipmentCondition ? equipmentCondition : null,
         temperature: showTemp && temperature ? Number(temperature) : null,
         additional_services: selectedAddOns.map((id) => ({ id })),
+        packages: isLCL && packages.length ? packages.map((p) => ({
+          description: p.description || null,
+          package_type: p.package_type || null,
+          piece_count: Number(p.piece_count) || 1,
+          length: Number(p.length_cm) || null,
+          width: Number(p.width_cm) || null,
+          height: Number(p.height_cm) || null,
+          weight_kg: Number(p.weight_kg) || null,
+          remark: p.remark || null,
+          is_dangerous_goods: p.is_dangerous_goods ? 1 : 0,
+          dg_class_id: p.is_dangerous_goods && p.dg_class_id ? Number(p.dg_class_id) : null,
+          un_number: p.is_dangerous_goods ? (p.un_number || null) : null,
+          packing_group: p.is_dangerous_goods ? (p.packing_group || null) : null,
+          proper_shipping_name: p.is_dangerous_goods ? (p.proper_shipping_name || null) : null,
+          flash_point: p.is_dangerous_goods && p.flash_point_c ? Number(p.flash_point_c) : null,
+          dg_remark: p.is_dangerous_goods ? (p.dg_remark || null) : null,
+        })) : null,
+        containers: isFCL && containers.length ? containers.map((c) => ({
+          container_type_id: c.container_type_id ? Number(c.container_type_id) : null,
+          quantity: Number(c.quantity) || 1,
+          gross_weight_kg: Number(c.gross_weight_kg) || null,
+          cargo_description: c.cargo_description || null,
+          remark: c.remark || null,
+          is_dangerous_goods: c.is_dangerous_goods ? 1 : 0,
+          dg_class_id: c.is_dangerous_goods && c.dg_class_id ? Number(c.dg_class_id) : null,
+          un_number: c.is_dangerous_goods ? (c.un_number || null) : null,
+          packing_group: c.is_dangerous_goods ? (c.packing_group || null) : null,
+          proper_shipping_name: c.is_dangerous_goods ? (c.proper_shipping_name || null) : null,
+          flash_point: c.is_dangerous_goods && c.flash_point_c ? Number(c.flash_point_c) : null,
+          dg_remark: c.is_dangerous_goods ? (c.dg_remark || null) : null,
+        })) : null,
       };
       const r = await publicEstimateBookingPrice(payload);
       const inner = (r as { data?: { estimated_price?: number; breakdown?: typeof breakdown } }).data;
@@ -321,6 +350,7 @@ export default function PublicEstimatePage() {
               locations={locations}
               modes={modes}
               serviceTypes={serviceTypes}
+              coverages={coverages}
               originId={originId}
               setOriginId={setOriginId}
               destId={destId}
@@ -329,6 +359,14 @@ export default function PublicEstimatePage() {
               setModeId={setModeId}
               serviceTypeId={serviceTypeId}
               setServiceTypeId={setServiceTypeId}
+              shipmentCoverage={shipmentCoverage}
+              setShipmentCoverage={setShipmentCoverage}
+              pickupDate={pickupDate}
+              setPickupDate={setPickupDate}
+              pickupTime={pickupTime}
+              setPickupTime={setPickupTime}
+              pickupNotes={pickupNotes}
+              setPickupNotes={setPickupNotes}
               renderFieldError={() => null}
             />
 
@@ -338,41 +376,24 @@ export default function PublicEstimatePage() {
               containerTypes={containerTypes}
               cargoCategories={cargoCategories}
               dgClasses={dgClasses}
-              containerTypeId={containerTypeId}
-              setContainerTypeId={setContainerTypeId}
-              containerCount={containerCount}
-              setContainerCount={setContainerCount}
-              weight={weight}
-              setWeight={setWeight}
-              cbm={cbm}
-              setCbm={setCbm}
-              itemLength={itemLength}
-              setItemLength={setItemLength}
-              itemWidth={itemWidth}
-              setItemWidth={setItemWidth}
-              itemHeight={itemHeight}
-              setItemHeight={setItemHeight}
               departureDate={departureDate}
               setDepartureDate={setDepartureDate}
               cargoCategoryId={cargoCategoryId}
               setCargoCategoryId={setCargoCategoryId}
               cargo={cargo}
               setCargo={setCargo}
-              selectedCT={selectedCT}
-              selectedCC={selectedCC}
-              isDG={isDG}
-              dgClassId={dgClassId}
-              setDgClassId={setDgClassId}
-              unNumber={unNumber}
-              setUnNumber={setUnNumber}
-              msdsFile={null}
-              setMsdsFile={() => {}}
               equipmentCondition={equipmentCondition}
               setEquipmentCondition={setEquipmentCondition}
               temperature={temperature}
               setTemperature={setTemperature}
               showTemp={showTemp}
               showProject={showProject}
+              containerResponsibility={containerResponsibility}
+              setContainerResponsibility={setContainerResponsibility}
+              packages={packages}
+              setPackages={setPackages}
+              containers={containers}
+              setContainers={setContainers}
               renderFieldError={() => null}
             />
 

@@ -1,10 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronDown, Package, Truck, Wrench, Settings } from "lucide-react";
 import type { AS } from "@/hooks/use-admin-booking-form";
 
@@ -35,7 +31,9 @@ export function AddOnServiceSection({
 }: AddOnServiceSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Layanan Tambahan</h3>
+      <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">
+        Layanan Tambahan
+      </h3>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 bg-white p-5 rounded-xl border shadow-sm">
         {CATEGORIES.map((cat) => {
           const svcs = addServices.filter((s) => (s.category || "other") === cat.key);
@@ -88,17 +86,21 @@ export function AddOnServiceSection({
                             if (isMandatory) return;
                             const on = v === true;
                             setSelectedAddOns((prev) =>
-                              on
-                                ? prev.includes(a.id) ? prev : [...prev, a.id]
-                                : prev.filter((x) => x !== a.id)
+                              on ? (prev.includes(a.id) ? prev : [...prev, a.id]) : prev.filter((x) => x !== a.id)
                             );
                           }}
                         />
                         <div className="flex flex-col">
-                          <span className={isMandatory ? "text-zinc-500 font-semibold italic" : "font-normal group-hover:text-zinc-900"}>
+                          <span
+                            className={
+                              isMandatory ? "text-zinc-500 font-semibold italic" : "font-normal group-hover:text-zinc-900"
+                            }
+                          >
                             {a.name}
                           </span>
-                          {isMandatory && <span className="text-[10px] text-zinc-400 font-medium">Bawaan (Default Terpilih)</span>}
+                          {isMandatory && (
+                            <span className="text-[10px] text-zinc-400 font-medium">Bawaan (Default Terpilih)</span>
+                          )}
                         </div>
                       </label>
                     );

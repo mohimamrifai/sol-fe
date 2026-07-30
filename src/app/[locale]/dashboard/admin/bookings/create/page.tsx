@@ -15,9 +15,9 @@ import { ApiError } from "@/lib/api-client";
 import { useRouter } from "@/i18n/routing";
 
 import { ShipperConsigneeSection } from "@/components/dashboard/admin/bookings/create/shipper-consignee-section";
-import { RouteServiceSection } from "./components/route-service-section";
-import { CargoDetailSection } from "./components/cargo-detail-section";
-import { AddOnServiceSection } from "./components/add-on-service-section";
+import { RouteServiceSection } from "@/components/dashboard/admin/bookings/create/route-service-section";
+import { CargoDetailSection } from "@/components/dashboard/admin/bookings/create/cargo-detail-section";
+import { AddOnServiceSection } from "@/components/dashboard/admin/bookings/create/add-on-service-section";
 import { useAdminBookingForm } from "@/hooks/use-admin-booking-form";
 
 export default function AdminCreateBookingPage() {
