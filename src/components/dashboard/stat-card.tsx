@@ -1,0 +1,73 @@
+"use client";
+
+import * as React from "react";
+import { useTranslations } from "next-intl";
+import { type LucideIcon } from "lucide-react";
+import { formatIdr } from "./format";
+import { cn } from "@/lib/utils";
+
+interface StatCardProps {
+  labelKey: string; // i18n key under "Dashboard.cards.<key>"
+  descriptionKey: string; // i18n key under "Dashboard.cards.<key>Description" (or *Hint)
+  value: number;
+  icon: LucideIcon;
+  iconClassName?: string;
+  /** When true, value is rendered as IDR currency. */
+  asCurrency?: boolean;
+}
+
+/**
+ * Compact read-only stat card for the customer dashboard.
+ *
+ * Layout:
+ *  - top row: uppercase label + main icon
+ *  - main value in big tabular numerals
+ *  - short description below
+ */
+export function StatCard({
+  labelKey,
+  descriptionKey,
+  value,
+  icon: Icon,
+  iconClassName = "bg-zinc-100 text-zinc-700",
+  asCurrency = false,
+}: StatCardProps) {
+  const t = useTranslations("Dashboard.cards");
+  const formatted = asCurrency
+    ? formatIdr(value)
+    : new Intl.NumberFormat("id-ID").format(value);
+
+  return (
+    <div
+      className={cn(
+        "relative flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)] sm:p-5",
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-semibold uppercase tracking-wider text-[10px] text-zinc-500">
+          {t(labelKey)}
+        </span>
+        <span
+          className={cn(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+            iconClassName,
+          )}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+
+      <div
+        className={cn(
+          "truncate tabular-nums font-bold tracking-tight text-zinc-900",
+          asCurrency ? "text-lg sm:text-xl" : "text-2xl sm:text-3xl",
+        )}
+        title={formatted}
+      >
+        {formatted}
+      </div>
+
+      <p className="text-xs leading-snug text-zinc-500">{t(descriptionKey)}</p>
+    </div>
+  );
+}

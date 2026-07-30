@@ -11,7 +11,6 @@ import {
   type AdminDashboardPayload,
   type CustomerDashboardPayload,
 } from "@/lib/dashboard-api";
-import { fetchCustomerShipments, fetchCustomerInvoices } from "@/lib/customer-api";
 import { LayoutDashboard } from "lucide-react";
 
 const DashboardSuperAdmin = dynamic(
@@ -42,25 +41,7 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState<AdminDashboardPayload | null>(null);
-  const [customerSummary, setCustomerSummary] = useState<CustomerDashboardPayload | null>(null);
-  const [customerShipments, setCustomerShipments] = useState<
-    Array<{
-      id: number;
-      shipment_number?: string;
-      waybill_number?: string;
-      status: string;
-      origin_location?: { name?: string };
-      destination_location?: { name?: string };
-    }>
-  >([]);
-  const [customerInvoices, setCustomerInvoices] = useState<
-    Array<{
-      invoice_number: string;
-      status: string;
-      due_date?: string;
-      total_amount: string | number;
-    }>
-  >([]);
+  const [customerData, setCustomerData] = useState<CustomerDashboardPayload | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -76,21 +57,13 @@ export default function DashboardPage() {
           const r = await fetchAdminDashboard();
           if (!cancelled) setAdminData(r.data);
         } else {
-          const [d, shipRes, invRes] = await Promise.all([
-            fetchCustomerDashboard(),
-            fetchCustomerShipments(5),
-            fetchCustomerInvoices(5),
-          ]);
-          if (!cancelled) {
-            setCustomerSummary(d.data);
-            setCustomerShipments((shipRes.data as unknown[]) as typeof customerShipments);
-            setCustomerInvoices((invRes.data as unknown[]) as typeof customerInvoices);
-          }
+          const r = await fetchCustomerDashboard();
+          if (!cancelled) setCustomerData(r.data);
         }
       } catch {
         if (!cancelled) {
           setAdminData(null);
-          setCustomerSummary(null);
+          setCustomerData(null);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -108,12 +81,7 @@ export default function DashboardPage() {
 
   const renderDashboardByRole = () => {
     const adminProps = { data: adminData, loading };
-    const customerProps = {
-      summary: customerSummary,
-      shipments: customerShipments,
-      invoices: customerInvoices,
-      loading,
-    };
+    const customerProps = { data: customerData, loading };
 
     switch (effectiveRole) {
       case "super_admin":
