@@ -29,7 +29,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={poppins.variable}>
+    <html lang={locale} className={poppins.variable} suppressHydrationWarning>
       <body
         className={`${poppins.className} antialiased bg-gray-50`}
       >

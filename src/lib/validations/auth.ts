@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NPWP_DIGIT_COUNT, isValidNpwp } from "@/lib/npwp";
 
 export const createLoginSchema = (t: (key: string) => string) => {
   return z.object({
@@ -13,131 +14,136 @@ export const createLoginSchema = (t: (key: string) => string) => {
   });
 };
 
-export const createRegisterSchema = (t: (key: string) => string) => {
+export const BUSINESS_ENTITY_TYPES = [
+  "PT",
+  "CV",
+  "UD",
+  "Koperasi",
+  "Yayasan",
+  "Firma",
+  "Perorangan",
+  "Lainnya",
+] as const;
+
+export const BUSINESS_CATEGORIES = [
+  { value: "trading", label: "Trading" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "retail", label: "Retail" },
+  { value: "distributor", label: "Distributor" },
+  { value: "e_commerce", label: "E-Commerce" },
+  { value: "logistics", label: "Logistics" },
+  { value: "others", label: "Others" },
+] as const;
+
+export const createRegisterSchema = (
+  t: (key: string, vars?: Record<string, unknown>) => string,
+) => {
   return z
     .object({
-      accountType: z.enum(["personal", "company"], {
-        message: t("accountTypeRequired"),
+      // ---- Section 1: Company Information ----
+      business_entity_type: z.enum(BUSINESS_ENTITY_TYPES, {
+        message: t("businessEntityRequired"),
       }),
-      // Company fields (optional initially, refined later)
-      companyEntityType: z.string().optional(),
-      companyName: z.string().optional(),
-      companyCode: z.string().optional(),
-      companyNpwp: z.string().optional(),
-      companyNib: z.string().optional(),
-      companyAddress: z.string().optional(),
-      companyCity: z.string().optional(),
-      companyProvince: z.string().optional(),
-      companyPostalCode: z.string().optional(),
-      companyEmail: z.string().email({ message: t("emailInvalid") }).optional().or(z.literal("")),
-      companyPhone: z.string().optional(),
-      
-      // PIC fields
-      picName: z.string().min(1, { message: t("fullNameRequired") }),
-      picEmail: z
+      business_entity_other: z.string().optional(),
+
+      company_name: z
+        .string()
+        .min(1, { message: t("companyNameRequired") }),
+
+      company_code: z
+        .string()
+        .min(1, { message: t("companyCodeRequired") })
+        .length(3, { message: t("companyCodeInvalid") })
+        .regex(/^[A-Z]{3}$/, { message: t("companyCodeInvalid") }),
+
+      npwp: z
+        .string()
+        .min(1, { message: t("npwpRequired") })
+        .refine(isValidNpwp, {
+          message: t("npwpInvalid", { count: NPWP_DIGIT_COUNT }),
+        }),
+
+      company_email: z
         .string()
         .min(1, { message: t("emailRequired") })
         .email({ message: t("emailInvalid") }),
-      picPhone: z.string().min(1, { message: t("phoneRequired") }),
+
+      company_phone: z
+        .string()
+        .min(1, { message: t("phoneRequired") }),
+
+      website: z
+        .string()
+        .url({ message: t("websiteInvalid") })
+        .or(z.literal(""))
+        .optional(),
+
+      // ---- Section 2: Company Address (cascading) ----
+      country: z.string().min(1, { message: t("countryRequired") }),
+      province: z.string().min(1, { message: t("provinceRequired") }),
+      city: z.string().min(1, { message: t("cityRequired") }),
+      district: z.string().min(1, { message: t("districtRequired") }),
+      postal_code: z
+        .string()
+        .min(1, { message: t("postalCodeRequired") })
+        .max(10, { message: t("postalCodeInvalid") }),
+      address: z.string().min(1, { message: t("addressRequired") }),
+
+      // ---- Section 3: Operational Information ----
+      business_category: z.enum(
+        BUSINESS_CATEGORIES.map((c) => c.value) as [string, ...string[]],
+        { message: t("businessCategoryRequired") },
+      ),
+      business_category_other: z.string().optional(),
+      monthly_shipment_estimate: z.enum(["<10", "10-50", "50-100", ">100"], {
+        message: t("monthlyShipmentEstimateRequired"),
+      }),
+
+      // ---- Section 4: Admin Account ----
+      admin_name: z.string().min(1, { message: t("fullNameRequired") }),
+      admin_email: z
+        .string()
+        .min(1, { message: t("emailRequired") })
+        .email({ message: t("emailInvalid") }),
+      admin_phone: z.string().min(1, { message: t("phoneRequired") }),
+
       password: z
         .string()
         .min(1, { message: t("passwordRequired") })
         .min(8, { message: t("passwordMin") }),
-      confirmPassword: z
+      confirm_password: z
         .string()
         .min(1, { message: t("confirmPasswordRequired") }),
-      terms: z.boolean().refine((val) => val === true, {
+
+      terms_accepted: z.literal(true, {
         message: t("termsRequired"),
       }),
     })
     .superRefine((data, ctx) => {
-      // Validate company fields if account type is company
-      if (data.accountType === "company") {
-        if (!data.companyEntityType || data.companyEntityType.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("companyEntityTypeRequired"),
-            path: ["companyEntityType"],
-          });
-        }
-        if (!data.companyName || data.companyName.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("companyNameRequired"),
-            path: ["companyName"],
-          });
-        }
-        if (!data.companyCode || data.companyCode.length !== 3) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("companyCodeInvalid"),
-            path: ["companyCode"],
-          });
-        }
-        if (!data.companyEmail || !z.string().email().safeParse(data.companyEmail).success) {
-           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("emailInvalid"),
-            path: ["companyEmail"],
-          });
-        }
-        if (!data.companyPhone || data.companyPhone.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("phoneRequired"),
-            path: ["companyPhone"],
-          });
-        }
-        if (!data.companyNpwp || data.companyNpwp.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("npwpRequired"),
-            path: ["companyNpwp"],
-          });
-        }
-        if (!data.companyNib || data.companyNib.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("nibRequired"),
-            path: ["companyNib"],
-          });
-        }
-        if (!data.companyAddress || data.companyAddress.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("addressRequired"),
-            path: ["companyAddress"],
-          });
-        }
-        if (!data.companyCity || data.companyCity.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("cityRequired"),
-            path: ["companyCity"],
-          });
-        }
-        if (!data.companyProvince || data.companyProvince.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("provinceRequired"),
-            path: ["companyProvince"],
-          });
-        }
-        if (!data.companyPostalCode || data.companyPostalCode.length < 1) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: t("postalCodeRequired"),
-            path: ["companyPostalCode"],
-          });
-        }
+      // Conditional: "Lainnya" requires business_entity_other
+      if (data.business_entity_type === "Lainnya" && !data.business_entity_other?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("businessEntityOtherRequired"),
+          path: ["business_entity_other"],
+        });
       }
 
-      // Validate password match
-      if (data.password !== data.confirmPassword) {
+      // Conditional: "others" requires business_category_other
+      if (data.business_category === "others" && !data.business_category_other?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("businessCategoryOtherRequired"),
+          path: ["business_category_other"],
+        });
+      }
+
+      // Password match
+      if (data.password !== data.confirm_password) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: t("passwordMismatch"),
-          path: ["confirmPassword"],
+          path: ["confirm_password"],
         });
       }
     });

@@ -32,28 +32,50 @@ export async function logoutRequest() {
   return apiFetch<{ message: string }>("/logout", { method: "POST" });
 }
 
-export async function registerCompanyRequest(payload: {
-  company_entity_type: string;
+export interface RegisterCompanyPayload {
+  // Section 1
+  business_entity_type: string;
+  business_entity_other?: string;
   company_name: string;
-  company_code?: string;
-  npwp?: string;
-  nib?: string;
-  company_address?: string;
-  city?: string;
-  province?: string;
-  postal_code?: string;
-  company_phone?: string;
-  name: string;
-  email: string;
+  company_code: string;
+  npwp: string;
+  company_email: string;
+  company_phone: string;
+  website?: string;
+  // Section 2
+  country: string;
+  province: string;
+  city: string;
+  district: string;
+  postal_code: string;
+  address: string;
+  // Section 3
+  business_category: string;
+  business_category_other?: string;
+  monthly_shipment_estimate: string;
+  // Section 4
+  admin_name: string;
+  admin_email: string;
+  admin_phone: string;
   password: string;
   password_confirmation: string;
-  phone?: string;
-}) {
+  terms_accepted: boolean;
+}
+
+export async function registerCompanyRequest(payload: RegisterCompanyPayload) {
   return apiFetch<{ message: string; data: unknown }>("/register", {
     method: "POST",
     body: JSON.stringify(payload),
     token: null,
   });
+}
+
+export async function checkCompanyCodeRequest(code: string) {
+  const params = new URLSearchParams({ code });
+  return apiFetch<{ code: string; exists: boolean; message: string }>(
+    `/register/check-company-code?${params.toString()}`,
+    { method: "GET", token: null },
+  );
 }
 
 export async function forgotPasswordRequest(email: string) {
