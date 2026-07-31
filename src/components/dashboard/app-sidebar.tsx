@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   LayoutDashboard,
-  PlusCircle,
   Package,
   Activity,
   FileText,
@@ -60,7 +59,6 @@ const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
   vendorPricing: Tags,
   roleManagement: ShieldCheck,
   internalUsers: Users,
-  createBooking: PlusCircle,
   myBookings: FileText,
   myShipments: Package,
   shipmentTracking: Activity,

@@ -16,12 +16,22 @@ export type ListQueryParams = {
   role?: string;
   /** Bookings list — service type filter */
   serviceTypeId?: number;
-  /** Bookings list — shipment coverage filter (port_to_port, etc.) */
+  /** Shipments list — service type bucket (LCL/FCL) */
+  serviceType?: string;
+  /** Bookings/Shipments list — shipment coverage filter (port_to_port, etc.) */
   shipmentCoverage?: string;
   /** Bookings list — booking date lower bound (YYYY-MM-DD) */
   dateFrom?: string;
   /** Bookings list — booking date upper bound (YYYY-MM-DD) */
   dateTo?: string;
+  /** Shipments list — origin location id */
+  originLocationId?: number;
+  /** Shipments list — destination location id */
+  destinationLocationId?: number;
+  /** Shipments list — shipment date lower bound (YYYY-MM-DD) */
+  shipmentDateFrom?: string;
+  /** Shipments list — shipment date upper bound (YYYY-MM-DD) */
+  shipmentDateTo?: string;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -44,12 +54,20 @@ export function buildListQuery(params?: ListQueryParams): string {
   const rl = params?.role?.trim();
   if (rl) q.set("role", rl);
   if (params?.serviceTypeId != null) q.set("service_type_id", String(params.serviceTypeId));
+  const st2 = params?.serviceType?.trim();
+  if (st2) q.set("service_type", st2);
   const cov = params?.shipmentCoverage?.trim();
   if (cov) q.set("shipment_coverage", cov);
   const df = params?.dateFrom?.trim();
   if (df) q.set("date_from", df);
   const dt = params?.dateTo?.trim();
   if (dt) q.set("date_to", dt);
+  if (params?.originLocationId != null) q.set("origin_location_id", String(params.originLocationId));
+  if (params?.destinationLocationId != null) q.set("destination_location_id", String(params.destinationLocationId));
+  const sdf = params?.shipmentDateFrom?.trim();
+  if (sdf) q.set("shipment_date_from", sdf);
+  const sdt = params?.shipmentDateTo?.trim();
+  if (sdt) q.set("shipment_date_to", sdt);
   const str = q.toString();
   return str ? `?${str}` : "";
 }

@@ -2,7 +2,6 @@
   "Dashboard": {
     "menu": {
       "dashboard": "Dashboard",
-      "createBooking": "Create Booking",
       "myBookings": "My Bookings",
       "myShipments": "My Shipments",
       "shipmentTracking": "Shipment Tracking",

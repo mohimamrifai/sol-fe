@@ -75,12 +75,6 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
     roles: ["super_admin"] as const,
   },
   {
-    menuKey: "createBooking",
-    url: "/dashboard/booking/create",
-    requiredPermission: "create_bookings",
-    roles: ["company_admin", "ops_pic"] as const,
-  },
-  {
     menuKey: "myBookings",
     url: "/dashboard/booking",
     requiredPermission: "view_bookings",

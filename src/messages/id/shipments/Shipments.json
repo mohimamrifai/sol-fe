@@ -1,0 +1,159 @@
+{
+  "Shipments": {
+    "title": "My Shipments",
+    "subtitle": "Shipment perusahaan Anda.",
+    "stats": {
+      "planning": "Shipment sedang tahap perencanaan.",
+      "in_progress": "Sedang dalam proses pengiriman.",
+      "completed": "Shipment telah selesai.",
+      "cancelled": "Shipment telah dibatalkan."
+    },
+    "card": {
+      "planning": "Planning",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Pencarian",
+      "searchPlaceholder": "Cari Shipment No, CN No, atau Booking No…",
+      "status": "Status",
+      "allStatus": "Semua status",
+      "serviceType": "Service Type",
+      "allServiceTypes": "Semua service",
+      "shipmentCoverage": "Shipment Coverage",
+      "allCoverages": "Semua coverage",
+      "originStation": "Origin Station",
+      "originStationPlaceholder": "Pilih origin station",
+      "destinationStation": "Destination Station",
+      "destinationStationPlaceholder": "Pilih destination station",
+      "shipmentDate": "Shipment Date",
+      "dateFrom": "Dari tanggal",
+      "dateTo": "Sampai tanggal"
+    },
+    "coverage": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
+    },
+    "serviceType": {
+      "LCL": "LCL",
+      "FCL": "FCL"
+    },
+    "table": {
+      "title": "Daftar Shipment",
+      "empty": "Belum ada shipment.",
+      "columns": {
+        "number": "No",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "cnNo": "CN No",
+        "origin": "Origin",
+        "destination": "Destination",
+        "service": "Service",
+        "eta": "ETA",
+        "status": "Status",
+        "action": "Aksi"
+      },
+      "actionDetail": "Detail"
+    },
+    "loadError": "Gagal memuat data shipment.",
+    "detail": {
+      "header": {
+        "title": "Detail Shipment",
+        "backToList": "Kembali ke daftar shipment",
+        "downloadCn": "Download CN"
+      },
+      "statusLabel": "Status",
+      "section1": {
+        "title": "Shipment Information",
+        "customer": "Customer",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "consignmentNote": "Consignment Note",
+        "serviceType": "Service Type",
+        "shipmentCoverage": "Shipment Coverage",
+        "originStation": "Origin Station",
+        "destinationStation": "Destination Station",
+        "etd": "ETD",
+        "eta": "ETA",
+        "currentStatus": "Current Status"
+      },
+      "section2": {
+        "title": "Shipper Information",
+        "name": "Nama",
+        "phone": "Telepon",
+        "address": "Alamat",
+        "noData": "Data shipper belum tersedia."
+      },
+      "section3": {
+        "title": "Consignee Information",
+        "name": "Nama",
+        "phone": "Telepon",
+        "address": "Alamat",
+        "noData": "Data consignee belum tersedia."
+      },
+      "section4": {
+        "title": "Cargo Information",
+        "lclTitle": "Package (LCL)",
+        "fclTitle": "Container (FCL)",
+        "noItems": "Belum ada detail kargo.",
+        "columns": {
+          "packageDescription": "Package Description",
+          "packageType": "Package Type",
+          "qty": "Qty",
+          "weight": "Weight (Kg)",
+          "volume": "Volume (CBM)",
+          "chargeableWeight": "Chargeable Weight",
+          "containerNo": "Container No",
+          "containerType": "Container Type",
+          "cargoCategory": "Cargo Category",
+          "cargoWeight": "Cargo Weight",
+          "containerResponsibility": "Container Responsibility"
+        },
+        "summary": {
+          "title": "Summary",
+          "totalPackage": "Total Package",
+          "totalActualWeight": "Total Actual Weight",
+          "totalVolume": "Total Volume",
+          "totalChargeableWeight": "Total Chargeable Weight",
+          "totalContainers": "Total Containers"
+        }
+      },
+      "section5": {
+        "title": "Shipment Tracking",
+        "columns": {
+          "dateTime": "Date & Time",
+          "activity": "Activity",
+          "location": "Location",
+          "status": "Status"
+        },
+        "noEntries": "Belum ada aktivitas tracking."
+      },
+      "section6": {
+        "title": "Documents",
+        "noEntries": "Belum ada dokumen.",
+        "view": "View",
+        "download": "Download",
+        "unavailable": "Belum tersedia",
+        "types": {
+          "consignmentNote": "Consignment Note (CN)",
+          "pod": "Proof of Delivery (POD)",
+          "deliveryOrder": "Delivery Order",
+          "invoice": "Invoice",
+          "taxInvoice": "Tax Invoice",
+          "other": "Other Supporting Documents"
+        }
+      },
+      "section7": {
+        "title": "Activity Log",
+        "noEntries": "Belum ada aktivitas."
+      },
+      "loadError": "Gagal memuat detail shipment.",
+      "notFound": "Shipment tidak ditemukan."
+    }
+  }
+}

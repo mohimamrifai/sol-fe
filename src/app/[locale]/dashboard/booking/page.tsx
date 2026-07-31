@@ -11,7 +11,7 @@ import {
   fetchCustomerBookingStats,
   fetchCustomerMasterServiceTypes,
 } from "@/lib/customer-api";
-import { BOOKING_STATUS_META, BOOKING_STATUS_KEYS, SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import { BOOKING_STATUS_KEYS, SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
 import { formatShortDate } from "@/components/dashboard/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { SearchableCombobox, type ComboboxOption } from "@/components/searchable
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BookingStatsCards } from "@/components/bookings/booking-stats-cards";
 import {
   Table,
   TableBody,
@@ -28,10 +29,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  FileText,
-  CheckCircle2,
-  XCircle,
-  Send,
   Plus,
   Search,
   Calendar,
@@ -56,18 +53,10 @@ type BookingRow = {
   status: string;
 };
 
-const STATUS_ICONS: Record<string, typeof FileText> = {
-  draft: FileText,
-  submitted: Send,
-  approved: CheckCircle2,
-  rejected: XCircle,
-};
-
 const ALL = "__all__";
 
 export default function CustomerBookingsListPage() {
   const t = useTranslations("Bookings");
-  const tStat = useTranslations("Bookings.stats");
   const router = useRouter();
   const pathname = usePathname();
   const search = useNextSearchParams();
@@ -206,23 +195,7 @@ export default function CustomerBookingsListPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {BOOKING_STATUS_KEYS.map((key) => {
-          const meta = BOOKING_STATUS_META[key];
-          const Icon = STATUS_ICONS[key] ?? FileText;
-          const value = Number(stats?.[key] ?? 0);
-          return (
-            <BookingStatCard
-              key={key}
-              label={t("table.title")}
-              description={tStat(key)}
-              value={value}
-              icon={<Icon className={`h-5 w-5 ${meta.iconColor}`} />}
-              iconBg={meta.iconBg}
-            />
-          );
-        })}
-      </div>
+      <BookingStatsCards counts={stats} />
 
       {/* Filter bar — Search takes its own row so dropdowns can share a single grid below */}
       <Card className="border-zinc-200 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)]">
@@ -465,34 +438,5 @@ function FilterField({
       </label>
       {children}
     </div>
-  );
-}
-
-function BookingStatCard({
-  label,
-  description,
-  value,
-  icon,
-  iconBg,
-}: {
-  label: string;
-  description: string;
-  value: number;
-  icon: React.ReactNode;
-  iconBg: string;
-}) {
-  return (
-    <Card className="border-zinc-200 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)]">
-      <CardContent className="flex items-start gap-4 p-5">
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
-          {icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">{label}</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900">{value}</p>
-          <p className="mt-0.5 text-xs text-zinc-500">{description}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

@@ -1,0 +1,159 @@
+{
+  "Shipments": {
+    "title": "My Shipments",
+    "subtitle": "Your company's shipments.",
+    "stats": {
+      "planning": "Shipment is being planned.",
+      "in_progress": "Shipment is in transit.",
+      "completed": "Shipment has been completed.",
+      "cancelled": "Shipment has been cancelled."
+    },
+    "card": {
+      "planning": "Planning",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search Shipment No, CN No, or Booking No…",
+      "status": "Status",
+      "allStatus": "All statuses",
+      "serviceType": "Service Type",
+      "allServiceTypes": "All services",
+      "shipmentCoverage": "Shipment Coverage",
+      "allCoverages": "All coverages",
+      "originStation": "Origin Station",
+      "originStationPlaceholder": "Select origin station",
+      "destinationStation": "Destination Station",
+      "destinationStationPlaceholder": "Select destination station",
+      "shipmentDate": "Shipment Date",
+      "dateFrom": "From date",
+      "dateTo": "To date"
+    },
+    "coverage": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
+    },
+    "serviceType": {
+      "LCL": "LCL",
+      "FCL": "FCL"
+    },
+    "table": {
+      "title": "Shipment List",
+      "empty": "No shipments yet.",
+      "columns": {
+        "number": "#",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "cnNo": "CN No",
+        "origin": "Origin",
+        "destination": "Destination",
+        "service": "Service",
+        "eta": "ETA",
+        "status": "Status",
+        "action": "Action"
+      },
+      "actionDetail": "Detail"
+    },
+    "loadError": "Failed to load shipments.",
+    "detail": {
+      "header": {
+        "title": "Shipment Detail",
+        "backToList": "Back to shipment list",
+        "downloadCn": "Download CN"
+      },
+      "statusLabel": "Status",
+      "section1": {
+        "title": "Shipment Information",
+        "customer": "Customer",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "consignmentNote": "Consignment Note",
+        "serviceType": "Service Type",
+        "shipmentCoverage": "Shipment Coverage",
+        "originStation": "Origin Station",
+        "destinationStation": "Destination Station",
+        "etd": "ETD",
+        "eta": "ETA",
+        "currentStatus": "Current Status"
+      },
+      "section2": {
+        "title": "Shipper Information",
+        "name": "Name",
+        "phone": "Phone",
+        "address": "Address",
+        "noData": "Shipper data is not available yet."
+      },
+      "section3": {
+        "title": "Consignee Information",
+        "name": "Name",
+        "phone": "Phone",
+        "address": "Address",
+        "noData": "Consignee data is not available yet."
+      },
+      "section4": {
+        "title": "Cargo Information",
+        "lclTitle": "Package (LCL)",
+        "fclTitle": "Container (FCL)",
+        "noItems": "No cargo details yet.",
+        "columns": {
+          "packageDescription": "Package Description",
+          "packageType": "Package Type",
+          "qty": "Qty",
+          "weight": "Weight (Kg)",
+          "volume": "Volume (CBM)",
+          "chargeableWeight": "Chargeable Weight",
+          "containerNo": "Container No",
+          "containerType": "Container Type",
+          "cargoCategory": "Cargo Category",
+          "cargoWeight": "Cargo Weight",
+          "containerResponsibility": "Container Responsibility"
+        },
+        "summary": {
+          "title": "Summary",
+          "totalPackage": "Total Package",
+          "totalActualWeight": "Total Actual Weight",
+          "totalVolume": "Total Volume",
+          "totalChargeableWeight": "Total Chargeable Weight",
+          "totalContainers": "Total Containers"
+        }
+      },
+      "section5": {
+        "title": "Shipment Tracking",
+        "columns": {
+          "dateTime": "Date & Time",
+          "activity": "Activity",
+          "location": "Location",
+          "status": "Status"
+        },
+        "noEntries": "No tracking activity yet."
+      },
+      "section6": {
+        "title": "Documents",
+        "noEntries": "No documents yet.",
+        "view": "View",
+        "download": "Download",
+        "unavailable": "Not available yet",
+        "types": {
+          "consignmentNote": "Consignment Note (CN)",
+          "pod": "Proof of Delivery (POD)",
+          "deliveryOrder": "Delivery Order",
+          "invoice": "Invoice",
+          "taxInvoice": "Tax Invoice",
+          "other": "Other Supporting Documents"
+        }
+      },
+      "section7": {
+        "title": "Activity Log",
+        "noEntries": "No activity yet."
+      },
+      "loadError": "Failed to load shipment detail.",
+      "notFound": "Shipment not found."
+    }
+  }
+}

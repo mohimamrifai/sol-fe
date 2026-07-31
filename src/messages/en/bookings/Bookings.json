@@ -41,6 +41,12 @@
       "approved": "Approved and ready to convert to a Shipment.",
       "rejected": "Booking was rejected."
     },
+    "card": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
     "coverage": {
       "port_to_port": "Port to Port",
       "door_to_port": "Door to Port",

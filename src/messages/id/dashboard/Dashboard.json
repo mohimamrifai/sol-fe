@@ -2,7 +2,6 @@
   "Dashboard": {
     "menu": {
       "dashboard": "Dashboard",
-      "createBooking": "Buat Booking",
       "myBookings": "Booking Saya",
       "myShipments": "Pengiriman Saya",
       "shipmentTracking": "Lacak Pengiriman",

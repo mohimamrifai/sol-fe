@@ -5,7 +5,14 @@ import type { LaravelPaginated } from "./types-api";
 export type { ListQueryParams };
 
 export async function fetchCustomerShipments(
-  input?: number | ListQueryParams,
+  input?: number | (ListQueryParams & {
+    service_type?: string;
+    shipment_coverage?: string;
+    origin_location_id?: number;
+    destination_location_id?: number;
+    shipment_date_from?: string;
+    shipment_date_to?: string;
+  }),
   signal?: AbortSignal
 ) {
   const params = normalizeListParams(input);
@@ -13,6 +20,12 @@ export async function fetchCustomerShipments(
     `/customer/shipments${buildListQuery(params)}`,
     { method: "GET", signal }
   );
+}
+
+export async function fetchCustomerShipmentStats() {
+  return apiFetch<{
+    data: { planning: number; in_progress: number; completed: number; cancelled: number };
+  }>(`/customer/shipments/stats`, { method: "GET" });
 }
 
 export async function fetchCustomerShipment(id: number) {
