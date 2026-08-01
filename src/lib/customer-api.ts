@@ -1,6 +1,11 @@
 import { apiFetch, apiFetchBlob, type BlobDownloadProgress } from "./api-client";
 import { buildListQuery, normalizeListParams, type ListQueryParams } from "./list-query";
 import type { LaravelPaginated } from "./types-api";
+import type {
+  PaymentDetail,
+  PaymentListResponse,
+  PaymentStats,
+} from "./payment-types";
 
 export type { ListQueryParams };
 
@@ -60,10 +65,59 @@ export async function fetchCustomerInvoice(invoiceId: number) {
 
 export async function fetchCustomerPayments(input?: number | ListQueryParams) {
   const params = normalizeListParams(input);
-  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+  return apiFetch<LaravelPaginated<PaymentListResponse["data"][number]>>(
     `/customer/payments${buildListQuery(params)}`,
     { method: "GET" }
   );
+}
+
+export async function fetchCustomerPaymentStats() {
+  return apiFetch<{ data: PaymentStats }>(`/customer/payments/stats`, { method: "GET" });
+}
+
+export async function fetchCustomerPayment(paymentId: number) {
+  return apiFetch<{ data: PaymentDetail }>(`/customer/payments/${paymentId}`, { method: "GET" });
+}
+
+export async function syncCustomerPaymentMidtrans(paymentId: number) {
+  return apiFetch<{ message: string; data: { id: number; status: string; is_success: boolean } }>(
+    `/customer/payments/${paymentId}/sync-midtrans`,
+    { method: "POST", body: JSON.stringify({}) }
+  );
+}
+
+export async function submitCustomerManualPayment(
+  paymentId: number,
+  payload: {
+    payment_date: string;
+    amount: number;
+    bank_name: string;
+    reference_number?: string;
+    remark?: string;
+    proof_file: File;
+  }
+) {
+  const form = new FormData();
+  form.append("payment_date", payload.payment_date);
+  form.append("amount", String(payload.amount));
+  form.append("bank_name", payload.bank_name);
+  if (payload.reference_number) form.append("reference_number", payload.reference_number);
+  if (payload.remark) form.append("remark", payload.remark);
+  form.append("proof_file", payload.proof_file);
+  return apiFetch<{ message: string; data: { attachment_id: number; manual_status: string } }>(
+    `/customer/payments/${paymentId}/manual-submit`,
+    { method: "POST", body: form }
+  );
+}
+
+export async function downloadCustomerPaymentReceipt(paymentId: number, mode: "preview" | "download" = "preview") {
+  const query = mode === "download" ? "?download=1" : "";
+  return apiFetchBlob(`/customer/payments/${paymentId}/receipt${query}`, { method: "GET" });
+}
+
+export async function downloadCustomerPaymentProof(paymentId: number, mode: "preview" | "download" = "preview") {
+  const endpoint = mode === "download" ? "proof-download" : "proof-preview";
+  return apiFetchBlob(`/customer/payments/${paymentId}/${endpoint}`, { method: "GET" });
 }
 
 export async function fetchCustomerBookings(

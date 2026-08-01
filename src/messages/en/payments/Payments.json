@@ -1,0 +1,174 @@
+{
+  "Payments": {
+    "title": "Payments",
+    "subtitle": "All payment transactions for your company.",
+    "stats": {
+      "unpaid": "Invoice has no successful payment yet.",
+      "partially_paid": "Invoice has been partially paid.",
+      "paid": "Invoice fully paid.",
+      "overdue": "Invoice past due date and still has an outstanding balance."
+    },
+    "card": {
+      "unpaid": "Unpaid",
+      "partially_paid": "Partially Paid",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "status": {
+      "unpaid": "Unpaid",
+      "partially_paid": "Partially Paid",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "success": "Success",
+      "failed": "Failed",
+      "expired": "Expired",
+      "refunded": "Refunded"
+    },
+    "paymentMethod": {
+      "midtrans": "Midtrans",
+      "transfer": "Bank Transfer",
+      "giro": "Giro",
+      "cash": "Cash",
+      "virtual_account": "Virtual Account"
+    },
+    "manualStatus": {
+      "unsubmitted": "Not submitted",
+      "submitted": "Submitted",
+      "verified": "Verified",
+      "rejected": "Rejected"
+    },
+    "filter": {
+      "title": "Filters",
+      "clear": "Reset",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search payment no, invoice no, or customer…",
+      "status": "Status",
+      "allStatus": "All statuses",
+      "paymentMethod": "Payment Method",
+      "allMethods": "All methods",
+      "paymentDateFrom": "Payment date from",
+      "paymentDateTo": "Payment date to"
+    },
+    "table": {
+      "title": "Payments",
+      "empty": "No payments yet.",
+      "columns": {
+        "paymentNo": "Payment No",
+        "invoiceNo": "Invoice No",
+        "invoiceAmount": "Invoice Amount",
+        "paidAmount": "Paid Amount",
+        "outstanding": "Outstanding",
+        "paymentMethod": "Payment Method",
+        "status": "Status",
+        "action": "Action"
+      },
+      "detail": "Detail"
+    },
+    "loadError": "Failed to load payments.",
+    "detail": {
+      "header": {
+        "backToList": "Back to payments",
+        "title": "Payment Detail",
+        "paymentNo": "Payment No",
+        "invoiceNo": "Invoice No",
+        "paymentStatus": "Payment Status",
+        "createdDate": "Created Date",
+        "method": "Payment Method",
+        "amount": "Amount",
+        "downloadReceipt": "Download Receipt",
+        "syncMidtrans": "Refresh Payment Status",
+        "payNow": "Pay Now",
+        "uploadProof": "Upload Payment Proof"
+      },
+      "loadError": "Failed to load payment detail.",
+      "notFound": "Payment not found.",
+      "section1": {
+        "title": "Invoice Information",
+        "invoiceNo": "Invoice No",
+        "invoiceDate": "Invoice Date",
+        "dueDate": "Due Date",
+        "currency": "Currency",
+        "invoiceAmount": "Invoice Amount",
+        "paidAmount": "Paid Amount",
+        "outstandingAmount": "Outstanding Amount"
+      },
+      "section2": {
+        "title": "Payment History",
+        "columns": {
+          "paymentDate": "Payment Date",
+          "amount": "Amount",
+          "paymentMethod": "Payment Method",
+          "referenceNo": "Reference No",
+          "status": "Status"
+        },
+        "summary": {
+          "title": "Summary",
+          "totalPaid": "Total Paid",
+          "outstandingAmount": "Outstanding Amount"
+        },
+        "empty": "No payments yet."
+      },
+      "section3": {
+        "title": "Online Payment",
+        "active": "Active",
+        "inactive": "Expired",
+        "paymentGateway": "Payment Gateway",
+        "transactionId": "Transaction ID",
+        "paymentStatus": "Payment Status",
+        "expiredAt": "Expired At",
+        "noLink": "No active payment link for this payment.",
+        "payNow": "Pay Now",
+        "copyLink": "Copy Payment Link",
+        "refreshStatus": "Refresh Payment Status",
+        "copied": "Payment link copied to clipboard."
+      },
+      "section4": {
+        "title": "Manual Payment",
+        "enabled": "Enabled",
+        "disabled": "Disabled for this company.",
+        "bankName": "Bank",
+        "accountNumber": "Account Number",
+        "accountName": "Account Name",
+        "form": {
+          "title": "Upload Payment Proof",
+          "paymentDate": "Payment Date",
+          "amount": "Payment Amount",
+          "bankName": "Bank Name",
+          "referenceNumber": "Reference Number",
+          "remark": "Remark",
+          "proofFile": "Payment Proof (PDF / JPG / JPEG / PNG)",
+          "submit": "Submit Payment Proof",
+          "submitting": "Uploading…",
+          "submitted": "Proof submitted. Waiting for finance verification.",
+          "disabledReason": "Manual payment is not available for this company."
+        }
+      },
+      "section5": {
+        "title": "Supporting Documents",
+        "columns": {
+          "document": "Document",
+          "action": "Action"
+        },
+        "view": "View",
+        "download": "Download",
+        "empty": "No supporting documents."
+      },
+      "section6": {
+        "title": "Activity Timeline",
+        "columns": {
+          "dateTime": "Date & Time",
+          "activity": "Activity"
+        },
+        "empty": "No activity yet."
+      }
+    },
+    "actions": {
+      "payNowSuccess": "Payment link created. Redirecting to Midtrans…",
+      "syncSuccess": "Payment status synchronized from Midtrans.",
+      "syncError": "Failed to sync payment status.",
+      "manualSubmitSuccess": "Payment proof uploaded successfully.",
+      "manualSubmitError": "Failed to upload payment proof."
+    }
+  }
+}

@@ -48,6 +48,14 @@ export type ListQueryParams = {
   dueDateFrom?: string;
   /** Invoices list — due date upper bound (YYYY-MM-DD) */
   dueDateTo?: string;
+  /** Payments list — payment method filter */
+  paymentMethod?: string;
+  /** Payments list — payment date lower bound (YYYY-MM-DD) */
+  paymentDateFrom?: string;
+  /** Payments list — payment date upper bound (YYYY-MM-DD) */
+  paymentDateTo?: string;
+  /** Payments list — invoice id filter */
+  invoiceId?: number;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -99,6 +107,13 @@ export function buildListQuery(params?: ListQueryParams): string {
   if (ddf) q.set("due_date_from", ddf);
   const ddt = params?.dueDateTo?.trim();
   if (ddt) q.set("due_date_to", ddt);
+  const pm = params?.paymentMethod?.trim();
+  if (pm) q.set("payment_method", pm);
+  const pdf = params?.paymentDateFrom?.trim();
+  if (pdf) q.set("payment_date_from", pdf);
+  const pdt = params?.paymentDateTo?.trim();
+  if (pdt) q.set("payment_date_to", pdt);
+  if (params?.invoiceId != null) q.set("invoice_id", String(params.invoiceId));
   const str = q.toString();
   return str ? `?${str}` : "";
 }

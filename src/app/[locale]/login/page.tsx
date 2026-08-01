@@ -46,11 +46,11 @@ export default function LoginPage() {
       if (e instanceof ApiError) {
         const body = e.body as { message?: string; errors?: Record<string, string[]> } | undefined;
         setFormError(
-          body?.message ?? (typeof e.message === "string" ? e.message : "Login gagal.")
+          body?.message ?? (typeof e.message === "string" ? e.message : t("loginFailed"))
         );
         return;
       }
-      setFormError("Tidak dapat terhubung ke server. Periksa NEXT_PUBLIC_API_URL dan server Laravel.");
+      setFormError(t("serverUnreachable"));
     }
   };
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center space-y-3 text-center">
           <BrandLogo size="lg" />
           <p className="text-sm font-medium text-zinc-500">
-            Logistik Multimoda, Transparan & Berkelanjutan
+            {t("brandTagline")}
           </p>
         </div>
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="h-10 w-full rounded-lg bg-black text-sm font-bold text-white hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md shadow-black/10 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Loading..." : t("login")}
+              {isSubmitting ? t("submitting") : t("login")}
             </Button>
           </div>
 
@@ -154,7 +154,7 @@ export default function LoginPage() {
       <div className="mt-12 flex flex-col items-center space-y-3 text-center">
         <BrandLogo size="sm" />
         <p className="text-xs font-medium text-zinc-400">
-          ©2026 PT IDNVerse Karya Nusantara
+          {t("brandCopyright")}
         </p>
       </div>
     </div>

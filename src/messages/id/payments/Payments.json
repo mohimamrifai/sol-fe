@@ -1,0 +1,174 @@
+{
+  "Payments": {
+    "title": "Pembayaran",
+    "subtitle": "Semua transaksi pembayaran untuk perusahaan Anda.",
+    "stats": {
+      "unpaid": "Invoice belum memiliki pembayaran yang berhasil.",
+      "partially_paid": "Invoice telah dibayar sebagian.",
+      "paid": "Invoice lunas.",
+      "overdue": "Invoice sudah lewat jatuh tempo dan masih memiliki sisa tagihan."
+    },
+    "card": {
+      "unpaid": "Belum Dibayar",
+      "partially_paid": "Dibayar Sebagian",
+      "paid": "Lunas",
+      "overdue": "Lewat Jatuh Tempo"
+    },
+    "status": {
+      "unpaid": "Belum Dibayar",
+      "partially_paid": "Dibayar Sebagian",
+      "paid": "Lunas",
+      "overdue": "Lewat Jatuh Tempo",
+      "pending": "Menunggu Pembayaran",
+      "success": "Berhasil",
+      "failed": "Gagal",
+      "expired": "Kedaluwarsa",
+      "refunded": "Dikembalikan"
+    },
+    "paymentMethod": {
+      "midtrans": "Midtrans",
+      "transfer": "Transfer Bank",
+      "giro": "Giro",
+      "cash": "Tunai",
+      "virtual_account": "Virtual Account"
+    },
+    "manualStatus": {
+      "unsubmitted": "Belum Diunggah",
+      "submitted": "Menunggu Verifikasi",
+      "verified": "Terverifikasi",
+      "rejected": "Ditolak"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Pencarian",
+      "searchPlaceholder": "Cari no pembayaran, no invoice, atau customer…",
+      "status": "Status",
+      "allStatus": "Semua status",
+      "paymentMethod": "Metode Pembayaran",
+      "allMethods": "Semua metode",
+      "paymentDateFrom": "Tanggal bayar dari",
+      "paymentDateTo": "Tanggal bayar sampai"
+    },
+    "table": {
+      "title": "Daftar Pembayaran",
+      "empty": "Belum ada data pembayaran.",
+      "columns": {
+        "paymentNo": "No Pembayaran",
+        "invoiceNo": "No Invoice",
+        "invoiceAmount": "Total Invoice",
+        "paidAmount": "Sudah Dibayar",
+        "outstanding": "Sisa Tagihan",
+        "paymentMethod": "Metode Pembayaran",
+        "status": "Status",
+        "action": "Aksi"
+      },
+      "detail": "Detail"
+    },
+    "loadError": "Gagal memuat data pembayaran.",
+    "detail": {
+      "header": {
+        "backToList": "Kembali ke daftar pembayaran",
+        "title": "Detail Pembayaran",
+        "paymentNo": "No Pembayaran",
+        "invoiceNo": "No Invoice",
+        "paymentStatus": "Status Pembayaran",
+        "createdDate": "Tanggal Dibuat",
+        "method": "Metode Pembayaran",
+        "amount": "Nominal",
+        "downloadReceipt": "Unduh Receipt",
+        "syncMidtrans": "Refresh Status Pembayaran",
+        "payNow": "Bayar Sekarang",
+        "uploadProof": "Unggah Bukti"
+      },
+      "loadError": "Gagal memuat detail pembayaran.",
+      "notFound": "Pembayaran tidak ditemukan.",
+      "section1": {
+        "title": "Informasi Invoice",
+        "invoiceNo": "No Invoice",
+        "invoiceDate": "Tanggal Invoice",
+        "dueDate": "Jatuh Tempo",
+        "currency": "Mata Uang",
+        "invoiceAmount": "Total Invoice",
+        "paidAmount": "Sudah Dibayar",
+        "outstandingAmount": "Sisa Tagihan"
+      },
+      "section2": {
+        "title": "Riwayat Pembayaran",
+        "columns": {
+          "paymentDate": "Tanggal Bayar",
+          "amount": "Nominal",
+          "paymentMethod": "Metode Pembayaran",
+          "referenceNo": "No Referensi",
+          "status": "Status"
+        },
+        "summary": {
+          "title": "Ringkasan",
+          "totalPaid": "Total Dibayar",
+          "outstandingAmount": "Sisa Tagihan"
+        },
+        "empty": "Belum ada pembayaran."
+      },
+      "section3": {
+        "title": "Pembayaran Online",
+        "active": "Aktif",
+        "inactive": "Kedaluwarsa",
+        "paymentGateway": "Payment Gateway",
+        "transactionId": "Transaction ID",
+        "paymentStatus": "Status Pembayaran",
+        "expiredAt": "Kedaluwarsa Pada",
+        "noLink": "Tidak ada payment link aktif untuk pembayaran ini.",
+        "payNow": "Bayar Sekarang",
+        "copyLink": "Salin Payment Link",
+        "refreshStatus": "Refresh Status Pembayaran",
+        "copied": "Payment link disalin ke clipboard."
+      },
+      "section4": {
+        "title": "Pembayaran Manual",
+        "enabled": "Aktif",
+        "disabled": "Tidak diaktifkan untuk perusahaan ini.",
+        "bankName": "Bank",
+        "accountNumber": "Nomor Rekening",
+        "accountName": "Atas Nama",
+        "form": {
+          "title": "Unggah Bukti Pembayaran",
+          "paymentDate": "Tanggal Pembayaran",
+          "amount": "Nominal Pembayaran",
+          "bankName": "Nama Bank",
+          "referenceNumber": "No Referensi",
+          "remark": "Catatan",
+          "proofFile": "Bukti Pembayaran (PDF / JPG / JPEG / PNG)",
+          "submit": "Kirim Bukti Pembayaran",
+          "submitting": "Mengunggah…",
+          "submitted": "Bukti terkirim. Menunggu verifikasi tim finance.",
+          "disabledReason": "Pembayaran manual tidak tersedia untuk perusahaan ini."
+        }
+      },
+      "section5": {
+        "title": "Dokumen Pendukung",
+        "columns": {
+          "document": "Dokumen",
+          "action": "Aksi"
+        },
+        "view": "Lihat",
+        "download": "Unduh",
+        "empty": "Belum ada dokumen pendukung."
+      },
+      "section6": {
+        "title": "Activity Timeline",
+        "columns": {
+          "dateTime": "Tanggal & Waktu",
+          "activity": "Aktivitas"
+        },
+        "empty": "Belum ada aktivitas."
+      }
+    },
+    "actions": {
+      "payNowSuccess": "Payment link dibuat. Mengarahkan ke Midtrans…",
+      "syncSuccess": "Status pembayaran berhasil disinkronkan dari Midtrans.",
+      "syncError": "Gagal menyinkronkan status pembayaran.",
+      "manualSubmitSuccess": "Bukti pembayaran berhasil diunggah.",
+      "manualSubmitError": "Gagal mengunggah bukti pembayaran."
+    }
+  }
+}

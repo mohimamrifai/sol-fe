@@ -14,6 +14,11 @@
     "emailRequired": "Email wajib diisi",
     "emailInvalid": "Alamat email tidak valid",
     "passwordRequired": "Password wajib diisi",
-    "passwordMin": "Password minimal 8 karakter"
+    "passwordMin": "Password minimal 8 karakter",
+    "loginFailed": "Login gagal.",
+    "serverUnreachable": "Tidak dapat terhubung ke server. Periksa NEXT_PUBLIC_API_URL dan pastikan server Laravel berjalan.",
+    "submitting": "Memuat...",
+    "brandTagline": "Logistik Multimoda, Transparan & Berkelanjutan",
+    "brandCopyright": "©2026 PT IDNVerse Karya Nusantara"
   }
 }

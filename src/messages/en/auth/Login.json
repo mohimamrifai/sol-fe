@@ -14,6 +14,11 @@
     "emailRequired": "Email is required",
     "emailInvalid": "Invalid email address",
     "passwordRequired": "Password is required",
-    "passwordMin": "Password must be at least 8 characters"
+    "passwordMin": "Password must be at least 8 characters",
+    "loginFailed": "Login failed.",
+    "serverUnreachable": "Cannot reach the server. Please check NEXT_PUBLIC_API_URL and ensure the Laravel server is running.",
+    "submitting": "Loading...",
+    "brandTagline": "Multimodal Logistics, Transparent & Sustainable",
+    "brandCopyright": "©2026 PT IDNVerse Karya Nusantara"
   }
 }

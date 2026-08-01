@@ -7,8 +7,11 @@ const LABELS: Record<string, string> = {
   deny: "Ditolak",
   cancel: "Dibatalkan",
   expire: "Kedaluwarsa",
+  expired: "Kedaluwarsa",
   failure: "Gagal",
-  refund: "Refund",
+  failed: "Gagal",
+  unpaid: "Belum Dibayar",
+  refunded: "Refund",
   partial_refund: "Refund sebagian",
   chargeback: "Chargeback",
 };
@@ -36,9 +39,14 @@ export function paymentStatusBadgeClass(status: string): string {
     case "cancel":
       return "border-orange-200/90 bg-orange-50 text-orange-950 dark:border-orange-800/60 dark:bg-orange-950/45 dark:text-orange-200";
     case "expire":
+    case "expired":
       return "border-stone-200/90 bg-stone-100 text-stone-800 dark:border-stone-600 dark:bg-stone-800/55 dark:text-stone-200";
     case "failure":
+    case "failed":
       return "border-red-200/90 bg-red-50 text-red-800 dark:border-red-800/60 dark:bg-red-950/45 dark:text-red-300";
+    case "unpaid":
+      return "border-slate-200/90 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200";
+    case "refunded":
     case "refund":
       return "border-teal-200/90 bg-teal-50 text-teal-900 dark:border-teal-800/60 dark:bg-teal-950/45 dark:text-teal-200";
     case "partial_refund":
