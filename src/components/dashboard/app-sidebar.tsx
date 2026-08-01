@@ -15,6 +15,7 @@ import {
   Tags,
   ShieldCheck,
   Settings,
+  FolderArchive,
 } from "lucide-react";
 
 import {
@@ -61,6 +62,7 @@ const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
   internalUsers: Users,
   myBookings: FileText,
   myShipments: Package,
+  documents: FolderArchive,
   shipmentTracking: Activity,
   invoices: FileText,
   payments: CreditCard,

@@ -111,7 +111,7 @@ export default function PublicTrackingPage() {
       setCnNumber(formattedWb);
       void search(formattedWb);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const fmtDate = (d?: string | null) => {

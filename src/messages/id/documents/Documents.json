@@ -1,0 +1,97 @@
+{
+  "Documents": {
+    "title": "Dokumen Saya",
+    "subtitle": "Seluruh dokumen terkait booking, shipment, dan billing Anda.",
+    "stats": {
+      "total": "Seluruh dokumen yang dapat Anda akses dari akun ini.",
+      "booking": "File yang diunggah saat membuat booking.",
+      "shipment": "Dokumen yang dihasilkan selama proses shipment.",
+      "billing": "Invoice, tax invoice, dan payment receipt."
+    },
+    "card": {
+      "total": "Total Dokumen",
+      "booking": "Dokumen Booking",
+      "shipment": "Dokumen Shipment",
+      "billing": "Dokumen Billing"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Pencarian",
+      "searchPlaceholder": "Cari nama dokumen, shipment no, booking no, atau CN no…",
+      "type": "Tipe Dokumen",
+      "allTypes": "Semua tipe",
+      "shipment": "Shipment",
+      "allShipments": "Semua shipment",
+      "shipmentPlaceholder": "Pilih shipment",
+      "dateFrom": "Dari tanggal",
+      "dateTo": "Sampai tanggal"
+    },
+    "bucket": {
+      "booking": "Booking",
+      "shipment": "Shipment",
+      "billing": "Billing"
+    },
+    "type": {
+      "booking_attachment": "Booking Attachment",
+      "consignment_note": "Consignment Note (CN)",
+      "delivery_order": "Delivery Order",
+      "proof_of_delivery": "Proof of Delivery (POD)",
+      "invoice": "Invoice",
+      "tax_invoice": "Tax Invoice",
+      "payment_receipt": "Payment Receipt",
+      "other_supporting": "Dokumen Pendukung Lainnya"
+    },
+    "table": {
+      "title": "Daftar Dokumen",
+      "empty": "Belum ada dokumen.",
+      "columns": {
+        "name": "Nama Dokumen",
+        "type": "Tipe Dokumen",
+        "shipmentNo": "No Shipment",
+        "bookingNo": "No Booking",
+        "uploadDate": "Tanggal Upload",
+        "uploadedBy": "Diupload Oleh",
+        "action": "Aksi"
+      },
+      "view": "Lihat",
+      "download": "Unduh"
+    },
+    "loadError": "Gagal memuat dokumen.",
+    "detail": {
+      "header": {
+        "title": "Detail Dokumen",
+        "backToList": "Kembali ke daftar dokumen",
+        "download": "Unduh"
+      },
+      "loadError": "Gagal memuat detail dokumen.",
+      "notFound": "Dokumen tidak ditemukan.",
+      "section1": {
+        "title": "Informasi Dokumen",
+        "documentName": "Nama Dokumen",
+        "documentType": "Tipe Dokumen",
+        "bookingNo": "No Booking",
+        "shipmentNo": "No Shipment",
+        "customer": "Customer",
+        "uploadedBy": "Diupload Oleh",
+        "uploadDate": "Tanggal Upload",
+        "remark": "Catatan"
+      },
+      "section2": {
+        "title": "Preview",
+        "unsupported": "Preview tidak tersedia untuk format ini. Silakan unduh untuk melihat file.",
+        "loading": "Memuat preview…",
+        "failed": "Gagal memuat preview."
+      },
+      "section3": {
+        "title": "Shipment Terkait",
+        "shipmentNo": "No Shipment",
+        "bookingNo": "No Booking",
+        "route": "Rute",
+        "serviceType": "Service Type",
+        "shipmentStatus": "Status Shipment",
+        "noShipment": "Tidak ada shipment terkait."
+      }
+    }
+  }
+}

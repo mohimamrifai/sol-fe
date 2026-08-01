@@ -1,0 +1,97 @@
+{
+  "Documents": {
+    "title": "My Documents",
+    "subtitle": "All documents related to your bookings, shipments, and billing.",
+    "stats": {
+      "total": "All documents you can access from this account.",
+      "booking": "Files uploaded during booking creation.",
+      "shipment": "Documents generated throughout the shipment process.",
+      "billing": "Invoices, tax invoices, and payment receipts."
+    },
+    "card": {
+      "total": "Total Documents",
+      "booking": "Booking Documents",
+      "shipment": "Shipment Documents",
+      "billing": "Billing Documents"
+    },
+    "filter": {
+      "title": "Filter",
+      "clear": "Reset",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search document name, shipment no, booking no, or CN no…",
+      "type": "Document Type",
+      "allTypes": "All types",
+      "shipment": "Shipment",
+      "allShipments": "All shipments",
+      "shipmentPlaceholder": "Select shipment",
+      "dateFrom": "From date",
+      "dateTo": "To date"
+    },
+    "bucket": {
+      "booking": "Booking",
+      "shipment": "Shipment",
+      "billing": "Billing"
+    },
+    "type": {
+      "booking_attachment": "Booking Attachment",
+      "consignment_note": "Consignment Note (CN)",
+      "delivery_order": "Delivery Order",
+      "proof_of_delivery": "Proof of Delivery (POD)",
+      "invoice": "Invoice",
+      "tax_invoice": "Tax Invoice",
+      "payment_receipt": "Payment Receipt",
+      "other_supporting": "Other Supporting Document"
+    },
+    "table": {
+      "title": "Document List",
+      "empty": "No documents available yet.",
+      "columns": {
+        "name": "Document Name",
+        "type": "Document Type",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "uploadDate": "Upload Date",
+        "uploadedBy": "Uploaded By",
+        "action": "Action"
+      },
+      "view": "View",
+      "download": "Download"
+    },
+    "loadError": "Failed to load documents.",
+    "detail": {
+      "header": {
+        "title": "Document Detail",
+        "backToList": "Back to document list",
+        "download": "Download"
+      },
+      "loadError": "Failed to load document detail.",
+      "notFound": "Document not found.",
+      "section1": {
+        "title": "Document Information",
+        "documentName": "Document Name",
+        "documentType": "Document Type",
+        "bookingNo": "Booking No",
+        "shipmentNo": "Shipment No",
+        "customer": "Customer",
+        "uploadedBy": "Uploaded By",
+        "uploadDate": "Upload Date",
+        "remark": "Remark"
+      },
+      "section2": {
+        "title": "Preview",
+        "unsupported": "Preview is not available for this format. Please download to view the file.",
+        "loading": "Loading preview…",
+        "failed": "Failed to load preview."
+      },
+      "section3": {
+        "title": "Related Shipment",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "route": "Route",
+        "serviceType": "Service Type",
+        "shipmentStatus": "Shipment Status",
+        "noShipment": "No related shipment."
+      }
+    }
+  }
+}

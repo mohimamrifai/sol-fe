@@ -215,3 +215,44 @@ export async function downloadCustomerInvoicePdf(
     onProgress: opts?.onProgress,
   });
 }
+
+export async function fetchCustomerDocumentStats() {
+  return apiFetch<{ data: { total: number; booking: number; shipment: number; billing: number } }>(
+    `/customer/documents/stats`,
+    { method: "GET" }
+  );
+}
+
+export async function fetchCustomerDocuments(
+  input?: number | (ListQueryParams & {
+    type?: string;
+    shipment_id?: number;
+    date_from?: string;
+    date_to?: string;
+  })
+) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/customer/documents${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+export async function fetchCustomerDocument(id: string) {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/documents/${encodeURIComponent(id)}`, {
+    method: "GET",
+  });
+}
+
+export async function fetchCustomerDocumentBlob(id: string, mode: "preview" | "download" = "preview") {
+  return apiFetchBlob(`/customer/documents/${encodeURIComponent(id)}/${mode}`, {
+    method: "GET",
+  });
+}
+
+export async function fetchCustomerDocumentShipmentOptions() {
+  return apiFetch<{ data: Array<{ id: number; label: string }> }>(
+    `/customer/documents/shipment-options`,
+    { method: "GET" }
+  );
+}

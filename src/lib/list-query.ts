@@ -32,6 +32,14 @@ export type ListQueryParams = {
   shipmentDateFrom?: string;
   /** Shipments list — shipment date upper bound (YYYY-MM-DD) */
   shipmentDateTo?: string;
+  /** Documents list — bucket filter (booking|shipment|billing) */
+  documentBucket?: string;
+  /** Documents list — shipment id filter */
+  shipmentId?: number;
+  /** Documents list — upload date lower bound (YYYY-MM-DD) */
+  uploadDateFrom?: string;
+  /** Documents list — upload date upper bound (YYYY-MM-DD) */
+  uploadDateTo?: string;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -68,6 +76,13 @@ export function buildListQuery(params?: ListQueryParams): string {
   if (sdf) q.set("shipment_date_from", sdf);
   const sdt = params?.shipmentDateTo?.trim();
   if (sdt) q.set("shipment_date_to", sdt);
+  const db = params?.documentBucket?.trim();
+  if (db) q.set("type", db);
+  if (params?.shipmentId != null) q.set("shipment_id", String(params.shipmentId));
+  const udf = params?.uploadDateFrom?.trim();
+  if (udf) q.set("date_from", udf);
+  const udt = params?.uploadDateTo?.trim();
+  if (udt) q.set("date_to", udt);
   const str = q.toString();
   return str ? `?${str}` : "";
 }

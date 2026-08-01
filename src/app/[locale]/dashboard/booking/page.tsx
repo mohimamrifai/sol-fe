@@ -80,7 +80,7 @@ export default function CustomerBookingsListPage() {
   useEffect(() => {
     if (debouncedSearch === searchTerm) return;
     updateUrl({ search: debouncedSearch, page: "1" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [debouncedSearch]);
 
   function updateUrl(patch: Record<string, string | null>) {

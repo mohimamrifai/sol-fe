@@ -87,6 +87,12 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
     roles: ["company_admin", "ops_pic"] as const,
   },
   {
+    menuKey: "documents",
+    url: "/dashboard/documents",
+    requiredPermission: "view_documents",
+    roles: ["company_admin", "ops_pic", "finance_pic"] as const,
+  },
+  {
     menuKey: "shipmentTracking",
     url: "/dashboard/tracking",
     requiredPermission: null,

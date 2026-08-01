@@ -59,7 +59,7 @@ export function ShipmentFilters({ value, onChange, originOptions, destinationOpt
       lastAppliedSearch.current = debouncedSearch;
       onChange({ ...value, search: debouncedSearch });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [debouncedSearch]);
 
   const update = <K extends keyof ShipmentFiltersValue>(
