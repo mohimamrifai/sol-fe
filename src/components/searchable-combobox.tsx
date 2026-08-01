@@ -70,6 +70,33 @@ export function SearchableCombobox({
     if (!open) setDraft("");
   }, [open]);
 
+  // Some popover libraries (Base UI) auto-focus the first tabbable
+  // element in the popup, which triggers the browser to scroll the
+  // page so the focused element stays in view. Because the popover
+  // is portaled near the bottom of the body, this looks like the
+  // page is jumping down. While the popover is open we force the
+  // scroll behavior to `auto` and restore the scroll position on
+  // every animation frame to keep the viewport stable.
+  React.useEffect(() => {
+    if (!open) return;
+    const html = document.documentElement;
+    const previous = html.style.scrollBehavior;
+    html.style.scrollBehavior = "auto";
+    const startY = window.scrollY;
+    let raf = 0;
+    const tick = () => {
+      if (window.scrollY !== startY) {
+        window.scrollTo({ top: startY, behavior: "auto" });
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      html.style.scrollBehavior = previous;
+    };
+  }, [open]);
+
   const commit = (next: string) => {
     if (!next.trim()) return;
     if (allowFreeInput) {

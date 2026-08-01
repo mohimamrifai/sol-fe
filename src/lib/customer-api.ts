@@ -48,6 +48,16 @@ export async function fetchCustomerInvoices(input?: number | ListQueryParams) {
   );
 }
 
+export async function fetchCustomerInvoiceStats() {
+  return apiFetch<{
+    data: { draft: number; issued: number; partially_paid: number; paid: number; overdue: number };
+  }>(`/customer/invoices/stats`, { method: "GET" });
+}
+
+export async function fetchCustomerInvoice(invoiceId: number) {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/invoices/${invoiceId}`, { method: "GET" });
+}
+
 export async function fetchCustomerPayments(input?: number | ListQueryParams) {
   const params = normalizeListParams(input);
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(

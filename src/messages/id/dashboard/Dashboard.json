@@ -5,7 +5,6 @@
       "myBookings": "Booking Saya",
       "myShipments": "Pengiriman Saya",
       "documents": "Dokumen",
-      "shipmentTracking": "Lacak Pengiriman",
       "invoices": "Tagihan",
       "payments": "Pembayaran",
       "companySettings": "Pengaturan Perusahaan",
@@ -130,10 +129,13 @@
         "cancelled": "Dibatalkan"
       },
       "invoice": {
-        "unpaid": "Belum bayar",
+        "draft": "Draft",
+        "issued": "Diterbitkan",
+        "partially_paid": "Dibayar sebagian",
         "paid": "Lunas",
         "overdue": "Jatuh tempo",
-        "cancelled": "Dibatalkan"
+        "cancelled": "Dibatalkan",
+        "unpaid": "Belum bayar"
       },
       "payment": {
         "success": "Berhasil",

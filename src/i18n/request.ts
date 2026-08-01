@@ -14,6 +14,7 @@ const NAMESPACE_PATHS: Record<string, string> = {
   Bookings: "bookings",
   Shipments: "shipments",
   Documents: "documents",
+  Invoices: "invoices",
   Dashboard: "dashboard",
   Hero: "landing",
   Landing: "landing",

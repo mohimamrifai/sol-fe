@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { AlertCircle, FileText, RefreshCcw } from "lucide-react";
 import { DocumentStatsCards } from "@/components/documents/document-stats-cards";
 import {
@@ -31,6 +32,8 @@ const INITIAL_STATE: PageState = {
 export default function CustomerDocumentsListPage() {
   const t = useTranslations("Documents");
   const [state, setState] = React.useState<PageState>(INITIAL_STATE);
+  const searchParams = useSearchParams();
+  const didInitFromQuery = React.useRef(false);
 
   const setFilters = React.useCallback((filters: DocumentFiltersValue) => {
     setState((prev) =>
@@ -49,6 +52,42 @@ export default function CustomerDocumentsListPage() {
       window.scrollTo({ top: 0 });
     }
   }, [state.page]);
+
+  React.useEffect(() => {
+    if (didInitFromQuery.current) return;
+    const shipmentIdRaw = searchParams.get("shipment_id");
+    const typeRaw = searchParams.get("type");
+    const searchRaw = searchParams.get("search");
+    const dateFromRaw = searchParams.get("date_from");
+    const dateToRaw = searchParams.get("date_to");
+
+    const shipmentId = shipmentIdRaw ? Number(shipmentIdRaw) : null;
+    const nextType =
+      typeRaw === "booking" || typeRaw === "shipment" || typeRaw === "billing" ? typeRaw : "";
+
+    const nextFilters: DocumentFiltersValue = {
+      ...DOCUMENT_FILTER_DEFAULTS,
+      search: searchRaw ?? "",
+      type: nextType,
+      shipmentId: shipmentId && Number.isFinite(shipmentId) ? shipmentId : null,
+      dateFrom: dateFromRaw ?? "",
+      dateTo: dateToRaw ?? "",
+    };
+
+    const hasAny =
+      nextFilters.search !== "" ||
+      nextFilters.type !== "" ||
+      nextFilters.shipmentId != null ||
+      nextFilters.dateFrom !== "" ||
+      nextFilters.dateTo !== "";
+
+    if (hasAny) {
+      didInitFromQuery.current = true;
+      setState({ filters: nextFilters, page: 1 });
+    } else {
+      didInitFromQuery.current = true;
+    }
+  }, [searchParams]);
 
   const stats = useCustomerDocumentStats();
   const list = useCustomerDocumentsList(state.filters, state.page, PER_PAGE);

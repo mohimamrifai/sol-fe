@@ -40,6 +40,14 @@ export type ListQueryParams = {
   uploadDateFrom?: string;
   /** Documents list — upload date upper bound (YYYY-MM-DD) */
   uploadDateTo?: string;
+  /** Invoices list — invoice date lower bound (YYYY-MM-DD) */
+  invoiceDateFrom?: string;
+  /** Invoices list — invoice date upper bound (YYYY-MM-DD) */
+  invoiceDateTo?: string;
+  /** Invoices list — due date lower bound (YYYY-MM-DD) */
+  dueDateFrom?: string;
+  /** Invoices list — due date upper bound (YYYY-MM-DD) */
+  dueDateTo?: string;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -83,6 +91,14 @@ export function buildListQuery(params?: ListQueryParams): string {
   if (udf) q.set("date_from", udf);
   const udt = params?.uploadDateTo?.trim();
   if (udt) q.set("date_to", udt);
+  const idf = params?.invoiceDateFrom?.trim();
+  if (idf) q.set("invoice_date_from", idf);
+  const idt = params?.invoiceDateTo?.trim();
+  if (idt) q.set("invoice_date_to", idt);
+  const ddf = params?.dueDateFrom?.trim();
+  if (ddf) q.set("due_date_from", ddf);
+  const ddt = params?.dueDateTo?.trim();
+  if (ddt) q.set("due_date_to", ddt);
   const str = q.toString();
   return str ? `?${str}` : "";
 }

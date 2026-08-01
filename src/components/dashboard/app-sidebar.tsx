@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   LayoutDashboard,
   Package,
-  Activity,
   FileText,
   CreditCard,
   Building,
@@ -63,7 +62,6 @@ const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
   myBookings: FileText,
   myShipments: Package,
   documents: FolderArchive,
-  shipmentTracking: Activity,
   invoices: FileText,
   payments: CreditCard,
   companySettings: Building,

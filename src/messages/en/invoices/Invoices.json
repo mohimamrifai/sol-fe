@@ -1,0 +1,138 @@
+{
+  "Invoices": {
+    "title": "Invoices",
+    "subtitle": "All invoices for your company, per shipment.",
+    "stats": {
+      "draft": "Invoice has not been issued yet.",
+      "issued": "Invoice has been issued and is awaiting payment.",
+      "partially_paid": "Invoice has been partially paid.",
+      "paid": "Invoice has been fully paid.",
+      "overdue": "Invoice is past due date and still has an outstanding balance."
+    },
+    "card": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "partially_paid": "Partially Paid",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "status": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "partially_paid": "Partially Paid",
+      "unpaid": "Unpaid",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "filter": {
+      "title": "Filters",
+      "clear": "Reset",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search invoice no, shipment no, or CN no…",
+      "status": "Status",
+      "allStatus": "All statuses",
+      "invoiceDateFrom": "Invoice date from",
+      "invoiceDateTo": "Invoice date to",
+      "dueDateFrom": "Due date from",
+      "dueDateTo": "Due date to"
+    },
+    "table": {
+      "title": "Invoices",
+      "empty": "No invoices yet.",
+      "columns": {
+        "invoiceNo": "Invoice No",
+        "shipmentNo": "Shipment No",
+        "invoiceDate": "Invoice Date",
+        "dueDate": "Due Date",
+        "totalAmount": "Total Amount",
+        "outstanding": "Outstanding",
+        "status": "Status",
+        "action": "Action"
+      },
+      "detail": "Detail"
+    },
+    "loadError": "Failed to load invoices.",
+    "detail": {
+      "header": {
+        "backToList": "Back to invoices",
+        "title": "Invoice Detail",
+        "downloadPdf": "Download PDF",
+        "payNow": "Pay Now"
+      },
+      "loadError": "Failed to load invoice detail.",
+      "notFound": "Invoice not found.",
+      "section1": {
+        "title": "Invoice Information",
+        "invoiceNumber": "Invoice Number",
+        "customer": "Customer",
+        "invoiceDate": "Invoice Date",
+        "dueDate": "Due Date",
+        "currency": "Currency",
+        "paymentTerms": "Payment Terms",
+        "remark": "Invoice Remark"
+      },
+      "section2": {
+        "title": "Shipment Information",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "cnNo": "CN No",
+        "route": "Route",
+        "serviceType": "Service Type",
+        "shipmentCoverage": "Shipment Coverage"
+      },
+      "section3": {
+        "title": "Invoice Detail",
+        "columns": {
+          "description": "Description",
+          "qty": "Qty",
+          "unitPrice": "Unit Price",
+          "amount": "Amount"
+        },
+        "summary": {
+          "title": "Summary",
+          "subtotal": "Subtotal",
+          "discount": "Discount",
+          "additionalCharge": "Additional Charge",
+          "ppn": "VAT",
+          "grandTotal": "Grand Total"
+        }
+      },
+      "section4": {
+        "title": "Supporting Documents",
+        "columns": {
+          "document": "Document",
+          "action": "Action"
+        },
+        "view": "View",
+        "download": "Download"
+      },
+      "section5": {
+        "title": "Payment Summary",
+        "invoiceAmount": "Invoice Amount",
+        "paidAmount": "Paid Amount",
+        "outstandingAmount": "Outstanding Amount",
+        "paymentStatus": "Payment Status"
+      },
+      "section6": {
+        "title": "Payment History",
+        "columns": {
+          "paymentDate": "Payment Date",
+          "amount": "Amount",
+          "paymentMethod": "Payment Method",
+          "referenceNo": "Reference No",
+          "status": "Status"
+        },
+        "empty": "No payments yet."
+      },
+      "section7": {
+        "title": "Activity Timeline",
+        "columns": {
+          "dateTime": "Date & Time",
+          "activity": "Activity"
+        },
+        "empty": "No activity yet."
+      }
+    }
+  }
+}
