@@ -33,6 +33,10 @@ const NAMESPACE_PATHS: Record<string, string> = {
   Estimate: "estimate",
   Tracking: "tracking",
   PlaceholderPages: "placeholder",
+  Company: "company",
+  Locations: "locations",
+  Users: "users",
+  Profile: "settings",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

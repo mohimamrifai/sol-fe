@@ -320,3 +320,208 @@ export async function fetchCustomerDocumentShipmentOptions() {
     { method: "GET" }
   );
 }
+
+// ── Company Profile ────────────────────────────────────────────
+
+export async function fetchCustomerCompany() {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/company`, { method: "GET" });
+}
+
+export async function updateCustomerCompany(payload: Record<string, unknown>) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/company`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchCustomerCompanyCommercial() {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/company/commercial`, { method: "GET" });
+}
+
+export async function fetchCustomerCompanyActivities(input?: number | ListQueryParams) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/customer/company/activities${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+// ── Company Documents ──────────────────────────────────────────
+
+export async function fetchCustomerCompanyDocuments() {
+  return apiFetch<{ data: Array<Record<string, unknown>> }>(`/customer/company/documents`, {
+    method: "GET",
+  });
+}
+
+export async function uploadCustomerCompanyDocument(payload: {
+  type: string;
+  label?: string;
+  file: File;
+}) {
+  const form = new FormData();
+  form.append("type", payload.type);
+  if (payload.label) form.append("label", payload.label);
+  form.append("file", payload.file);
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/company/documents`, {
+    method: "POST",
+    body: form,
+  });
+}
+
+export async function deleteCustomerCompanyDocument(documentId: number) {
+  return apiFetch(`/customer/company/documents/${documentId}`, { method: "DELETE" });
+}
+
+export async function downloadCustomerCompanyDocument(documentId: number) {
+  return apiFetchBlob(`/customer/company/documents/${documentId}/download`, { method: "GET" });
+}
+
+export async function previewCustomerCompanyDocument(documentId: number) {
+  return apiFetchBlob(`/customer/company/documents/${documentId}`, { method: "GET" });
+}
+
+// ── Locations ──────────────────────────────────────────────────
+
+export async function fetchCustomerLocationStats() {
+  return apiFetch<{
+    data: { total: number; head_office: number; branch_office: number; warehouse: number; active: number };
+  }>(`/customer/locations/stats`, { method: "GET" });
+}
+
+export async function fetchCustomerLocations(input?: number | ListQueryParams) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/customer/locations${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+export async function fetchCustomerLocation(id: number) {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/locations/${id}`, { method: "GET" });
+}
+
+export async function createCustomerLocation(payload: Record<string, unknown>) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/locations`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCustomerLocation(id: number, payload: Record<string, unknown>) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/locations/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function changeCustomerLocationStatus(id: number, status: "active" | "inactive") {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(
+    `/customer/locations/${id}/status`,
+    { method: "PATCH", body: JSON.stringify({ status }) }
+  );
+}
+
+export async function fetchCustomerLocationActivities(id: number) {
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(`/customer/locations/${id}/activities`, {
+    method: "GET",
+  });
+}
+
+// ── Users ──────────────────────────────────────────────────────
+
+export async function fetchCustomerUserStats() {
+  return apiFetch<{
+    data: { total: number; active: number; inactive: number; company_admin: number };
+  }>(`/customer/users/stats`, { method: "GET" });
+}
+
+export async function fetchCustomerUsers(input?: number | ListQueryParams) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/customer/users${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+export async function fetchCustomerUser(id: number) {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/users/${id}`, { method: "GET" });
+}
+
+export async function createCustomerUser(payload: Record<string, unknown>) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/users`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCustomerUser(id: number, payload: Record<string, unknown>) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/users/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function changeCustomerUserStatus(id: number, status: "active" | "inactive") {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(
+    `/customer/users/${id}/status`,
+    { method: "PATCH", body: JSON.stringify({ status }) }
+  );
+}
+
+export async function changeCustomerUserRole(id: number, role: string) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/users/${id}/role`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function resetCustomerUserPassword(id: number, password: string) {
+  return apiFetch(`/customer/users/${id}/reset-password`, {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
+}
+
+export async function fetchCustomerUserActivities(id: number) {
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(`/customer/users/${id}/activities`, {
+    method: "GET",
+  });
+}
+
+// ── My Profile ─────────────────────────────────────────────────
+
+export async function fetchCustomerMyProfile() {
+  return apiFetch<{ data: Record<string, unknown> }>(`/customer/my-profile`, { method: "GET" });
+}
+
+export async function updateCustomerMyProfile(payload: { name?: string; phone?: string }) {
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(`/customer/my-profile`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function uploadCustomerProfilePhoto(file: File) {
+  const form = new FormData();
+  form.append("photo", file);
+  return apiFetch<{ message: string; data: { profile_photo_url: string } }>(
+    `/customer/my-profile/photo`,
+    { method: "POST", body: form }
+  );
+}
+
+export async function deleteCustomerProfilePhoto() {
+  return apiFetch(`/customer/my-profile/photo`, { method: "DELETE" });
+}
+
+export async function changeCustomerMyPassword(payload: {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}) {
+  return apiFetch(`/customer/my-profile/change-password`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

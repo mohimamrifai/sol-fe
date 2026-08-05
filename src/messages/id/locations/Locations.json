@@ -1,0 +1,116 @@
+{
+  "Locations": {
+    "title": "Locations",
+    "subtitle": "Kelola lokasi perusahaan Anda — Head Office, Branch Office, dan Warehouse.",
+    "stats": {
+      "total": "Total Lokasi",
+      "headOffice": "Head Office",
+      "branchOffice": "Branch Office",
+      "warehouse": "Warehouse",
+      "active": "Aktif"
+    },
+    "filters": {
+      "search": "Cari berdasarkan nama atau kode",
+      "type": "Tipe",
+      "status": "Status",
+      "province": "Provinsi",
+      "city": "Kota",
+      "loading": "Memuat…",
+      "searchProvince": "Cari provinsi",
+      "searchCity": "Cari kota",
+      "selectProvinceFirst": "Pilih provinsi dulu"
+    },
+    "add": "Tambah Location",
+    "table": {
+      "code": "Kode",
+      "name": "Nama",
+      "type": "Tipe",
+      "city": "Kota",
+      "pic": "PIC",
+      "status": "Status",
+      "actions": "Aksi"
+    },
+    "type": {
+      "head_office": "Head Office",
+      "branch_office": "Branch Office",
+      "warehouse": "Warehouse"
+    },
+    "status": {
+      "active": "Aktif",
+      "inactive": "Tidak Aktif"
+    },
+    "form": {
+      "title": {
+        "create": "Tambah Location",
+        "edit": "Edit Location"
+      },
+      "type": "Tipe Location",
+      "name": "Nama Location",
+      "phone": "Telepon",
+      "status": "Status",
+      "addressSection": "Informasi Alamat",
+      "country": "Negara",
+      "province": "Provinsi",
+      "city": "Kota",
+      "district": "Kecamatan",
+      "postalCode": "Kode Pos",
+      "address": "Alamat",
+      "picSection": "Penanggung Jawab",
+      "picName": "Nama PIC",
+      "picEmail": "Email PIC",
+      "picMobile": "Mobile PIC",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "errors": {
+        "headOfficeExists": "Maksimal 1 Head Office per perusahaan.",
+        "lastHeadOffice": "Tidak dapat mengubah tipe dari Head Office ketika ini satu-satunya."
+      }
+    },
+    "detail": {
+      "headerTitle": "Detail Location",
+      "sections": {
+        "info": "Informasi Location",
+        "address": "Informasi Alamat",
+        "pic": "Penanggung Jawab",
+        "activities": "Log Aktivitas"
+      },
+      "fields": {
+        "code": "Kode",
+        "type": "Tipe",
+        "name": "Nama",
+        "phone": "Telepon",
+        "status": "Status",
+        "createdAt": "Dibuat Pada",
+        "country": "Negara",
+        "province": "Provinsi",
+        "city": "Kota",
+        "district": "Kecamatan",
+        "postalCode": "Kode Pos",
+        "address": "Alamat",
+        "picName": "Nama",
+        "picEmail": "Email",
+        "picMobile": "Mobile"
+      },
+      "actions": {
+        "edit": "Edit",
+        "changeStatus": "Ubah Status",
+        "back": "Kembali ke Locations"
+      }
+    },
+    "activities": {
+      "title": "Log Aktivitas",
+      "empty": "Belum ada aktivitas tercatat.",
+      "actor": "oleh {name}"
+    },
+    "notFound": {
+      "title": "Location tidak ditemukan",
+      "description": "Kami tidak dapat menemukan location ini. Mungkin telah dihapus atau Anda tidak memiliki akses.",
+      "back": "Kembali ke locations"
+    },
+    "common": {
+      "cancel": "Batal",
+      "loading": "Memuat…",
+      "error": "Gagal memuat data."
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "Company": {
+    "title": "Company Profile",
+    "subtitle": "Manage your company information, commercial settings, and documents.",
+    "tabs": {
+      "info": "Company Information",
+      "commercial": "Commercial Information",
+      "documents": "Documents",
+      "activities": "Activity Log"
+    },
+    "sections": {
+      "companyInfo": "Company Information",
+      "companyAddress": "Company Address",
+      "contact": "Contact",
+      "operational": "Operational",
+      "commercial": "Commercial Information",
+      "documents": "Documents",
+      "activities": "Activity Log"
+    },
+    "form": {
+      "businessEntity": "Business Entity",
+      "name": "Company Name",
+      "companyCode": "Customer Code",
+      "npwp": "NPWP",
+      "nib": "NIB",
+      "address": "Address",
+      "country": "Country",
+      "province": "Province",
+      "city": "City",
+      "district": "District",
+      "postalCode": "Postal Code",
+      "email": "Email",
+      "phone": "Phone",
+      "website": "Website",
+      "contactPerson": "Contact Person",
+      "businessCategory": "Business Category",
+      "monthlyShipmentEstimate": "Monthly Shipment Estimate",
+      "save": "Save Changes",
+      "saving": "Saving…",
+      "saved": "Profile updated successfully.",
+      "readonly": "Read only — managed by internal team.",
+      "readonlyHint": "This field cannot be edited from this screen."
+    },
+    "businessCategory": {
+      "trading": "Trading",
+      "manufacturing": "Manufacturing",
+      "retail": "Retail",
+      "distributor": "Distributor",
+      "e_commerce": "E-Commerce",
+      "logistics": "Logistics",
+      "others": "Others"
+    },
+    "monthlyEstimate": {
+      "under_10": "Under 10 shipments",
+      "10_to_50": "10–50 shipments",
+      "50_to_100": "50–100 shipments",
+      "over_100": "Over 100 shipments"
+    },
+    "commercialFields": {
+      "billingType": "Billing Type",
+      "pricingType": "Pricing Type",
+      "discountPercent": "Discount",
+      "billingCycle": "Billing Cycle",
+      "paymentTerm": "Payment Term",
+      "creditLimit": "Credit Limit",
+      "currentDepositBalance": "Deposit Balance",
+      "outstandingBalance": "Outstanding Balance"
+    },
+    "commercialLabels": {
+      "billingType": {
+        "postpaid": "Postpaid",
+        "prepaid": "Prepaid"
+      },
+      "pricingType": {
+        "standard": "Standard",
+        "volume": "Volume",
+        "tiered": "Tiered"
+      },
+      "billingCycle": {
+        "end_of_month": "End of Month",
+        "half_monthly_1": "Half Monthly (1st)",
+        "half_monthly_15": "Half Monthly (15th)",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "paymentTerm": {
+        "net_7": "Net 7",
+        "net_14": "Net 14",
+        "net_30": "Net 30",
+        "net_45": "Net 45",
+        "prepaid": "Prepaid",
+        "cod": "Cash on Delivery"
+      }
+    },
+    "documents": {
+      "title": "Company Documents",
+      "description": "Upload NPWP, NIB, Business License, or other supporting documents.",
+      "add": "Upload Document",
+      "empty": "No documents uploaded yet.",
+      "type": {
+        "npwp": "NPWP",
+        "nib": "NIB",
+        "business_license": "Business License",
+        "other": "Other"
+      },
+      "upload": {
+        "title": "Upload Document",
+        "type": "Document Type",
+        "label": "Label (Optional)",
+        "file": "File",
+        "submit": "Upload",
+        "maxSize": "Max 5 MB · PDF, JPG, PNG"
+      },
+      "actions": {
+        "preview": "Preview",
+        "download": "Download",
+        "delete": "Delete"
+      }
+    },
+    "activities": {
+      "title": "Activity Log",
+      "description": "All recorded activities on your company profile.",
+      "empty": "No activities recorded yet.",
+      "actor": "by {name}"
+    },
+    "notFound": {
+      "title": "Company not found",
+      "description": "We couldn't find your company information. Please contact support.",
+      "back": "Back to dashboard"
+    },
+    "companyStatus": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "loading": "Loading…",
+      "error": "Failed to load data."
+    }
+  }
+}

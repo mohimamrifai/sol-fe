@@ -1,0 +1,116 @@
+{
+  "Locations": {
+    "title": "Locations",
+    "subtitle": "Manage your company's locations — Head Office, Branch Offices, and Warehouses.",
+    "stats": {
+      "total": "Total Locations",
+      "headOffice": "Head Office",
+      "branchOffice": "Branch Office",
+      "warehouse": "Warehouse",
+      "active": "Active"
+    },
+    "filters": {
+      "search": "Search by name or code",
+      "type": "Type",
+      "status": "Status",
+      "province": "Province",
+      "city": "City",
+      "loading": "Loading…",
+      "searchProvince": "Search province",
+      "searchCity": "Search city",
+      "selectProvinceFirst": "Select province first"
+    },
+    "add": "Add Location",
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "type": "Type",
+      "city": "City",
+      "pic": "PIC",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "type": {
+      "head_office": "Head Office",
+      "branch_office": "Branch Office",
+      "warehouse": "Warehouse"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "form": {
+      "title": {
+        "create": "Add Location",
+        "edit": "Edit Location"
+      },
+      "type": "Location Type",
+      "name": "Location Name",
+      "phone": "Phone",
+      "status": "Status",
+      "addressSection": "Address Information",
+      "country": "Country",
+      "province": "Province",
+      "city": "City",
+      "district": "District",
+      "postalCode": "Postal Code",
+      "address": "Address",
+      "picSection": "Person in Charge",
+      "picName": "PIC Name",
+      "picEmail": "PIC Email",
+      "picMobile": "PIC Mobile",
+      "save": "Save",
+      "saving": "Saving…",
+      "errors": {
+        "headOfficeExists": "Maximum 1 Head Office per company.",
+        "lastHeadOffice": "Cannot change type from Head Office when this is the only one."
+      }
+    },
+    "detail": {
+      "headerTitle": "Location Detail",
+      "sections": {
+        "info": "Location Information",
+        "address": "Address Information",
+        "pic": "Person in Charge",
+        "activities": "Activity Log"
+      },
+      "fields": {
+        "code": "Code",
+        "type": "Type",
+        "name": "Name",
+        "phone": "Phone",
+        "status": "Status",
+        "createdAt": "Created At",
+        "country": "Country",
+        "province": "Province",
+        "city": "City",
+        "district": "District",
+        "postalCode": "Postal Code",
+        "address": "Address",
+        "picName": "Name",
+        "picEmail": "Email",
+        "picMobile": "Mobile"
+      },
+      "actions": {
+        "edit": "Edit",
+        "changeStatus": "Change Status",
+        "back": "Back to Locations"
+      }
+    },
+    "activities": {
+      "title": "Activity Log",
+      "empty": "No activities recorded yet.",
+      "actor": "by {name}"
+    },
+    "notFound": {
+      "title": "Location not found",
+      "description": "We couldn't find this location. It may have been removed or you don't have access.",
+      "back": "Back to locations"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "loading": "Loading…",
+      "error": "Failed to load data."
+    }
+  }
+}

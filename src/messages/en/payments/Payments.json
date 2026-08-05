@@ -82,6 +82,9 @@
         "uploadProof": "Upload Payment Proof"
       },
       "loadError": "Failed to load payment detail.",
+      "notFoundTitle": "Data not found",
+      "notFoundDescription": "The page you're looking for isn't available, has been moved, or you don't have access.",
+      "back": "Back",
       "notFound": "Payment not found.",
       "section1": {
         "title": "Invoice Information",

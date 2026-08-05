@@ -56,6 +56,12 @@ export type ListQueryParams = {
   paymentDateTo?: string;
   /** Payments list — invoice id filter */
   invoiceId?: number;
+  /** Locations list — province filter */
+  province?: string;
+  /** Locations list — city filter */
+  city?: string;
+  /** Users list — location access filter (id) */
+  locationId?: number;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -114,6 +120,11 @@ export function buildListQuery(params?: ListQueryParams): string {
   const pdt = params?.paymentDateTo?.trim();
   if (pdt) q.set("payment_date_to", pdt);
   if (params?.invoiceId != null) q.set("invoice_id", String(params.invoiceId));
+  const pv = params?.province?.trim();
+  if (pv) q.set("province", pv);
+  const ct = params?.city?.trim();
+  if (ct) q.set("city", ct);
+  if (params?.locationId != null) q.set("location_id", String(params.locationId));
   const str = q.toString();
   return str ? `?${str}` : "";
 }

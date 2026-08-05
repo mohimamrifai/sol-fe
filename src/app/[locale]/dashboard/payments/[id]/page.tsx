@@ -1,10 +1,7 @@
 "use client";
 
 import { use } from "react";
-import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomerPaymentDetail } from "@/hooks/use-customer-payment-detail";
 import { PaymentHeader } from "@/components/payments/payment-detail/payment-header";
@@ -14,32 +11,22 @@ import { OnlinePaymentSection } from "@/components/payments/payment-detail/onlin
 import { ManualPaymentSection } from "@/components/payments/payment-detail/manual-payment-section";
 import { SupportingDocumentsSection } from "@/components/payments/payment-detail/supporting-documents-section";
 import { ActivityTimelineSection } from "@/components/payments/payment-detail/activity-timeline-section";
+import { NotFoundState } from "@/components/payments/payment-detail/not-found-state";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default function CustomerPaymentDetailPage({ params }: PageProps) {
-  const t = useTranslations("Payments.detail");
   const qc = useQueryClient();
   const { id: rawId } = use(params);
   const paymentId = Number(decodeURIComponent(rawId));
-
-  const { data: paymentEnvelope, isLoading, error, refetch } = useCustomerPaymentDetail(
-    Number.isFinite(paymentId) && paymentId > 0 ? paymentId : null
-  );
+  const validPaymentId = Number.isFinite(paymentId) && paymentId > 0 ? paymentId : null;
+  const { data: paymentEnvelope, isLoading, error, refetch } = useCustomerPaymentDetail(validPaymentId);
   const payment = paymentEnvelope?.data;
 
-  if (!Number.isFinite(paymentId) || paymentId <= 0) {
-    return (
-      <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{t("notFound")}</AlertTitle>
-          <AlertDescription>{t("notFound")}</AlertDescription>
-        </Alert>
-      </div>
-    );
+  if (validPaymentId == null) {
+    return <NotFoundState />;
   }
 
   if (isLoading) {
@@ -56,15 +43,7 @@ export default function CustomerPaymentDetailPage({ params }: PageProps) {
   }
 
   if (error || !payment) {
-    return (
-      <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{error ? t("loadError") : t("notFound")}</AlertTitle>
-          <AlertDescription>{error ? (error as Error).message : t("notFound")}</AlertDescription>
-        </Alert>
-      </div>
-    );
+    return <NotFoundState />;
   }
 
   return (

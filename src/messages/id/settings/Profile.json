@@ -1,0 +1,64 @@
+{
+  "Profile": {
+    "title": "Profil Saya",
+    "subtitle": "Kelola informasi pribadi, info akun, dan keamanan Anda.",
+    "sections": {
+      "userInfo": "Informasi User",
+      "accountInfo": "Informasi Akun",
+      "accessInfo": "Informasi Akses",
+      "changePassword": "Ubah Password"
+    },
+    "form": {
+      "name": "Nama Lengkap",
+      "email": "Email",
+      "emailReadonly": "Email tidak dapat diubah.",
+      "phone": "Telepon",
+      "save": "Simpan Perubahan",
+      "saving": "Menyimpan…",
+      "saved": "Profil berhasil diperbarui."
+    },
+    "photo": {
+      "title": "Foto Profile",
+      "upload": "Unggah Foto",
+      "remove": "Hapus",
+      "hint": "JPG, JPEG, atau PNG. Maks 2 MB.",
+      "uploading": "Mengunggah…"
+    },
+    "account": {
+      "company": "Perusahaan",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Login Terakhir",
+      "createdAt": "Anggota Sejak",
+      "featureAccess": "Default Feature Access"
+    },
+    "accountStatus": {
+      "active": "Aktif",
+      "inactive": "Tidak Aktif"
+    },
+    "access": {
+      "locations": "Akses Location",
+      "features": "Feature Access",
+      "noLocations": "Belum ada location yang ditetapkan.",
+      "noFeatures": "Belum ada feature access."
+    },
+    "password": {
+      "current": "Password Saat Ini",
+      "new": "Password Baru",
+      "confirm": "Konfirmasi Password Baru",
+      "submit": "Ubah Password",
+      "submitting": "Mengubah…",
+      "changed": "Password berhasil diubah.",
+      "errors": {
+        "currentWrong": "Password saat ini salah.",
+        "mismatch": "Password tidak cocok.",
+        "minLength": "Password minimal 8 karakter."
+      }
+    },
+    "common": {
+      "cancel": "Batal",
+      "loading": "Memuat…",
+      "error": "Gagal memuat data."
+    }
+  }
+}

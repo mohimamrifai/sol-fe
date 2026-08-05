@@ -82,6 +82,9 @@
         "uploadProof": "Unggah Bukti"
       },
       "loadError": "Gagal memuat detail pembayaran.",
+      "notFoundTitle": "Data tidak ditemukan",
+      "notFoundDescription": "Halaman yang Anda cari tidak tersedia, telah dipindahkan, atau Anda tidak memiliki akses.",
+      "back": "Kembali",
       "notFound": "Pembayaran tidak ditemukan.",
       "section1": {
         "title": "Informasi Invoice",

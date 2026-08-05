@@ -7,6 +7,7 @@ import {
   FileText,
   CreditCard,
   Building,
+  Building2,
   LogOut,
   User,
   Users,
@@ -15,6 +16,7 @@ import {
   ShieldCheck,
   Settings,
   FolderArchive,
+  MapPin,
 } from "lucide-react";
 
 import {
@@ -65,6 +67,9 @@ const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
   invoices: FileText,
   payments: CreditCard,
   companySettings: Building,
+  company: Building2,
+  locations: MapPin,
+  users: Users,
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

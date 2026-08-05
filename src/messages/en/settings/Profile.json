@@ -1,0 +1,64 @@
+{
+  "Profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your personal information, account info, and security.",
+    "sections": {
+      "userInfo": "User Information",
+      "accountInfo": "Account Information",
+      "accessInfo": "Access Information",
+      "changePassword": "Change Password"
+    },
+    "form": {
+      "name": "Full Name",
+      "email": "Email",
+      "emailReadonly": "Email cannot be changed.",
+      "phone": "Phone",
+      "save": "Save Changes",
+      "saving": "Saving…",
+      "saved": "Profile updated successfully."
+    },
+    "photo": {
+      "title": "Profile Photo",
+      "upload": "Upload Photo",
+      "remove": "Remove",
+      "hint": "JPG, JPEG, or PNG. Max 2 MB.",
+      "uploading": "Uploading…"
+    },
+    "account": {
+      "company": "Company",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last Login",
+      "createdAt": "Member Since",
+      "featureAccess": "Default Feature Access"
+    },
+    "accountStatus": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "access": {
+      "locations": "Location Access",
+      "features": "Feature Access",
+      "noLocations": "No locations assigned yet.",
+      "noFeatures": "No feature access assigned."
+    },
+    "password": {
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "submit": "Change Password",
+      "submitting": "Changing…",
+      "changed": "Password changed successfully.",
+      "errors": {
+        "currentWrong": "Current password is incorrect.",
+        "mismatch": "Passwords do not match.",
+        "minLength": "Password must be at least 8 characters."
+      }
+    },
+    "common": {
+      "cancel": "Cancel",
+      "loading": "Loading…",
+      "error": "Failed to load data."
+    }
+  }
+}

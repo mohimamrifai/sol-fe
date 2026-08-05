@@ -11,6 +11,18 @@ export interface AuthUser {
   company?: unknown;
   roles: string[];
   permissions?: string[];
+  feature_access?: string[];
+  location_access?: Array<{
+    id: number;
+    code?: string;
+    name: string;
+    type?: string;
+    status?: string;
+  }>;
+  last_login_at?: string | null;
+  created_at?: string | null;
+  profile_photo_path?: string | null;
+  profile_photo_url?: string | null;
 }
 
 export async function loginRequest(email: string, password: string) {

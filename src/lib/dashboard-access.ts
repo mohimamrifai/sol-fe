@@ -108,7 +108,25 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
     menuKey: "companySettings",
     url: "/dashboard/settings",
     requiredPermission: null,
-    roles: ["company_admin", "ops_pic", "finance_pic", "super_admin", "operations", "finance", "sales"] as const,
+    roles: ["company_admin", "ops_pic", "finance_pic", "viewer", "super_admin", "operations", "finance", "sales"] as const,
+  },
+  {
+    menuKey: "company",
+    url: "/dashboard/company",
+    requiredPermission: "view_company",
+    roles: ["company_admin", "ops_pic", "finance_pic", "viewer"] as const,
+  },
+  {
+    menuKey: "locations",
+    url: "/dashboard/locations",
+    requiredPermission: "view_locations",
+    roles: ["company_admin", "ops_pic", "viewer"] as const,
+  },
+  {
+    menuKey: "users",
+    url: "/dashboard/users",
+    requiredPermission: "view_users",
+    roles: ["company_admin", "viewer"] as const,
   },
 ] as const;
 

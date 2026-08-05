@@ -1,0 +1,150 @@
+{
+  "Users": {
+    "title": "Users",
+    "subtitle": "Kelola anggota tim perusahaan Anda beserta hak aksesnya.",
+    "stats": {
+      "total": "Total User",
+      "active": "Aktif",
+      "inactive": "Tidak Aktif",
+      "companyAdmin": "Company Admin"
+    },
+    "filters": {
+      "search": "Cari berdasarkan nama atau email",
+      "role": "Role",
+      "status": "Status",
+      "location": "Location",
+      "locationAccess": "Akses Lokasi",
+      "loading": "Memuat…",
+      "searchLocation": "Cari lokasi"
+    },
+    "add": "Tambah User",
+    "table": {
+      "name": "Nama Lengkap",
+      "email": "Email",
+      "role": "Role",
+      "locations": "Location Access",
+      "lastLogin": "Login Terakhir",
+      "status": "Status",
+      "actions": "Aksi"
+    },
+    "role": {
+      "company_admin": "Company Admin",
+      "ops_pic": "Operational PIC",
+      "finance_pic": "Finance PIC",
+      "viewer": "Viewer"
+    },
+    "userStatus": {
+      "active": "Aktif",
+      "inactive": "Tidak Aktif"
+    },
+    "form": {
+      "title": {
+        "create": "Tambah User",
+        "edit": "Edit User"
+      },
+      "sections": {
+        "info": "User Information",
+        "configuration": "Configuration",
+        "security": "Security"
+      },
+      "name": "Full Name",
+      "email": "Email",
+      "emailReadonly": "Email tidak dapat diubah.",
+      "password": "Temporary Password",
+      "passwordHint": "Kosongkan jika tidak ingin mengubah password. Minimal 8 karakter.",
+      "mobileNumber": "Mobile Number",
+      "role": "Role",
+      "status": "User Status",
+      "locationAccess": "Location Access",
+      "locationAccessHint": "Hanya location dengan status aktif yang ditampilkan.",
+      "featureAccess": "Feature Access",
+      "featureAccessHint": "Default mengikuti role. Company Admin dapat override.",
+      "useDefaultFeatures": "Gunakan default features untuk role",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "cancel": "Batal",
+      "errors": {
+        "lastAdmin": "Tidak dapat menonaktifkan atau mengubah role Company Admin terakhir."
+      }
+    },
+    "featureAccess": {
+      "view_company": "Lihat Profil Perusahaan",
+      "manage_company": "Kelola Profil Perusahaan",
+      "view_locations": "Lihat Locations",
+      "manage_locations": "Kelola Locations",
+      "view_users": "Lihat Users",
+      "create_users": "Buat User",
+      "edit_users": "Edit User",
+      "view_bookings": "Lihat Bookings",
+      "create_bookings": "Buat Booking",
+      "manage_bookings": "Kelola Bookings",
+      "view_shipments": "Lihat Shipments",
+      "view_invoices": "Lihat Invoices",
+      "view_payments": "Lihat Payments",
+      "view_documents": "Lihat Dokumen",
+      "manage_documents": "Kelola Dokumen"
+    },
+    "detail": {
+      "headerTitle": "Detail User",
+      "sections": {
+        "info": "Informasi User",
+        "configuration": "Konfigurasi",
+        "security": "Keamanan",
+        "activities": "Log Aktivitas"
+      },
+      "fields": {
+        "name": "Nama",
+        "email": "Email",
+        "phone": "Telepon",
+        "status": "Status",
+        "created": "Dibuat Pada",
+        "role": "Role",
+        "locations": "Locations",
+        "featureAccess": "Feature Access",
+        "noLocations": "Belum ada lokasi yang ditetapkan.",
+        "noFeatureAccess": "Belum ada feature access."
+      },
+      "actions": {
+        "edit": "Edit",
+        "changeStatus": "Ubah Status",
+        "changeRole": "Ubah Role",
+        "resetPassword": "Reset Password",
+        "back": "Kembali ke Users"
+      },
+      "security": {
+        "lastLogin": "Login Terakhir",
+        "createdAt": "Dibuat Pada"
+      }
+    },
+    "activities": {
+      "title": "Log Aktivitas",
+      "empty": "Belum ada aktivitas tercatat.",
+      "actor": "oleh {name}"
+    },
+    "dialogs": {
+      "changeStatus": {
+        "title": "Ubah Status",
+        "active": "Aktifkan user",
+        "inactive": "Nonaktifkan user"
+      },
+      "changeRole": {
+        "title": "Ubah Role"
+      },
+      "resetPassword": {
+        "title": "Reset Password",
+        "newPassword": "Password Baru",
+        "submit": "Reset Password"
+      }
+    },
+    "notFound": {
+      "title": "User tidak ditemukan",
+      "description": "Kami tidak dapat menemukan user ini. Mungkin telah dihapus atau Anda tidak memiliki akses.",
+      "back": "Kembali ke users"
+    },
+    "common": {
+      "cancel": "Batal",
+      "loading": "Memuat…",
+      "error": "Gagal memuat data."
+    }
+  }
+}
