@@ -1,5 +1,5 @@
 import type { AuthUser } from "./auth-api";
-import { getDashboardUiRole, isCustomerUser, isInternalUser } from "./auth-role";
+import { getDashboardUiRole, isCustomerUser, isInternalUser, isVendorUser } from "./auth-role";
 
 /**
  * Definisi item sidebar + aturan akses rute (satu sumber kebenaran).
@@ -18,6 +18,10 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
       "company_admin",
       "ops_pic",
       "finance_pic",
+      "vendor_company_admin",
+      "vendor_ops_pic",
+      "vendor_finance_pic",
+      "vendor_viewer",
     ] as const,
   },
   {
@@ -106,15 +110,29 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
   },
   {
     menuKey: "companySettings",
-    url: "/dashboard/settings",
+    url: "/dashboard/vendor/settings",
     requiredPermission: null,
-    roles: ["company_admin", "ops_pic", "finance_pic", "viewer", "super_admin", "operations", "finance", "sales"] as const,
+    roles: [
+      "vendor_company_admin",
+      "vendor_ops_pic",
+      "vendor_finance_pic",
+      "vendor_viewer",
+    ] as const,
   },
   {
     menuKey: "company",
     url: "/dashboard/company",
     requiredPermission: "view_company",
-    roles: ["company_admin", "ops_pic", "finance_pic", "viewer"] as const,
+    roles: [
+      "company_admin",
+      "ops_pic",
+      "finance_pic",
+      "viewer",
+      "vendor_company_admin",
+      "vendor_ops_pic",
+      "vendor_finance_pic",
+      "vendor_viewer",
+    ] as const,
   },
   {
     menuKey: "locations",
@@ -124,9 +142,61 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
   },
   {
     menuKey: "users",
-    url: "/dashboard/users",
+    url: "/dashboard/vendor/users",
     requiredPermission: "view_users",
-    roles: ["company_admin", "viewer"] as const,
+    roles: ["vendor_company_admin", "vendor_viewer"] as const,
+  },
+  {
+    menuKey: "vendorJobOrders",
+    url: "/dashboard/vendor/job-orders",
+    requiredPermission: "view_vendor_job_orders",
+    roles: [
+      "vendor_company_admin",
+      "vendor_ops_pic",
+      "vendor_viewer",
+    ] as const,
+  },
+  {
+    menuKey: "vendorDocuments",
+    url: "/dashboard/vendor/documents",
+    requiredPermission: "view_vendor_documents",
+    roles: [
+      "vendor_company_admin",
+      "vendor_ops_pic",
+      "vendor_finance_pic",
+      "vendor_viewer",
+    ] as const,
+  },
+  {
+    menuKey: "vendorInvoices",
+    url: "/dashboard/vendor/invoices",
+    requiredPermission: "view_vendor_invoices",
+    roles: [
+      "vendor_company_admin",
+      "vendor_finance_pic",
+      "vendor_viewer",
+    ] as const,
+  },
+  {
+    menuKey: "vendorPayments",
+    url: "/dashboard/vendor/payments",
+    requiredPermission: "view_vendor_payments",
+    roles: [
+      "vendor_company_admin",
+      "vendor_finance_pic",
+      "vendor_viewer",
+    ] as const,
+  },
+  {
+    menuKey: "company",
+    url: "/dashboard/vendor/company",
+    requiredPermission: "view_company",
+    roles: [
+      "vendor_company_admin",
+      "vendor_ops_pic",
+      "vendor_finance_pic",
+      "vendor_viewer",
+    ] as const,
   },
 ] as const;
 
@@ -134,6 +204,7 @@ export type SidebarItemDef = (typeof DASHBOARD_SIDEBAR_ITEM_DEFS)[number];
 export type DashboardMenuKey = SidebarItemDef["menuKey"];
 
 export const ADMIN_DASHBOARD_PREFIX = "/dashboard/admin";
+export const VENDOR_DASHBOARD_PREFIX = "/dashboard/vendor";
 
 /** Hilangkan prefix locale jika ada (/id/dashboard → /dashboard). */
 export function normalizeDashboardPathname(pathname: string): string {
@@ -150,7 +221,8 @@ export function normalizeDashboardPathname(pathname: string): string {
 function effectiveMenuRole(user: AuthUser | null): string | null {
   const ui = getDashboardUiRole(user);
   if (ui == null) return null;
-  return ui === "internal_other" ? "operations" : ui;
+  if (ui === "internal_other") return "operations";
+  return ui;
 }
 
 type AccessResult = { redirectTo: string } | null;
@@ -173,6 +245,13 @@ export function evaluateDashboardPathAccess(user: AuthUser, pathname: string): A
     return null;
   }
 
+  if (path.startsWith(`${VENDOR_DASHBOARD_PREFIX}/`) || path === VENDOR_DASHBOARD_PREFIX) {
+    if (!isVendorUser(user)) {
+      return { redirectTo: "/dashboard" };
+    }
+    return null;
+  }
+
   const menuRole = effectiveMenuRole(user);
   if (!menuRole) {
     return { redirectTo: "/dashboard" };
@@ -183,6 +262,7 @@ export function evaluateDashboardPathAccess(user: AuthUser, pathname: string): A
   for (const def of defs) {
     if (def.url === "/dashboard") continue;
     if (def.url.startsWith(ADMIN_DASHBOARD_PREFIX)) continue;
+    if (def.url.startsWith(VENDOR_DASHBOARD_PREFIX)) continue;
 
     const isThisRoute = path === def.url || path.startsWith(`${def.url}/`);
     if (!isThisRoute) continue;
@@ -191,7 +271,7 @@ export function evaluateDashboardPathAccess(user: AuthUser, pathname: string): A
       return { redirectTo: "/dashboard" };
     }
 
-    if (!isCustomerUser(user)) {
+    if (!isCustomerUser(user) && !isVendorUser(user)) {
       return { redirectTo: "/dashboard" };
     }
 

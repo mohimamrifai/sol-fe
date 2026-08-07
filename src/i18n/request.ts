@@ -37,6 +37,7 @@ const NAMESPACE_PATHS: Record<string, string> = {
   Locations: "locations",
   Users: "users",
   Profile: "settings",
+  Vendor: "vendor",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

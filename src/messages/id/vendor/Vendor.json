@@ -1,0 +1,473 @@
+{
+  "Vendor": {
+    "common": {
+      "search": "Cari",
+      "filter": "Filter",
+      "reset": "Reset",
+      "from": "Dari",
+      "to": "Ke",
+      "apply": "Terapkan",
+      "loading": "Memuat...",
+      "noData": "Belum ada data.",
+      "all": "Semua",
+      "back": "Kembali",
+      "view": "Lihat",
+      "activate": "Aktifkan",
+      "deactivate": "Nonaktifkan",
+      "save": "Simpan",
+      "submit": "Submit",
+      "edit": "Edit",
+      "delete": "Hapus",
+      "download": "Unduh",
+      "preview": "Pratinjau",
+      "actions": "Aksi",
+      "status": "Status",
+      "type": "Tipe"
+    },
+    "status": {
+      "job": {
+        "pending_acceptance": "Pending Acceptance",
+        "accepted": "Accepted",
+        "in_progress": "In Progress",
+        "waiting_verification": "Waiting Internal Verification",
+        "completed": "Completed",
+        "rejected": "Rejected"
+      },
+      "invoice": {
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "paid": "Paid"
+      },
+      "payment": {
+        "pending_payment": "Pending Payment",
+        "partially_paid": "Partially Paid",
+        "paid": "Paid"
+      },
+      "user": {
+        "active": "Aktif",
+        "inactive": "Tidak Aktif"
+      }
+    },
+    "dashboard": {
+      "stats": {
+        "pending_acceptance": { "label": "Menunggu Persetujuan" },
+        "in_progress": { "label": "Berjalan" },
+        "completed": { "label": "Selesai" },
+        "pending_invoice": { "label": "Invoice Tertunda" }
+      },
+      "myJobOrders": {
+        "title": "Job Order Saya",
+        "viewAll": "Lihat semua",
+        "empty": "Belum ada job order yang ditugaskan.",
+        "columns": {
+          "jo": "No. JO",
+          "customer": "Customer",
+          "service": "Layanan",
+          "due": "Jatuh Tempo",
+          "status": "Status"
+        }
+      },
+      "performance": {
+        "title": "Performa Vendor",
+        "metrics": {
+          "active_job_orders": "Job Order Aktif",
+          "completed_this_month": "Selesai Bulan Ini",
+          "pending_acceptance": "Menunggu Persetujuan",
+          "invoice_outstanding": "Sisa Invoice"
+        }
+      },
+      "quickActions": {
+        "title": "Aksi Cepat",
+        "viewPending": "Lihat Job Tertunda",
+        "createInvoice": "Buat Invoice Vendor",
+        "myJobOrders": "Job Order Saya"
+      },
+      "upcomingDeadlines": {
+        "title": "Mendekati Deadline",
+        "empty": "Tidak ada deadline terdekat.",
+        "joNo": "No. JO",
+        "customer": "Customer",
+        "dueDate": "Jatuh Tempo",
+        "remaining": "Sisa Waktu",
+        "status": "Status",
+        "remainingToday": "Hari ini",
+        "remainingDays": "{count} hari"
+      },
+      "recentActivities": {
+        "title": "Aktivitas Terbaru",
+        "empty": "Belum ada aktivitas terbaru."
+      },
+      "activities": {
+        "vendor_job_assigned": "Job order baru ditugaskan ke vendor.",
+        "vendor_job_accepted": "Job order diterima oleh vendor.",
+        "vendor_progress_submitted": "Progress update dikirimkan oleh vendor.",
+        "vendor_completion_submitted": "Penyelesaian dikirimkan oleh vendor.",
+        "vendor_invoice_created": "Invoice vendor dibuat.",
+        "vendor_invoice_updated": "Invoice vendor diperbarui.",
+        "vendor_invoice_submitted": "Invoice vendor diajukan.",
+        "vendor_invoice_approved": "Invoice vendor disetujui.",
+        "vendor_invoice_rejected": "Invoice vendor ditolak.",
+        "vendor_user_created": "Pengguna vendor baru dibuat.",
+        "vendor_user_updated": "Pengguna vendor diperbarui.",
+        "vendor_user_role_changed": "Role pengguna vendor diubah.",
+        "vendor_user_status_changed": "Status pengguna vendor diubah.",
+        "vendor_user_password_reset": "Password pengguna vendor di-reset.",
+        "vendor_profile_updated": "Profil vendor diperbarui.",
+        "vendor_password_changed": "Password vendor diubah.",
+        "vendor_company_updated": "Profil perusahaan vendor diperbarui."
+      },
+      "pendingDocuments": {
+        "title": "Dokumen Tertunda",
+        "empty": "Tidak ada dokumen tertunda.",
+        "joNo": "No. JO",
+        "document": "Dokumen",
+        "status": "Status",
+        "action": "Aksi",
+        "rows": {
+          "vendor_invoice": "Invoice Vendor",
+          "pending_submission": "Belum Diajukan",
+          "create": "Buat"
+        }
+      }
+    },
+    "jobOrders": {
+      "title": "Job Orders",
+      "subtitle": "Kelola job order yang ditugaskan ke perusahaan Anda.",
+      "stats": {
+        "pending_acceptance": "Menunggu Persetujuan",
+        "accepted": "Diterima",
+        "in_progress": "Berjalan",
+        "waiting_verification": "Menunggu Verifikasi",
+        "completed": "Selesai"
+      },
+      "filters": {
+        "search": "Cari No. JO / No. Shipment / Customer",
+        "status": "Status",
+        "serviceType": "Layanan",
+        "assignedDate": "Tanggal Penugasan"
+      },
+      "table": {
+        "jo": "No. JO",
+        "customer": "Customer",
+        "shipment": "No. Shipment",
+        "service": "Layanan",
+        "assignedDate": "Tgl Penugasan",
+        "dueDate": "Jatuh Tempo",
+        "status": "Status",
+        "action": "Aksi"
+      },
+      "empty": "Belum ada job order.",
+      "detail": {
+        "header": {
+          "assigned": "Tgl Penugasan",
+          "due": "Jatuh Tempo"
+        },
+        "sections": {
+          "jobInfo": "Informasi Job",
+          "location": "Informasi Lokasi",
+          "jobDetail": "Detail Job",
+          "supportingDocs": "Dokumen Pendukung",
+          "timeline": "Timeline",
+          "progress": "Progress Update",
+          "activityLog": "Activity Log"
+        },
+        "accept": "Terima Job",
+        "submitProgress": "Kirim Progress",
+        "submitCompletion": "Kirim Penyelesaian",
+        "view": "Lihat",
+        "noDocuments": "Belum ada dokumen pendukung.",
+        "noTimeline": "Belum ada event timeline.",
+        "noActivities": "Belum ada aktivitas.",
+        "dangerousGoods": "Barang Berbahaya",
+        "transportMode": "Mode Transportasi",
+        "temperature": "Suhu",
+        "notes": "Catatan",
+        "yes": "Ya",
+        "no": "Tidak",
+        "completionRemark": "Catatan Penyelesaian",
+        "progressNotes": "Catatan Progress"
+      }
+    },
+    "documents": {
+      "title": "Dokumen",
+      "subtitle": "Browse dokumen terkait job order Anda.",
+      "stats": {
+        "job_order": "Job Order",
+        "consignment_note": "Consignment Note",
+        "delivery_order": "Delivery Order",
+        "proof_of_completion": "Proof of Completion",
+        "supporting": "Supporting"
+      },
+      "filters": {
+        "search": "Cari No. JO / No. Shipment / Nama Dokumen",
+        "documentType": "Tipe Dokumen",
+        "serviceType": "Layanan",
+        "uploadDate": "Tgl Upload"
+      },
+      "table": {
+        "name": "Nama Dokumen",
+        "type": "Tipe",
+        "jo": "No. JO",
+        "shipment": "No. Shipment",
+        "uploadedBy": "Diupload Oleh",
+        "uploadDate": "Tgl Upload"
+      },
+      "detail": {
+        "sections": {
+          "info": "Informasi Dokumen",
+          "preview": "Pratinjau",
+          "activity": "Activity Log"
+        }
+      }
+    },
+    "invoices": {
+      "title": "Invoice Vendor",
+      "subtitle": "Kelola invoice yang Anda buat untuk ditagih ke internal.",
+      "stats": {
+        "draft": "Draft",
+        "submitted": "Diajukan",
+        "approved": "Disetujui",
+        "rejected": "Ditolak",
+        "paid": "Dibayar"
+      },
+      "filters": {
+        "search": "Cari No. Invoice / No. JO",
+        "status": "Status",
+        "invoiceDate": "Tgl Invoice",
+        "dueDate": "Jatuh Tempo"
+      },
+      "table": {
+        "invoiceNo": "No. Invoice",
+        "jo": "No. JO",
+        "invoiceDate": "Tgl Invoice",
+        "dueDate": "Jatuh Tempo",
+        "amount": "Total",
+        "status": "Status"
+      },
+      "create": "Buat Invoice",
+      "form": {
+        "editTitle": "Edit Invoice",
+        "createTitle": "Buat Invoice Baru",
+        "jobOrderPlaceholder": "Pilih job order",
+        "totalLabel": "Total Estimasi",
+        "summary": {
+          "title": "Ringkasan",
+          "jobLabel": "Job Order",
+          "noJob": "Belum dipilih",
+          "subtotal": "Subtotal",
+          "tax": "Pajak",
+          "total": "Total",
+          "filesAttached": "Lampiran",
+          "noFiles": "Belum ada file",
+          "requiredNote": "Tanda * wajib diisi"
+        },
+        "sections": {
+          "jobOrder": "Job Order",
+          "invoiceInfo": "Informasi Invoice",
+          "uploadDocs": "Dokumen"
+        },
+        "dropzone": {
+          "primary": "Klik untuk pilih file",
+          "or": "atau drag & drop",
+          "maxSize": "Maks 10MB",
+          "remove": "Hapus"
+        },
+        "noCompletedHint": "Belum ada job order yang berstatus Completed.",
+        "fields": {
+          "invoiceNumber": "Nomor Invoice",
+          "invoiceDate": "Tgl Invoice",
+          "dueDate": "Jatuh Tempo",
+          "invoiceAmount": "Nilai Invoice",
+          "taxAmount": "Nilai Pajak",
+          "totalAmount": "Total (otomatis)",
+          "notes": "Catatan",
+          "pdf": "Invoice Vendor (PDF)",
+          "pdfRequired": "Invoice Vendor (PDF) *",
+          "noJobResults": "Job order tidak ditemukan",
+          "taxInvoice": "Tax Invoice (PDF)",
+          "taxInvoiceOptional": "Tax Invoice (PDF) (opsional)",
+          "supporting": "Dokumen Pendukung",
+          "supportingOptional": "Dokumen Pendukung (opsional)"
+        }
+      },
+      "detail": {
+        "sections": {
+          "info": "Informasi Invoice",
+          "billing": "Billing",
+          "documents": "Dokumen Pendukung",
+          "approval": "Persetujuan",
+          "activity": "Activity Log"
+        },
+        "edit": "Edit",
+        "submit": "Submit",
+        "downloadInvoice": "Unduh Invoice"
+      },
+      "toast": {
+        "updated": "Invoice berhasil diperbarui.",
+        "created": "Invoice berhasil dibuat sebagai draft.",
+        "updateFailed": "Gagal memperbarui invoice.",
+        "createFailed": "Gagal membuat invoice."
+      }
+    },
+    "payments": {
+      "title": "Pembayaran Vendor",
+      "subtitle": "Riwayat pembayaran dari internal finance.",
+      "stats": {
+        "pending_payment": "Menunggu Pembayaran",
+        "partially_paid": "Dibayar Sebagian",
+        "paid": "Dibayar"
+      },
+      "filters": {
+        "search": "Cari No. Payment / No. Invoice / No. JO",
+        "status": "Status",
+        "paymentDate": "Tgl Bayar"
+      },
+      "table": {
+        "paymentNo": "No. Payment",
+        "invoiceNo": "No. Invoice",
+        "jo": "No. JO",
+        "paymentDate": "Tgl Bayar",
+        "amount": "Jumlah",
+        "status": "Status"
+      },
+      "detail": {
+        "header": {
+          "downloadReceipt": "Unduh Bukti Pembayaran"
+        },
+        "sections": {
+          "info": "Informasi Pembayaran",
+          "summary": "Ringkasan Pembayaran",
+          "documents": "Dokumen Pembayaran",
+          "history": "Riwayat Pembayaran",
+          "activity": "Activity Log"
+        },
+        "fields": {
+          "paymentNo": "No. Payment",
+          "invoiceNo": "No. Invoice",
+          "paymentDate": "Tgl Bayar",
+          "method": "Metode",
+          "referenceNo": "No. Referensi",
+          "paidBy": "Dibayar Oleh",
+          "paymentReceipt": "Bukti Pembayaran",
+          "transferReceipt": "Bukti Transfer",
+          "withholdingTax": "Bukti Potong Pajak"
+        }
+      }
+    },
+    "company": {
+      "title": "Profil Perusahaan",
+      "sections": {
+        "companyInfo": "Informasi Perusahaan",
+        "address": "Alamat Perusahaan",
+        "contact": "Kontak Utama",
+        "business": "Informasi Bisnis",
+        "bank": "Informasi Bank",
+        "activity": "Activity Log"
+      },
+      "fields": {
+        "companyCode": "Kode Perusahaan",
+        "companyName": "Nama Perusahaan",
+        "businessEntity": "Entitas Bisnis",
+        "npwp": "NPWP",
+        "nib": "NIB",
+        "businessCategory": "Kategori Bisnis",
+        "serviceCategories": "Kategori Layanan",
+        "serviceCategoriesReadonly": "Kategori Layanan (read-only)",
+        "website": "Website",
+        "address": "Alamat",
+        "city": "Kota",
+        "province": "Provinsi",
+        "district": "Distrik",
+        "postalCode": "Kode Pos",
+        "country": "Negara",
+        "email": "Email",
+        "phone": "Telepon",
+        "picName": "Nama PIC",
+        "picEmail": "Email PIC",
+        "picPhone": "Telepon PIC",
+        "picMobile": "Mobile PIC",
+        "bankName": "Nama Bank",
+        "accountNumber": "Nomor Rekening",
+        "accountName": "Nama Pemilik Rekening"
+      },
+      "edit": "Edit Profil",
+      "form": {
+        "sections": {
+          "company": "Perusahaan",
+          "address": "Alamat",
+          "contact": "Kontak Utama",
+          "bank": "Bank"
+        },
+        "readonlyNotice": "Business Entity, Nama Perusahaan, Vendor Code, dan Service Category tidak dapat diubah.",
+        "save": "Simpan Perubahan",
+        "editDialogTitle": "Edit Profil Perusahaan"
+      }
+    },
+    "users": {
+      "title": "Manajemen Pengguna",
+      "stats": {
+        "total": "Total",
+        "active": "Aktif",
+        "inactive": "Tidak Aktif"
+      },
+      "table": {
+        "lastLogin": "Login Terakhir"
+      },
+      "filters": {
+        "search": "Cari nama atau email",
+        "role": "Pilih role"
+      },
+      "actions": {
+        "changeRole": "Ubah Role",
+        "changeStatus": "Ubah Status",
+        "resetPassword": "Reset Password",
+        "viewDetail": "Lihat Detail",
+        "addUser": "Tambah User Vendor"
+      }
+    },
+    "settings": {
+      "title": "Profil Saya",
+      "sections": {
+        "userInfo": "Informasi Pengguna",
+        "account": "Informasi Akun",
+        "access": "Informasi Akses",
+        "password": "Ganti Password",
+        "activity": "Activity Log"
+      },
+      "fields": {
+        "fullName": "Nama Lengkap",
+        "phone": "Telepon",
+        "email": "Email",
+        "companyName": "Nama Perusahaan",
+        "companyCode": "Kode Perusahaan",
+        "userType": "Tipe Pengguna",
+        "memberSince": "Member Sejak"
+      },
+      "permissions": {
+        "roles": "Role",
+        "list": "Hak Akses",
+        "none": "Tidak ada hak akses spesifik.",
+        "labels": {
+          "vendor_access": "Akses Vendor Portal",
+          "vendor_dashboard": "Lihat Dashboard Vendor",
+          "view_vendor_job_orders": "Lihat Job Orders",
+          "manage_vendor_job_orders": "Kelola Job Orders",
+          "accept_job_orders": "Terima Job Orders",
+          "submit_progress": "Kirim Progress",
+          "view_vendor_documents": "Lihat Dokumen",
+          "view_vendor_invoices": "Lihat Invoice",
+          "manage_vendor_invoices": "Buat/Edit Invoice",
+          "submit_vendor_invoices": "Submit Invoice",
+          "view_vendor_payments": "Lihat Pembayaran",
+          "view_vendor_company": "Lihat Profil Perusahaan",
+          "manage_vendor_company": "Edit Profil Perusahaan",
+          "view_vendor_users": "Lihat Pengguna Vendor",
+          "manage_vendor_users": "Kelola Pengguna Vendor",
+          "manage_vendor_profile": "Edit Profil Sendiri"
+        }
+      }
+    }
+  }
+}

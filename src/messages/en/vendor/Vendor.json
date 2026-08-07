@@ -1,0 +1,474 @@
+{
+  "Vendor": {
+    "common": {
+      "search": "Search",
+      "filter": "Filter",
+      "reset": "Reset",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply",
+      "loading": "Loading...",
+      "noData": "No data yet.",
+      "all": "All",
+      "back": "Back",
+      "view": "View",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "cancel": "Cancel",
+      "save": "Save",
+      "submit": "Submit",
+      "edit": "Edit",
+      "delete": "Delete",
+      "download": "Download",
+      "preview": "Preview",
+      "actions": "Actions",
+      "status": "Status",
+      "type": "Type"
+    },
+    "status": {
+      "job": {
+        "pending_acceptance": "Pending Acceptance",
+        "accepted": "Accepted",
+        "in_progress": "In Progress",
+        "waiting_verification": "Waiting Internal Verification",
+        "completed": "Completed",
+        "rejected": "Rejected"
+      },
+      "invoice": {
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "paid": "Paid"
+      },
+      "payment": {
+        "pending_payment": "Pending Payment",
+        "partially_paid": "Partially Paid",
+        "paid": "Paid"
+      },
+      "user": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
+    "dashboard": {
+      "stats": {
+        "pending_acceptance": { "label": "Pending Acceptance" },
+        "in_progress": { "label": "In Progress" },
+        "completed": { "label": "Completed" },
+        "pending_invoice": { "label": "Pending Invoice" }
+      },
+      "myJobOrders": {
+        "title": "My Job Orders",
+        "viewAll": "View all",
+        "empty": "No job orders assigned yet.",
+        "columns": {
+          "jo": "JO No.",
+          "customer": "Customer",
+          "service": "Service",
+          "due": "Due Date",
+          "status": "Status"
+        }
+      },
+      "performance": {
+        "title": "Vendor Performance",
+        "metrics": {
+          "active_job_orders": "Active Job Orders",
+          "completed_this_month": "Completed This Month",
+          "pending_acceptance": "Pending Acceptance",
+          "invoice_outstanding": "Invoice Outstanding"
+        }
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "viewPending": "View Pending Jobs",
+        "createInvoice": "Create Vendor Invoice",
+        "myJobOrders": "My Job Orders"
+      },
+      "upcomingDeadlines": {
+        "title": "Upcoming Deadlines",
+        "empty": "No upcoming deadlines.",
+        "joNo": "JO No.",
+        "customer": "Customer",
+        "dueDate": "Due Date",
+        "remaining": "Remaining",
+        "status": "Status",
+        "remainingToday": "Today",
+        "remainingDays": "{count, plural, =0 {Today} =1 {1 day} other {# days}}"
+      },
+      "recentActivities": {
+        "title": "Recent Activities",
+        "empty": "No recent activities."
+      },
+      "activities": {
+        "vendor_job_assigned": "New job order assigned to vendor.",
+        "vendor_job_accepted": "Job order accepted by vendor.",
+        "vendor_progress_submitted": "Progress update submitted by vendor.",
+        "vendor_completion_submitted": "Completion submitted by vendor.",
+        "vendor_invoice_created": "Vendor invoice created.",
+        "vendor_invoice_updated": "Vendor invoice updated.",
+        "vendor_invoice_submitted": "Vendor invoice submitted.",
+        "vendor_invoice_approved": "Vendor invoice approved.",
+        "vendor_invoice_rejected": "Vendor invoice rejected.",
+        "vendor_user_created": "New vendor user created.",
+        "vendor_user_updated": "Vendor user updated.",
+        "vendor_user_role_changed": "Vendor user role changed.",
+        "vendor_user_status_changed": "Vendor user status changed.",
+        "vendor_user_password_reset": "Vendor user password reset.",
+        "vendor_profile_updated": "Vendor profile updated.",
+        "vendor_password_changed": "Vendor password changed.",
+        "vendor_company_updated": "Vendor company profile updated."
+      },
+      "pendingDocuments": {
+        "title": "Pending Documents",
+        "empty": "No pending documents.",
+        "joNo": "JO No.",
+        "document": "Document",
+        "status": "Status",
+        "action": "Action",
+        "rows": {
+          "vendor_invoice": "Vendor Invoice",
+          "pending_submission": "Pending Submission",
+          "create": "Create"
+        }
+      }
+    },
+    "jobOrders": {
+      "title": "Job Orders",
+      "subtitle": "Manage job orders assigned to your company.",
+      "stats": {
+        "pending_acceptance": "Pending Acceptance",
+        "accepted": "Accepted",
+        "in_progress": "In Progress",
+        "waiting_verification": "Waiting Verification",
+        "completed": "Completed"
+      },
+      "filters": {
+        "search": "Search JO No / Shipment No / Customer",
+        "status": "Status",
+        "serviceType": "Service",
+        "assignedDate": "Assigned Date"
+      },
+      "table": {
+        "jo": "JO No.",
+        "customer": "Customer",
+        "shipment": "Shipment No.",
+        "service": "Service",
+        "assignedDate": "Assigned Date",
+        "dueDate": "Due Date",
+        "status": "Status",
+        "action": "Action"
+      },
+      "empty": "No job orders.",
+      "detail": {
+        "header": {
+          "assigned": "Assigned Date",
+          "due": "Due Date"
+        },
+        "sections": {
+          "jobInfo": "Job Information",
+          "location": "Location Information",
+          "jobDetail": "Job Detail",
+          "supportingDocs": "Supporting Documents",
+          "timeline": "Timeline",
+          "progress": "Progress Update",
+          "activityLog": "Activity Log"
+        },
+        "accept": "Accept Job",
+        "submitProgress": "Submit Progress",
+        "submitCompletion": "Submit Completion",
+        "view": "View",
+        "noDocuments": "No supporting documents available.",
+        "noTimeline": "No timeline events.",
+        "noActivities": "No activities yet.",
+        "dangerousGoods": "Dangerous Goods",
+        "transportMode": "Transport Mode",
+        "temperature": "Temperature",
+        "notes": "Notes",
+        "yes": "Yes",
+        "no": "No",
+        "completionRemark": "Completion Remark",
+        "progressNotes": "Progress Notes"
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "subtitle": "Browse documents related to your job orders.",
+      "stats": {
+        "job_order": "Job Order",
+        "consignment_note": "Consignment Note",
+        "delivery_order": "Delivery Order",
+        "proof_of_completion": "Proof of Completion",
+        "supporting": "Supporting"
+      },
+      "filters": {
+        "search": "Search by JO No / Shipment No / Document Name",
+        "documentType": "Document Type",
+        "serviceType": "Service",
+        "uploadDate": "Upload Date"
+      },
+      "table": {
+        "name": "Document Name",
+        "type": "Type",
+        "jo": "JO No.",
+        "shipment": "Shipment No.",
+        "uploadedBy": "Uploaded By",
+        "uploadDate": "Upload Date"
+      },
+      "detail": {
+        "sections": {
+          "info": "Document Information",
+          "preview": "Preview",
+          "activity": "Activity Log"
+        }
+      }
+    },
+    "invoices": {
+      "title": "Vendor Invoices",
+      "subtitle": "Manage invoices you create to bill internal.",
+      "stats": {
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "paid": "Paid"
+      },
+      "filters": {
+        "search": "Search Invoice No / JO No",
+        "status": "Status",
+        "invoiceDate": "Invoice Date",
+        "dueDate": "Due Date"
+      },
+      "table": {
+        "invoiceNo": "Invoice No.",
+        "jo": "JO No.",
+        "invoiceDate": "Invoice Date",
+        "dueDate": "Due Date",
+        "amount": "Total",
+        "status": "Status"
+      },
+      "create": "Create Invoice",
+      "form": {
+        "editTitle": "Edit Invoice",
+        "createTitle": "Create New Invoice",
+        "jobOrderPlaceholder": "Select job order",
+        "totalLabel": "Estimated Total",
+        "summary": {
+          "title": "Summary",
+          "jobLabel": "Job Order",
+          "noJob": "Not selected",
+          "subtotal": "Subtotal",
+          "tax": "Tax",
+          "total": "Total",
+          "filesAttached": "Attachments",
+          "noFiles": "No files yet",
+          "requiredNote": "* indicates required"
+        },
+        "sections": {
+          "jobOrder": "Job Order",
+          "invoiceInfo": "Invoice Information",
+          "uploadDocs": "Documents"
+        },
+        "dropzone": {
+          "primary": "Click to select file",
+          "or": "or drag & drop",
+          "maxSize": "Max 10MB",
+          "remove": "Remove"
+        },
+        "noCompletedHint": "No job orders have reached Completed status yet.",
+        "fields": {
+          "invoiceNumber": "Invoice Number",
+          "invoiceDate": "Invoice Date",
+          "dueDate": "Due Date",
+          "invoiceAmount": "Invoice Amount",
+          "taxAmount": "Tax Amount",
+          "totalAmount": "Total (auto)",
+          "notes": "Notes",
+          "pdf": "Vendor Invoice (PDF)",
+          "pdfRequired": "Vendor Invoice (PDF) *",
+          "noJobResults": "No matching job order",
+          "taxInvoice": "Tax Invoice (PDF)",
+          "taxInvoiceOptional": "Tax Invoice (PDF) (optional)",
+          "supporting": "Supporting Documents",
+          "supportingOptional": "Supporting Files (optional)"
+        }
+      },
+      "detail": {
+        "sections": {
+          "info": "Invoice Information",
+          "billing": "Billing",
+          "documents": "Supporting Documents",
+          "approval": "Approval",
+          "activity": "Activity Log"
+        },
+        "edit": "Edit",
+        "submit": "Submit",
+        "downloadInvoice": "Download Invoice"
+      },
+      "toast": {
+        "updated": "Invoice updated successfully.",
+        "created": "Invoice created as draft.",
+        "updateFailed": "Failed to update invoice.",
+        "createFailed": "Failed to create invoice."
+      }
+    },
+    "payments": {
+      "title": "Vendor Payments",
+      "subtitle": "Payment history from internal finance.",
+      "stats": {
+        "pending_payment": "Pending Payment",
+        "partially_paid": "Partially Paid",
+        "paid": "Paid"
+      },
+      "filters": {
+        "search": "Search Payment No / Invoice No / JO No",
+        "status": "Status",
+        "paymentDate": "Payment Date"
+      },
+      "table": {
+        "paymentNo": "Payment No.",
+        "invoiceNo": "Invoice No.",
+        "jo": "JO No.",
+        "paymentDate": "Payment Date",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "detail": {
+        "header": {
+          "downloadReceipt": "Download Payment Receipt"
+        },
+        "sections": {
+          "info": "Payment Information",
+          "summary": "Payment Summary",
+          "documents": "Payment Documents",
+          "history": "Payment History",
+          "activity": "Activity Log"
+        },
+        "fields": {
+          "paymentNo": "Payment No.",
+          "invoiceNo": "Invoice No.",
+          "paymentDate": "Payment Date",
+          "method": "Method",
+          "referenceNo": "Reference No.",
+          "paidBy": "Paid By",
+          "paymentReceipt": "Payment Receipt",
+          "transferReceipt": "Transfer Receipt",
+          "withholdingTax": "Withholding Tax"
+        }
+      }
+    },
+    "company": {
+      "title": "Company Profile",
+      "sections": {
+        "companyInfo": "Company Information",
+        "address": "Company Address",
+        "contact": "Primary Contact",
+        "business": "Business Information",
+        "bank": "Bank Information",
+        "activity": "Activity Log"
+      },
+      "fields": {
+        "companyCode": "Company Code",
+        "companyName": "Company Name",
+        "businessEntity": "Business Entity",
+        "npwp": "NPWP",
+        "nib": "NIB",
+        "businessCategory": "Business Category",
+        "serviceCategories": "Service Categories",
+        "serviceCategoriesReadonly": "Service Categories (read-only)",
+        "website": "Website",
+        "address": "Address",
+        "city": "City",
+        "province": "Province",
+        "district": "District",
+        "postalCode": "Postal Code",
+        "country": "Country",
+        "email": "Email",
+        "phone": "Phone",
+        "picName": "PIC Name",
+        "picEmail": "PIC Email",
+        "picPhone": "PIC Phone",
+        "picMobile": "PIC Mobile",
+        "bankName": "Bank Name",
+        "accountNumber": "Account Number",
+        "accountName": "Account Name"
+      },
+      "edit": "Edit Profile",
+      "form": {
+        "sections": {
+          "company": "Company",
+          "address": "Address",
+          "contact": "Primary Contact",
+          "bank": "Bank"
+        },
+        "readonlyNotice": "Business Entity, Company Name, Vendor Code, and Service Category cannot be changed.",
+        "save": "Save Changes",
+        "editDialogTitle": "Edit Company Profile"
+      }
+    },
+    "users": {
+      "title": "User Management",
+      "stats": {
+        "total": "Total",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "table": {
+        "lastLogin": "Last Login"
+      },
+      "filters": {
+        "search": "Search name or email",
+        "role": "Select role"
+      },
+      "actions": {
+        "changeRole": "Change Role",
+        "changeStatus": "Change Status",
+        "resetPassword": "Reset Password",
+        "viewDetail": "View Detail",
+        "addUser": "Add Vendor User"
+      }
+    },
+    "settings": {
+      "title": "My Profile",
+      "sections": {
+        "userInfo": "User Information",
+        "account": "Account Information",
+        "access": "Access Information",
+        "password": "Change Password",
+        "activity": "Activity Log"
+      },
+      "fields": {
+        "fullName": "Full Name",
+        "phone": "Phone",
+        "email": "Email",
+        "companyName": "Company Name",
+        "companyCode": "Company Code",
+        "userType": "User Type",
+        "memberSince": "Member Since"
+      },
+      "permissions": {
+        "roles": "Roles",
+        "list": "Permissions",
+        "none": "No specific permissions.",
+        "labels": {
+          "vendor_access": "Vendor Portal Access",
+          "vendor_dashboard": "View Vendor Dashboard",
+          "view_vendor_job_orders": "View Job Orders",
+          "manage_vendor_job_orders": "Manage Job Orders",
+          "accept_job_orders": "Accept Job Orders",
+          "submit_progress": "Submit Progress",
+          "view_vendor_documents": "View Documents",
+          "view_vendor_invoices": "View Invoices",
+          "manage_vendor_invoices": "Create/Edit Invoices",
+          "submit_vendor_invoices": "Submit Invoices",
+          "view_vendor_payments": "View Payments",
+          "view_vendor_company": "View Company Profile",
+          "manage_vendor_company": "Edit Company Profile",
+          "view_vendor_users": "View Vendor Users",
+          "manage_vendor_users": "Manage Vendor Users",
+          "manage_vendor_profile": "Edit Own Profile"
+        }
+      }
+    }
+  }
+}

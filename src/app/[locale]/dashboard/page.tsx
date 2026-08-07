@@ -11,6 +11,7 @@ import {
   type AdminDashboardPayload,
   type CustomerDashboardPayload,
 } from "@/lib/dashboard-api";
+import { fetchVendorDashboard } from "@/lib/vendor/dashboard-api";
 import { LayoutDashboard } from "lucide-react";
 
 const DashboardSuperAdmin = dynamic(
@@ -34,6 +35,22 @@ const DashboardOpsPic = dynamic(
 const DashboardFinancePic = dynamic(
   () => import("@/components/dashboard/role/DashboardFinancePic").then((m) => m.DashboardFinancePic)
 );
+const DashboardVendorCompanyAdmin = dynamic(
+  () => import("@/components/dashboard/role/DashboardVendorCompanyAdmin").then(
+    (m) => m.DashboardVendorCompanyAdmin
+  )
+);
+const DashboardVendorOpsPic = dynamic(
+  () => import("@/components/dashboard/role/DashboardVendorOpsPic").then((m) => m.DashboardVendorOpsPic)
+);
+const DashboardVendorFinancePic = dynamic(
+  () => import("@/components/dashboard/role/DashboardVendorFinancePic").then(
+    (m) => m.DashboardVendorFinancePic
+  )
+);
+const DashboardVendorViewer = dynamic(
+  () => import("@/components/dashboard/role/DashboardVendorViewer").then((m) => m.DashboardVendorViewer)
+);
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -56,6 +73,9 @@ export default function DashboardPage() {
         if (user.user_type === "internal") {
           const r = await fetchAdminDashboard();
           if (!cancelled) setAdminData(r.data);
+        } else if (user.user_type === "vendor") {
+          const r = await fetchVendorDashboard();
+          if (!cancelled) setAdminData(r.data as unknown as AdminDashboardPayload);
         } else {
           const r = await fetchCustomerDashboard();
           if (!cancelled) setCustomerData(r.data);
@@ -98,6 +118,14 @@ export default function DashboardPage() {
         return <DashboardOpsPic {...customerProps} />;
       case "finance_pic":
         return <DashboardFinancePic {...customerProps} />;
+      case "vendor_company_admin":
+        return <DashboardVendorCompanyAdmin />;
+      case "vendor_ops_pic":
+        return <DashboardVendorOpsPic />;
+      case "vendor_finance_pic":
+        return <DashboardVendorFinancePic />;
+      case "vendor_viewer":
+        return <DashboardVendorViewer />;
       default:
         return (
           <div className="flex min-w-0 w-full flex-1 flex-col gap-4">

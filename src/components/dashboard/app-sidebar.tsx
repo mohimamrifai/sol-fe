@@ -17,6 +17,10 @@ import {
   Settings,
   FolderArchive,
   MapPin,
+  ClipboardList,
+  Receipt,
+  Wallet,
+  FileBox,
 } from "lucide-react";
 
 import {
@@ -70,6 +74,10 @@ const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
   company: Building2,
   locations: MapPin,
   users: Users,
+  vendorJobOrders: ClipboardList,
+  vendorDocuments: FileBox,
+  vendorInvoices: Receipt,
+  vendorPayments: Wallet,
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -98,6 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navItems = useMemo(() => {
     if (!menuRole) return [];
     const isInternal = user?.user_type === "internal";
+    const isVendor = user?.user_type === "vendor";
 
     return allMenuItems.filter((item) => {
       const def = DASHBOARD_SIDEBAR_ITEM_DEFS.find((d) => d.url === item.url);
@@ -105,10 +114,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       const isDashboardHome = def.url === "/dashboard";
       const isInternalRoute = def.url.startsWith("/dashboard/admin");
+      const isVendorRoute = def.url.startsWith("/dashboard/vendor");
 
       if (!isDashboardHome) {
         if (isInternalRoute && !isInternal) return false;
-        if (!isInternalRoute && isInternal) return false;
+        if (isVendorRoute && !isVendor) return false;
+        if (!isInternalRoute && !isVendorRoute && isInternal) return false;
+        if (!isInternalRoute && !isVendorRoute && isVendor) {
+          // Vendor juga boleh akses shared pages (company, users, settings)
+          const isSharedRoute = ["/dashboard/company", "/dashboard/users", "/dashboard/settings"].includes(def.url);
+          if (!isSharedRoute) return false;
+        }
       }
 
       if (def.requiredPermission != null) {

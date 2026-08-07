@@ -82,12 +82,12 @@ export async function apiFetch<T = unknown>(
   const body = isJson ? await res.json().catch(() => null) : await res.text();
 
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401) {
       if (typeof window !== "undefined") {
         sessionStorage.removeItem("sol_token");
         sessionStorage.removeItem("sol_profile_cached_at");
-        // We use window.location.href instead of router.push to force a full reload
-        // clearing any in-memory state.
+        // Hanya 401 (token tidak valid/expired) yang memicu redirect ke login.
+        // 403 adalah masalah permission/role — caller harus handle (tidak boleh silent logout).
         window.location.href = "/login";
       }
     }
@@ -128,7 +128,7 @@ export async function apiFetchBlob(
     throw new ApiError(networkFailureMessage(path, err), 0, err);
   }
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401) {
       if (typeof window !== "undefined") {
         sessionStorage.removeItem("sol_token");
         sessionStorage.removeItem("sol_profile_cached_at");

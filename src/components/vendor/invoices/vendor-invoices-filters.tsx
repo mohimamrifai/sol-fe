@@ -1,0 +1,70 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { DateRangePicker } from "@/components/vendor/date-range-picker";
+
+type Props = { onChange: (filters: Record<string, unknown>) => void };
+
+export function VendorInvoiceFilters({ onChange }: Props) {
+  const tCommon = useTranslations("Vendor.common");
+  const tFilter = useTranslations("Vendor.invoices.filters");
+  const tStat = useTranslations("Vendor.invoices.stats");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  useEffect(() => {
+    const handle = setTimeout(() => onChange({ search, status, from, to }), 300);
+    return () => clearTimeout(handle);
+  }, [search, status, from, to, onChange]);
+
+  return (
+    <Card>
+      <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 md:grid-cols-3 md:items-end">
+        <div className="relative sm:col-span-2 md:col-span-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tFilter("search")}
+            className="h-10 pl-9"
+          />
+        </div>
+        <Select value={status} onValueChange={(v) => v && setStatus(v)}>
+          <SelectTrigger className="h-10 w-full min-w-40">
+            <SelectValue placeholder={tFilter("status")} />
+          </SelectTrigger>
+          <SelectContent side="bottom">
+            <SelectItem value="all">{tCommon("all")}</SelectItem>
+            <SelectItem value="draft">{tStat("draft")}</SelectItem>
+            <SelectItem value="submitted">{tStat("submitted")}</SelectItem>
+            <SelectItem value="approved">{tStat("approved")}</SelectItem>
+            <SelectItem value="rejected">{tStat("rejected")}</SelectItem>
+            <SelectItem value="paid">{tStat("paid")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <DateRangePicker
+          from={from}
+          to={to}
+          onChange={({ from: f, to: tt }) => { setFrom(f); setTo(tt); }}
+        />
+        <div className="sm:col-span-2 md:col-span-3 md:flex md:justify-end">
+          <Button
+            variant="outline"
+            className="h-10 w-full md:w-auto"
+            onClick={() => { setSearch(""); setStatus("all"); setFrom(""); setTo(""); }}
+          >
+            <X className="mr-1 h-4 w-4" /> {tCommon("reset")}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

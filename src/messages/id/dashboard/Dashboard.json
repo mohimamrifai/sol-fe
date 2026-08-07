@@ -20,6 +20,10 @@
       "vendorPricing": "Vendor & Harga",
       "roleManagement": "Manajemen Hak Akses",
       "internalUsers": "Pengguna Internal",
+      "vendorJobOrders": "Job Orders",
+      "vendorDocuments": "Dokumen Vendor",
+      "vendorInvoices": "Invoice Vendor",
+      "vendorPayments": "Pembayaran Vendor",
       "logout": "Keluar"
     },
     "roleTitles": {
@@ -30,6 +34,10 @@
       "company_admin": "Dashboard Perusahaan",
       "ops_pic": "Dashboard Ops PIC",
       "finance_pic": "Dashboard Finance PIC",
+      "vendor_company_admin": "Dashboard Vendor",
+      "vendor_ops_pic": "Dashboard Vendor Ops",
+      "vendor_finance_pic": "Dashboard Vendor Finance",
+      "vendor_viewer": "Dashboard Vendor",
       "default": "Dashboard"
     },
     "profile": "Profil",

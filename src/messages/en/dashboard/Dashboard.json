@@ -20,6 +20,10 @@
       "vendorPricing": "Vendor & Pricing",
       "roleManagement": "Role & Permissions",
       "internalUsers": "Internal Users",
+      "vendorJobOrders": "Job Orders",
+      "vendorDocuments": "Vendor Documents",
+      "vendorInvoices": "Vendor Invoices",
+      "vendorPayments": "Vendor Payments",
       "logout": "Logout"
     },
     "roleTitles": {
@@ -30,6 +34,10 @@
       "company_admin": "Company Dashboard",
       "ops_pic": "Ops PIC Dashboard",
       "finance_pic": "Finance PIC Dashboard",
+      "vendor_company_admin": "Vendor Dashboard",
+      "vendor_ops_pic": "Vendor Ops Dashboard",
+      "vendor_finance_pic": "Vendor Finance Dashboard",
+      "vendor_viewer": "Vendor Dashboard",
       "default": "Dashboard"
     },
     "profile": "Profile",
