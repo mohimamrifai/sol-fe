@@ -18,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { shipmentStatusBadgeClass, shipmentStatusLabel } from "@/lib/shipment-status";
+import { shipmentStatusBadgeClass } from "@/lib/shipment-status";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 import { cn } from "@/lib/utils";
 import { Eye, MoreHorizontal } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
@@ -75,6 +76,7 @@ function ShipmentActionsMenu({ shipmentId, cnNumber }: { shipmentId: number; cnN
 }
 
 export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTableProps) {
+  const shipmentStatusLabel = useShipmentStatusLabel();
   const preparedRows = useMemo(
     () =>
       rows.map((shipment) => {

@@ -36,6 +36,10 @@ const FALLBACK_LABEL: Record<string, string> = {
   container_unloading: "Container Unloading",
   unloading: "Unloading",
   ready_for_pickup: "Ready for Pickup",
+  planning: "Planning",
+  in_progress: "In Progress",
+  ready_for_departure: "Ready for Departure",
+  in_transit: "In Transit",
   completed: "Completed",
   cancelled: "Cancelled",
 };

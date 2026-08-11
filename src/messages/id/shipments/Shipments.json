@@ -14,6 +14,27 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
+    "trackingStatus": {
+      "booking_created": "Booking Dibuat",
+      "created": "Dibuat",
+      "survey_completed": "Survey Selesai",
+      "cargo_received": "Kargo Diterima",
+      "stuffing_container": "Stuffing Kontainer",
+      "container_sealed": "Kontainer Disegel",
+      "train_departed": "Kereta Berangkat",
+      "departed": "Berangkat",
+      "train_arrived": "Kereta Tiba",
+      "arrived": "Tiba",
+      "container_unloading": "Bongkar Kontainer",
+      "unloading": "Bongkar",
+      "ready_for_pickup": "Siap Diambil",
+      "planning": "Planning",
+      "in_progress": "Dalam Proses",
+      "ready_for_departure": "Siap Berangkat",
+      "in_transit": "Dalam Perjalanan",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
+    },
     "filter": {
       "title": "Filter",
       "clear": "Reset",

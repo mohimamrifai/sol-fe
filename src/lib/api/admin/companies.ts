@@ -98,3 +98,52 @@ export async function updateAdminCustomerDiscount(
 export async function deleteAdminCustomerDiscount(companyId: number, discountId: number) {
   return apiFetch(`/admin/companies/${companyId}/customer-discounts/${discountId}`, { method: "DELETE" });
 }
+
+export async function fetchAdminCompanyStats() {
+  return apiFetch<{ data: Record<string, number> }>(`/admin/companies/stats`, { method: "GET" });
+}
+
+export async function suspendAdminCompany(id: number) {
+  return apiFetch(`/admin/companies/${id}/suspend`, { method: "POST", body: JSON.stringify({}) });
+}
+
+export async function fetchAdminCompanyLocations(companyId: number, input?: ListQueryParams) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/admin/companies/${companyId}/locations${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+export async function createAdminCompanyLocation(companyId: number, body: Record<string, unknown>) {
+  return apiFetch(`/admin/companies/${companyId}/locations`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateAdminCompanyLocation(
+  companyId: number,
+  locationId: number,
+  body: Record<string, unknown>
+) {
+  return apiFetch(`/admin/companies/${companyId}/locations/${locationId}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function changeAdminCompanyLocationStatus(
+  companyId: number,
+  locationId: number,
+  status: "active" | "inactive"
+) {
+  return apiFetch(`/admin/companies/${companyId}/locations/${locationId}/status`, {
+    method: "POST",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteAdminCompanyLocation(companyId: number, locationId: number) {
+  return apiFetch(`/admin/companies/${companyId}/locations/${locationId}`, { method: "DELETE" });
+}

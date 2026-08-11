@@ -59,9 +59,13 @@ type AdminSidebarNavProps = {
 function activeItemClass(isActive: boolean): string {
   return cn(
     isActive
-      ? "bg-[#0b1b69] text-white shadow-sm hover:bg-[#0d2280] hover:text-white data-active:bg-[#0b1b69] data-active:text-white [&_svg]:text-white"
+      ? "bg-[#0b1b69] text-white shadow-sm hover:bg-[#0d2280] hover:text-white data-active:bg-[#0b1b69]! data-active:text-white! [&_svg]:!text-white [&_svg]:!opacity-100"
       : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 data-active:bg-zinc-100 data-active:text-zinc-900 [&_svg]:text-zinc-600"
   );
+}
+
+function activeIconClass(isActive: boolean, sizeClass: string): string {
+  return cn(sizeClass, "shrink-0", isActive ? "text-white!" : "text-zinc-600");
 }
 
 function NavSubItem({
@@ -82,7 +86,7 @@ function NavSubItem({
         className={cn("h-8 rounded-md px-2 text-sm font-medium transition-colors", activeItemClass(isActive))}
         render={
           <Link href={item.url} className="flex items-center gap-2 text-inherit">
-            <Icon className="h-3.5 w-3.5 shrink-0" />
+            <Icon className={activeIconClass(isActive, "h-3.5 w-3.5")} />
             <span>{label}</span>
           </Link>
         }
@@ -110,10 +114,10 @@ function NavGroup({
           className={cn(
             "flex h-9 w-full items-center gap-2 rounded-md px-3 text-sm font-medium text-zinc-700 transition-colors",
             "hover:bg-zinc-100 hover:text-zinc-900 [&_svg]:text-zinc-600",
-            groupActive && "bg-zinc-100 text-zinc-900 [&_svg]:text-zinc-800"
+            groupActive && "bg-zinc-100 text-zinc-900 [&_svg]:!text-zinc-800"
           )}
         >
-          <ChevronRight className="h-4 w-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+          <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90", groupActive ? "text-zinc-800!" : "text-zinc-600")} />
           <span className="truncate">{groupLabel}</span>
         </CollapsibleTrigger>
         <CollapsibleContent className="overflow-visible data-[closed]:overflow-hidden">
@@ -170,7 +174,7 @@ export function AdminSidebarNav({ menuRole, permissions, userRoles = [] }: Admin
             className={cn("h-9 rounded-md px-3 text-sm font-medium transition-colors", activeItemClass(dashboardActive))}
             render={
               <Link href={ADMIN_DASHBOARD_ITEM.url} className="flex w-full items-center gap-3 text-inherit">
-                <DashboardIcon className="h-4 w-4 shrink-0" />
+                <DashboardIcon className={activeIconClass(dashboardActive, "h-4 w-4")} />
                 <span>{t("items.dashboard")}</span>
               </Link>
             }

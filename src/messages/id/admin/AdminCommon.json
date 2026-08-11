@@ -1,0 +1,138 @@
+{
+  "AdminCommon": {
+    "actions": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "delete": "Hapus",
+      "deleting": "Menghapus…",
+      "back": "Kembali",
+      "edit": "Edit",
+      "loading": "Memuat…",
+      "actions": "Aksi",
+      "actionsMenu": "Menu aksi",
+      "viewDetail": "Lihat detail",
+      "manage": "Kelola",
+      "activate": "Aktifkan",
+      "activating": "Mengaktifkan…",
+      "deactivate": "Nonaktifkan",
+      "deactivating": "Menonaktifkan…",
+      "approve": "Setujui",
+      "reject": "Tolak",
+      "rejecting": "Menolak…",
+      "suspend": "Suspend",
+      "suspending": "Suspending…",
+      "close": "Tutup",
+      "submit": "Submit",
+      "confirm": "Konfirmasi",
+      "select": "Pilih",
+      "add": "Tambah",
+      "generate": "Generate",
+      "generating": "Generating…",
+      "issue": "Issue",
+      "download": "Unduh",
+      "record": "Catat"
+    },
+    "table": {
+      "no": "No",
+      "actions": "Aksi",
+      "empty": "Belum ada data.",
+      "rowsOnPage": "Baris pada halaman ini.",
+      "customer": "Customer",
+      "status": "Status"
+    },
+    "filters": {
+      "allStatus": "Semua status",
+      "status": "Status"
+    },
+    "deleteDialog": {
+      "confirm": "Hapus",
+      "deleting": "Menghapus…",
+      "cancel": "Batal"
+    },
+    "status": {
+      "customer": {
+        "active": "Aktif",
+        "pending": "Menunggu Review",
+        "inactive": "Nonaktif",
+        "rejected": "Ditolak",
+        "suspended": "Suspended"
+      },
+      "booking": {
+        "draft": "Draft",
+        "submitted": "Diajukan",
+        "approved": "Terkonfirmasi",
+        "confirmed": "Terkonfirmasi",
+        "rejected": "Ditolak",
+        "cancelled": "Dibatalkan",
+        "converted": "Dikonversi ke Shipment"
+      },
+      "invoice": {
+        "draft": "Draft",
+        "issued": "Issued",
+        "partially_paid": "Partially Paid",
+        "unpaid": "Belum bayar",
+        "paid": "Lunas",
+        "overdue": "Jatuh tempo",
+        "cancelled": "Dibatalkan"
+      },
+      "payment": {
+        "success": "Berhasil",
+        "settlement": "Berhasil",
+        "pending": "Menunggu",
+        "capture": "Menunggu",
+        "authorize": "Menunggu",
+        "deny": "Ditolak",
+        "cancel": "Dibatalkan",
+        "expire": "Kedaluwarsa",
+        "expired": "Kedaluwarsa",
+        "failure": "Gagal",
+        "failed": "Gagal",
+        "unpaid": "Belum Dibayar",
+        "refunded": "Refund",
+        "partial_refund": "Refund sebagian",
+        "chargeback": "Chargeback"
+      },
+      "shipment": {
+        "planning": "Planning",
+        "in_progress": "Dalam Proses",
+        "ready_for_departure": "Ready for Departure",
+        "in_transit": "In Transit",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "booking_created": "Booking Dibuat",
+        "created": "Dibuat",
+        "survey_completed": "Survey Selesai",
+        "cargo_received": "Kargo Diterima",
+        "stuffing_container": "Stuffing Kontainer",
+        "container_sealed": "Kontainer Disegel",
+        "train_departed": "Kereta Berangkat",
+        "departed": "Berangkat",
+        "train_arrived": "Kereta Tiba",
+        "arrived": "Tiba",
+        "container_unloading": "Bongkar Kontainer",
+        "unloading": "Bongkar",
+        "ready_for_pickup": "Siap Diambil"
+      }
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat data.",
+      "saveFailed": "Gagal menyimpan.",
+      "deleteFailed": "Gagal menghapus."
+    },
+    "addressRegion": {
+      "state": "Provinsi/State",
+      "selectCountry": "Pilih negara",
+      "selectCountryFirst": "Pilih negara terlebih dahulu",
+      "selectProvince": "Pilih provinsi",
+      "selectProvinceFirst": "Pilih provinsi terlebih dahulu",
+      "selectCity": "Pilih kota / kabupaten",
+      "selectCityFirst": "Pilih kota terlebih dahulu",
+      "selectDistrict": "Pilih kecamatan",
+      "searchCountry": "Cari negara",
+      "searchProvince": "Cari provinsi",
+      "searchCity": "Cari kota / kabupaten",
+      "searchDistrict": "Cari kecamatan"
+    }
+  }
+}

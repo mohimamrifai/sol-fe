@@ -11,8 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { invoiceStatusBadgeClass, invoiceStatusLabelFromApi } from "@/lib/invoice-status";
+import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
 import { cn } from "@/lib/utils";
+import { useInvoiceStatusLabel, usePaymentStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useTranslations } from "next-intl";
 
 type Inv = Record<string, unknown>;
 
@@ -50,6 +52,10 @@ function rowLabel(label: string, value: ReactNode, className?: string) {
 }
 
 export function InvoiceDetailView({ data }: { data: Inv | null }) {
+  const t = useTranslations("AdminInvoices");
+  const invoiceStatusLabel = useInvoiceStatusLabel();
+  const paymentStatusLabel = usePaymentStatusLabel();
+
   if (!data) {
     return <p className="text-sm text-muted-foreground">—</p>;
   }
@@ -77,11 +83,11 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-lg font-semibold tracking-tight">{num}</p>
-          <p className="text-xs text-muted-foreground">Invoice</p>
+          <p className="text-xs text-muted-foreground">{t("detail.invoiceLabel")}</p>
         </div>
         {st ? (
           <Badge variant="outline" className={invoiceStatusBadgeClass(st)}>
-            {invoiceStatusLabelFromApi(st)}
+            {invoiceStatusLabel(st)}
           </Badge>
         ) : null}
       </div>
@@ -89,30 +95,30 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
       <Separator />
 
       <div className="space-y-3">
-        {rowLabel("Perusahaan", company?.name ?? "—")}
+        {rowLabel(t("detail.company"), company?.name ?? "—")}
         {rowLabel(
-          "Shipment / waybill",
+          t("detail.shipment"),
           <span className="font-mono text-xs">{waybill}</span>
         )}
-        {rowLabel("Tanggal terbit", fmtDate(data.issued_date))}
-        {rowLabel("Jatuh tempo", fmtDate(data.due_date))}
-        {creator?.name ? rowLabel("Dibuat oleh", creator.name) : null}
+        {rowLabel(t("detail.issuedDate"), fmtDate(data.issued_date))}
+        {rowLabel(t("detail.dueDate"), fmtDate(data.due_date))}
+        {creator?.name ? rowLabel(t("detail.createdBy"), creator.name) : null}
       </div>
 
       <Separator />
 
       <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-        <p className="text-xs font-medium text-muted-foreground">Ringkasan nominal</p>
+        <p className="text-xs font-medium text-muted-foreground">{t("detail.summary")}</p>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal</span>
+          <span className="text-muted-foreground">{t("detail.subtotal")}</span>
           <span className="tabular-nums">{fmtIdr(data.subtotal)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">PPN</span>
+          <span className="text-muted-foreground">{t("detail.tax")}</span>
           <span className="tabular-nums">{fmtIdr(data.tax_amount)}</span>
         </div>
         <div className="flex justify-between border-t pt-2 text-sm font-semibold">
-          <span>Total</span>
+          <span>{t("detail.total")}</span>
           <span className="tabular-nums">{fmtIdr(data.total_amount)}</span>
         </div>
       </div>
@@ -121,7 +127,7 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
         <>
           <Separator />
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Catatan</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("detail.notes")}</p>
             <p className="whitespace-pre-wrap text-sm">{notes}</p>
           </div>
         </>
@@ -130,18 +136,18 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
       <Separator />
 
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">Item baris</p>
+        <p className="text-xs font-medium text-muted-foreground">{t("detail.lineItems")}</p>
         {itemRows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Tidak ada item.</p>
+          <p className="text-sm text-muted-foreground">{t("detail.noItems")}</p>
         ) : (
           <div className="overflow-x-auto rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Deskripsi</TableHead>
-                  <TableHead className="w-20 text-right">Qty</TableHead>
-                  <TableHead className="min-w-[100px] text-right">Harga satuan</TableHead>
-                  <TableHead className="min-w-[100px] text-right">Jumlah</TableHead>
+                  <TableHead>{t("detail.description")}</TableHead>
+                  <TableHead className="w-20 text-right">{t("detail.quantity")}</TableHead>
+                  <TableHead className="min-w-[100px] text-right">{t("detail.unitPrice")}</TableHead>
+                  <TableHead className="min-w-[100px] text-right">{t("detail.amount")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -168,7 +174,7 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
         <>
           <Separator />
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Pembayaran</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("detail.payments")}</p>
             <ul className="space-y-2">
               {payRows.map((p, idx) => {
                 const pid =
@@ -178,17 +184,18 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
                       ? String(p.midtrans_order_id)
                       : `pay-${idx}`;
                 const paidAt = p.paid_at ? fmtDate(p.paid_at) : "—";
+                const paySt = String(p.status ?? "");
                 return (
                   <li
                     key={pid}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm"
                   >
                     <span className="text-muted-foreground">
-                      {String(p.payment_type ?? p.status ?? "Pembayaran")}
+                      {String(p.payment_type ?? (paySt ? paymentStatusLabel(paySt) : t("detail.payments")))}
                     </span>
                     <span className="font-medium tabular-nums">{fmtIdr(p.amount)}</span>
                     <span className="w-full text-xs text-muted-foreground sm:w-auto sm:text-right">
-                      {paidAt} · {String(p.status ?? "—")}
+                      {paidAt} · {paySt ? paymentStatusLabel(paySt) : "—"}
                     </span>
                   </li>
                 );

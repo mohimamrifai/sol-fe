@@ -3,6 +3,11 @@ export type BookingDetail = {
   booking_number: string;
   status: string;
   has_shipment?: boolean;
+  shipment_exists?: boolean;
+  shipment_id?: number | null;
+  created_at?: string;
+  shipment_coverage?: string;
+  activities?: Array<{ description?: string; event?: string; created_at?: string }>;
   origin_location_id?: number;
   destination_location_id?: number;
   transport_mode_id?: number;

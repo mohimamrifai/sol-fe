@@ -1,0 +1,138 @@
+{
+  "AdminCommon": {
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "back": "Back",
+      "edit": "Edit",
+      "loading": "Loading…",
+      "actions": "Actions",
+      "actionsMenu": "Actions menu",
+      "viewDetail": "View detail",
+      "manage": "Manage",
+      "activate": "Activate",
+      "activating": "Activating…",
+      "deactivate": "Deactivate",
+      "deactivating": "Deactivating…",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejecting": "Rejecting…",
+      "suspend": "Suspend",
+      "suspending": "Suspending…",
+      "close": "Close",
+      "submit": "Submit",
+      "confirm": "Confirm",
+      "select": "Select",
+      "add": "Add",
+      "generate": "Generate",
+      "generating": "Generating…",
+      "issue": "Issue",
+      "download": "Download",
+      "record": "Record"
+    },
+    "table": {
+      "no": "No",
+      "actions": "Actions",
+      "empty": "No data yet.",
+      "rowsOnPage": "Rows on this page.",
+      "customer": "Customer",
+      "status": "Status"
+    },
+    "filters": {
+      "allStatus": "All statuses",
+      "status": "Status"
+    },
+    "deleteDialog": {
+      "confirm": "Delete",
+      "deleting": "Deleting…",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "customer": {
+        "active": "Active",
+        "pending": "Pending Review",
+        "inactive": "Inactive",
+        "rejected": "Rejected",
+        "suspended": "Suspended"
+      },
+      "booking": {
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "approved": "Confirmed",
+        "confirmed": "Confirmed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled",
+        "converted": "Converted to Shipment"
+      },
+      "invoice": {
+        "draft": "Draft",
+        "issued": "Issued",
+        "partially_paid": "Partially Paid",
+        "unpaid": "Unpaid",
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "cancelled": "Cancelled"
+      },
+      "payment": {
+        "success": "Success",
+        "settlement": "Success",
+        "pending": "Pending",
+        "capture": "Pending",
+        "authorize": "Pending",
+        "deny": "Denied",
+        "cancel": "Cancelled",
+        "expire": "Expired",
+        "expired": "Expired",
+        "failure": "Failed",
+        "failed": "Failed",
+        "unpaid": "Unpaid",
+        "refunded": "Refunded",
+        "partial_refund": "Partial Refund",
+        "chargeback": "Chargeback"
+      },
+      "shipment": {
+        "planning": "Planning",
+        "in_progress": "In Progress",
+        "ready_for_departure": "Ready for Departure",
+        "in_transit": "In Transit",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "booking_created": "Booking Created",
+        "created": "Created",
+        "survey_completed": "Survey Completed",
+        "cargo_received": "Cargo Received",
+        "stuffing_container": "Stuffing Container",
+        "container_sealed": "Container Sealed",
+        "train_departed": "Train Departed",
+        "departed": "Departed",
+        "train_arrived": "Train Arrived",
+        "arrived": "Arrived",
+        "container_unloading": "Container Unloading",
+        "unloading": "Unloading",
+        "ready_for_pickup": "Ready for Pickup"
+      }
+    },
+    "errors": {
+      "loadFailed": "Failed to load data.",
+      "saveFailed": "Failed to save.",
+      "deleteFailed": "Failed to delete."
+    },
+    "addressRegion": {
+      "state": "State",
+      "selectCountry": "Select country",
+      "selectCountryFirst": "Select country first",
+      "selectProvince": "Select province",
+      "selectProvinceFirst": "Select province first",
+      "selectCity": "Select city / regency",
+      "selectCityFirst": "Select city first",
+      "selectDistrict": "Select district",
+      "searchCountry": "Search country",
+      "searchProvince": "Search province",
+      "searchCity": "Search city / regency",
+      "searchDistrict": "Search district"
+    }
+  }
+}

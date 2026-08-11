@@ -22,6 +22,7 @@ import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities"
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { toast } from "sonner";
+import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 
 const BUSINESS_ENTITY_OPTIONS = [
   { value: "PT", label: "PT" },
@@ -275,7 +276,7 @@ export default function AdminCustomerCreatePage() {
               />
             </div>
           )}
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-2">
             <Label>Alamat</Label>
             <Textarea
               value={address}
@@ -284,24 +285,21 @@ export default function AdminCustomerCreatePage() {
               rows={3}
             />
           </div>
-          <div className="space-y-2">
-            <Label>Kota</Label>
-            <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Kota / kabupaten" />
-          </div>
-          <div className="space-y-2">
-            <Label>Provinsi</Label>
-            <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="Provinsi" />
-          </div>
-          <div className="space-y-2">
-            <Label>Kode pos</Label>
-            <Input
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, ""))}
-              placeholder="00000"
-              inputMode="numeric"
-              pattern="[0-9]*"
-            />
-          </div>
+          <ControlledAddressRegionFields
+            className="md:col-span-2"
+            idPrefix="create-co"
+            value={{ province, city, postal_code: postalCode }}
+            onChange={(patch) => {
+              if (patch.province !== undefined) setProvince(patch.province);
+              if (patch.city !== undefined) setCity(patch.city);
+              if (patch.postal_code !== undefined) setPostalCode(patch.postal_code);
+            }}
+            labels={{
+              province: "Provinsi",
+              city: "Kota",
+              postalCode: "Kode pos",
+            }}
+          />
           <div className="space-y-2">
             <Label>Email perusahaan</Label>
             <Input

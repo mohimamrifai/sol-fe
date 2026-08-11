@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, X } from "lucide-react";
 import Image from "next/image";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 
 interface TrackingPhoto {
   id?: number | string;
@@ -59,6 +60,7 @@ function PhotoLightbox({
 
 export function TrackingTimelineCard({ trackings }: TrackingTimelineCardProps) {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const shipmentStatusLabel = useShipmentStatusLabel();
 
   const fmtDateTime = (d?: string) => {
     if (!d) return "";
@@ -91,7 +93,7 @@ export function TrackingTimelineCard({ trackings }: TrackingTimelineCardProps) {
                 return (
                   <div key={String(t.id)} className="relative">
                     <div className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-zinc-300 ring-4 ring-white" />
-                    <div className="font-semibold text-sm">{String(t.status ?? "")}</div>
+                    <div className="font-semibold text-sm">{shipmentStatusLabel(String(t.status ?? ""))}</div>
                     <div className="text-muted-foreground text-[11px] mt-0.5">
                       {t.tracked_at ? fmtDateTime(String(t.tracked_at)) : ""}
                       {t.location ? ` — ${String(t.location)}` : ""}

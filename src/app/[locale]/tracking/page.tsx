@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api-client";
-import { shipmentStatusLabel } from "@/lib/shipment-status";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 import { useTranslations } from "next-intl";
 import {
   Search,
@@ -78,6 +78,7 @@ function PhotoLightbox({
 
 export default function PublicTrackingPage() {
   const t = useTranslations("Tracking");
+  const shipmentStatusLabel = useShipmentStatusLabel();
   const searchParams = useSearchParams();
   const [cnNumber, setCnNumber] = useState("");
   const [loading, setLoading] = useState(false);

@@ -1,0 +1,87 @@
+{
+  "AdminInvoices": {
+    "pageTitle": "Customer Invoice Management",
+    "pageSubtitle": "Invoice, penerbitan, dan link pembayaran Midtrans.",
+    "listTitle": "Daftar Invoice",
+    "searchPlaceholder": "Cari nomor invoice…",
+    "generateInvoice": "Generate Invoice",
+    "createManual": "Create Manual Invoice",
+    "columns": {
+      "invoiceNo": "Nomor Invoice",
+      "shipment": "Shipment",
+      "amount": "Jumlah",
+      "issuedDate": "Tanggal Terbit",
+      "dueDate": "Jatuh Tempo"
+    },
+    "stats": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "partiallyPaid": "Partially Paid",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "viewDetail": "Lihat detail invoice",
+      "downloadPdf": "Unduh PDF",
+      "issue": "Issue Invoice",
+      "createMidtransLink": "Buat Link Midtrans",
+      "creatingLink": "Membuat link...",
+      "edit": "Edit invoice",
+      "delete": "Hapus invoice"
+    },
+    "detail": {
+      "title": "Detail invoice",
+      "internalRef": "Referensi internal #{id}",
+      "invoiceLabel": "Invoice",
+      "description": "Deskripsi",
+      "company": "Perusahaan",
+      "shipment": "Shipment / waybill",
+      "issuedDate": "Tanggal terbit",
+      "dueDate": "Jatuh tempo",
+      "createdBy": "Dibuat oleh",
+      "summary": "Ringkasan nominal",
+      "subtotal": "Subtotal",
+      "tax": "PPN",
+      "total": "Total",
+      "notes": "Catatan",
+      "lineItems": "Item baris",
+      "noItems": "Tidak ada item.",
+      "quantity": "Kuantitas",
+      "unitPrice": "Harga Satuan",
+      "amount": "Jumlah",
+      "payments": "Pembayaran"
+    },
+    "toasts": {
+      "loadFailed": "Gagal memuat invoice.",
+      "detailLoadFailed": "Gagal memuat detail invoice.",
+      "deleted": "Invoice berhasil dihapus.",
+      "deleteFailed": "Gagal menghapus invoice.",
+      "linkCreating": "Membuat link pembayaran…",
+      "linkCreated": "Link berhasil dibuat dan disalin ke clipboard!",
+      "linkFailed": "Gagal membuat link.",
+      "pdfDownloaded": "PDF invoice berhasil diunduh.",
+      "pdfFailed": "Gagal mengunduh PDF.",
+      "issued": "Invoice diterbitkan.",
+      "issueFailed": "Gagal issue invoice."
+    },
+    "deleteDialog": {
+      "title": "Hapus invoice?",
+      "description": "Yakin hapus invoice \"{number}\"? Invoice akan diarsipkan (soft delete). Tidak dapat dihapus jika sudah ada pembayaran sukses."
+    },
+    "generateDialog": {
+      "title": "Generate Invoice",
+      "description": "Shipment completed yang belum memiliki invoice. Pilih satu atau lebih untuk dibuat draft invoice.",
+      "loading": "Memuat shipment…",
+      "noEligible": "Tidak ada shipment eligible.",
+      "columns": {
+        "shipmentNo": "Shipment No",
+        "cnNo": "CN No",
+        "customer": "Customer",
+        "service": "Service",
+        "completed": "Completed"
+      },
+      "success": "{count} invoice draft dibuat.",
+      "failed": "Gagal generate invoice."
+    }
+  }
+}

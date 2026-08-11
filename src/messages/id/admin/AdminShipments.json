@@ -1,0 +1,34 @@
+{
+  "AdminShipments": {
+    "pageTitle": "Shipment Management",
+    "pageSubtitle": "Shipment customer dan pelacakan operasional.",
+    "listTitle": "Daftar Shipment",
+    "searchPlaceholder": "Cari Nomor Shipment atau CN…",
+    "filterStatus": "Filter Status",
+    "columns": {
+      "cnNumber": "CN Number",
+      "origin": "Origin",
+      "destination": "Destination"
+    },
+    "stats": {
+      "planning": "Planning",
+      "readyForDeparture": "Ready for Departure",
+      "inTransit": "In Transit",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "viewDetail": "Lihat detail shipment",
+      "cnActionsMenu": "Menu aksi CN",
+      "cnActionsMenuWithNumber": "Menu aksi CN {number}",
+      "service": "Service",
+      "route": "Rute",
+      "empty": "Belum ada shipment ditemukan.",
+      "updatedCaption": "Data Shipment Terupdate"
+    },
+    "toasts": {
+      "loadFailed": "Gagal memuat shipment."
+    },
+    "invalidId": "ID shipment tidak valid."
+  }
+}

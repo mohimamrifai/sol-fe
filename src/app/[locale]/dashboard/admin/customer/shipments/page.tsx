@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,39 +9,28 @@ import {
 } from "@/components/ui/card";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { SHIPMENT_STATUS_KEYS, shipmentStatusLabel } from "@/lib/shipment-status";
-import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { PackageSearch } from "lucide-react";
-import { fetchAdminShipments } from "@/lib/admin-api";
+import { fetchAdminShipments, fetchAdminShipmentStats } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useShipmentStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useTranslations } from "next-intl";
 import { ShipmentStatsCards } from "./components/shipment-stats-cards";
 import { ShipmentTable } from "./components/shipment-table";
 
 const PER_PAGE = 10;
-const STATS_CAP = 1000;
-
-const SHIPMENT_STATUS_FILTERS = [
-  { value: "all", label: "Semua status" },
-  ...SHIPMENT_STATUS_KEYS.map((k) => ({
-    value: k,
-    label: shipmentStatusLabel(k),
-  })),
-];
 
 type ShipRow = Record<string, unknown>;
 
-function isInTransitStatus(st: string): boolean {
-  const k = st.toLowerCase();
-  return ["departed", "arrived", "unloading"].includes(k);
-}
-
 export default function AdminShipmentsPage() {
+  const t = useTranslations("AdminShipments");
+  const tc = useTranslations("AdminCommon");
+  const shipmentStatusLabel = useShipmentStatusLabel();
   const authHydrated = useAuthPersistHydrated();
   const [rows, setRows] = useState<ShipRow[]>([]);
-  const [statsRows, setStatsRows] = useState<ShipRow[]>([]);
-  const [statsMeta, setStatsMeta] = useState<LaravelPaginated<ShipRow> | null>(null);
+  const [shipmentStats, setShipmentStats] = useState<Record<string, number> | null>(null);
   const [meta, setMeta] = useState<LaravelPaginated<ShipRow> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,31 +40,33 @@ export default function AdminShipmentsPage() {
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const shipmentStatusFilters = useMemo(
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      { value: "planning", label: shipmentStatusLabel("planning") },
+      { value: "ready_for_departure", label: shipmentStatusLabel("ready_for_departure") },
+      { value: "in_transit", label: shipmentStatusLabel("in_transit") },
+      { value: "completed", label: shipmentStatusLabel("completed") },
+      { value: "cancelled", label: shipmentStatusLabel("cancelled") },
+    ],
+    [tc, shipmentStatusLabel]
+  );
+
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, statusFilter]);
-
-
 
   const statusParam = statusFilter === "all" ? undefined : statusFilter;
 
   const loadStats = useCallback(async () => {
     if (!authHydrated) return;
     try {
-      const res = await fetchAdminShipments({
-        page: 1,
-        perPage: STATS_CAP,
-        search: debouncedSearch.trim() || undefined,
-        status: statusParam,
-      });
-      const paginated = res as LaravelPaginated<ShipRow>;
-      setStatsRows(paginated.data ?? []);
-      setStatsMeta(paginated);
+      const res = await fetchAdminShipmentStats();
+      setShipmentStats((res as { data: Record<string, number> }).data);
     } catch {
-      setStatsRows([]);
-      setStatsMeta(null);
+      setShipmentStats(null);
     }
-  }, [authHydrated, debouncedSearch, statusParam]);
+  }, [authHydrated]);
 
   const load = useCallback(async () => {
     if (!authHydrated) return;
@@ -92,13 +83,13 @@ export default function AdminShipmentsPage() {
       setRows(paginated.data ?? []);
       setMeta(paginated);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Gagal memuat shipment.");
+      setError(e instanceof ApiError ? e.message : t("toasts.loadFailed"));
       setRows([]);
       setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, statusParam]);
+  }, [authHydrated, page, debouncedSearch, statusParam, t]);
 
   useEffect(() => {
     void loadStats();
@@ -108,11 +99,6 @@ export default function AdminShipmentsPage() {
     void load();
   }, [load]);
 
-  const countCreated = statsRows.filter((s) => String(s.status).toLowerCase() === "created").length;
-  const countInTransit = statsRows.filter((s) => isInTransitStatus(String(s.status))).length;
-  const countCompleted = statsRows.filter((s) => String(s.status).toLowerCase() === "completed").length;
-  const totalStats = statsMeta?.total ?? 0;
-
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2">
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -121,8 +107,8 @@ export default function AdminShipmentsPage() {
             <PackageSearch className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl uppercase">Shipment Management</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Monitoring perjalanan, kontainer & rack secara real-time.</p>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl uppercase">{t("pageTitle")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("pageSubtitle")}</p>
           </div>
         </div>
       </div>
@@ -132,36 +118,37 @@ export default function AdminShipmentsPage() {
       ) : null}
 
       <ShipmentStatsCards
-        countCreated={countCreated}
-        countInTransit={countInTransit}
-        countCompleted={countCompleted}
-        totalStats={totalStats}
+        planning={shipmentStats?.planning ?? 0}
+        readyForDeparture={shipmentStats?.ready_for_departure ?? 0}
+        inTransit={shipmentStats?.in_transit ?? 0}
+        completed={shipmentStats?.completed ?? 0}
+        cancelled={shipmentStats?.cancelled ?? 0}
       />
 
       <Card className="min-w-0 overflow-hidden border-zinc-200/60 shadow-sm">
         <CardHeader className="space-y-1 bg-zinc-50/50 border-b border-zinc-100">
-          <CardTitle className="text-lg font-bold">Daftar Shipment</CardTitle>
+          <CardTitle className="text-lg font-bold">{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="p-4 border-b border-zinc-50">
             <TableToolbar
-              searchPlaceholder="Cari Nomor Shipment atau CN…"
+              searchPlaceholder={t("searchPlaceholder")}
               searchValue={searchInput}
               onSearchChange={setSearchInput}
-              filterLabel="Filter Status"
+              filterLabel={t("filterStatus")}
               filterValue={statusFilter}
               onFilterChange={setStatusFilter}
-              filterOptions={SHIPMENT_STATUS_FILTERS}
+              filterOptions={shipmentStatusFilters}
             />
           </div>
-          
+
           <ShipmentTable
             rows={rows}
             meta={meta}
             perPage={PER_PAGE}
             loading={loading}
           />
-          
+
           {meta && meta.last_page > 1 && (
             <div className="p-4 border-t border-zinc-50">
               <PaginationBar

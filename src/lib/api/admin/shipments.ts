@@ -79,3 +79,7 @@ export async function downloadAdminConsignmentNotePdf(shipmentId: number) {
 export async function downloadAdminWaybillPdf(shipmentId: number) {
   return apiFetchBlob(`/admin/shipments/${shipmentId}/waybill-pdf`, { method: "GET" });
 }
+
+export async function fetchAdminShipmentStats() {
+  return apiFetch<{ data: Record<string, number> }>(`/admin/shipments/stats`, { method: "GET" });
+}

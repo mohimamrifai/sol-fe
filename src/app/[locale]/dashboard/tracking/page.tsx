@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api-client";
-import { shipmentStatusLabel } from "@/lib/shipment-status";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 
 type TrackingPhoto = {
   path?: string;
@@ -32,6 +32,7 @@ type TrackingData = {
 };
 
 export default function CustomerTrackingPage() {
+  const shipmentStatusLabel = useShipmentStatusLabel();
   const [cnNumber, setCnNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

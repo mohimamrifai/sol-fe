@@ -1,79 +1,50 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, ClipboardClock, ClipboardList, FilePenLine } from "lucide-react";
+import { CheckCircle2, ClipboardClock, FilePenLine } from "lucide-react";
+import { BOOKING_FSD_STAT_META } from "@/lib/booking-status";
 
 interface BookingStatsProps {
   countDraft: number;
   countSubmitted: number;
-  countApproved: number;
-  totalStats: number;
+  countConfirmed: number;
 }
 
 export function BookingStats({
   countDraft,
   countSubmitted,
-  countApproved,
-  totalStats,
+  countConfirmed,
 }: BookingStatsProps) {
+  const t = useTranslations("AdminBookings");
+
+  const cards = [
+    { key: "draft" as const, count: countDraft, icon: FilePenLine },
+    { key: "submitted" as const, count: countSubmitted, icon: ClipboardClock },
+    { key: "confirmed" as const, count: countConfirmed, icon: CheckCircle2 },
+  ];
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Draft</CardDescription>
-            <span className="rounded-md bg-slate-100 p-1.5 text-slate-700">
-              <FilePenLine className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{countDraft}</span>
-            <span className="text-xs font-normal text-muted-foreground">belum dikirim / revisi</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Menunggu persetujuan</CardDescription>
-            <span className="rounded-md bg-amber-100 p-1.5 text-amber-700">
-              <ClipboardClock className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{countSubmitted}</span>
-            <span className="text-xs font-normal text-muted-foreground">perlu approve / tolak</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Disetujui</CardDescription>
-            <span className="rounded-md bg-emerald-100 p-1.5 text-emerald-700">
-              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{countApproved}</span>
-            <span className="text-xs font-normal text-emerald-600">siap konversi ke shipment</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Total booking</CardDescription>
-            <span className="rounded-md bg-sky-100 p-1.5 text-sky-700">
-              <ClipboardList className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{totalStats}</span>
-            <span className="text-xs font-normal text-muted-foreground">semua booking</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
+    <div className="grid gap-4 sm:grid-cols-3">
+      {cards.map(({ key, count, icon: Icon }) => {
+        const meta = BOOKING_FSD_STAT_META[key];
+        return (
+          <Card key={key}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardDescription>{t(`stats.${key}`)}</CardDescription>
+                <span className={`rounded-md p-1.5 ${meta.iconBg} ${meta.iconColor}`}>
+                  <Icon className="h-3.5 w-3.5" aria-hidden />
+                </span>
+              </div>
+              <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
+                <span>{count}</span>
+                <span className="text-xs font-normal text-muted-foreground">{t(`stats.${key}Hint`)}</span>
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        );
+      })}
     </div>
   );
 }

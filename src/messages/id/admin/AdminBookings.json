@@ -1,0 +1,85 @@
+{
+  "AdminBookings": {
+    "title": "Bookings",
+    "pageTitle": "Booking Management",
+    "pageSubtitle": "Booking customer dan konversi ke shipment.",
+    "addBooking": "Tambah Booking",
+    "listTitle": "Daftar Booking",
+    "searchPlaceholder": "Cari nomor booking atau kargo…",
+    "columns": {
+      "bookingNo": "Kode Booking",
+      "customer": "Customer",
+      "origin": "Origin",
+      "destination": "Destination",
+      "route": "Route",
+      "service": "Service",
+      "coverage": "Coverage",
+      "bookingDate": "Booking Date",
+      "status": "Status"
+    },
+    "filters": {
+      "submitted": "Diajukan",
+      "confirmed": "Terkonfirmasi",
+      "approved": "Disetujui",
+      "rejected": "Ditolak",
+      "cancelled": "Dibatalkan"
+    },
+    "stats": {
+      "draft": "Draft",
+      "draftHint": "Booking belum disubmit.",
+      "submitted": "Submitted",
+      "submittedHint": "Menunggu konfirmasi internal.",
+      "confirmed": "Confirmed",
+      "confirmedHint": "Dikonfirmasi, siap dikonversi ke shipment.",
+      "converted": "Dikonversi ke Shipment"
+    },
+    "actions": {
+      "detail": "Detail",
+      "submit": "Submit",
+      "confirm": "Confirm",
+      "reject": "Reject",
+      "convert": "Convert to Shipment",
+      "viewShipment": "View Shipment",
+      "delete": "Delete",
+      "editBooking": "Edit booking"
+    },
+    "toasts": {
+      "submitted": "Booking disubmit.",
+      "deleted": "Booking dihapus.",
+      "confirmed": "Booking dikonfirmasi.",
+      "converted": "Booking dikonversi ke shipment.",
+      "rejected": "Booking ditolak.",
+      "updated": "Booking berhasil diperbarui.",
+      "detailUpdated": "Detail booking berhasil diperbarui.",
+      "submitFailed": "Gagal submit.",
+      "deleteFailed": "Gagal menghapus.",
+      "confirmFailed": "Gagal konfirmasi.",
+      "convertFailed": "Gagal konversi.",
+      "rejectFailed": "Gagal menolak.",
+      "updateFailed": "Gagal memperbarui booking.",
+      "loadFailed": "Gagal memuat booking",
+      "editLoadFailed": "Gagal memuat form edit booking."
+    },
+    "confirm": {
+      "deleteDraft": "Hapus booking draft ini?"
+    },
+    "rejectDialog": {
+      "title": "Tolak booking",
+      "reasonLabel": "Alasan Penolakan",
+      "selectPlaceholder": "Pilih alasan...",
+      "otherLabel": "Alasan Spesifik",
+      "otherPlaceholder": "Ketikkan alasan penolakan...",
+      "other": "Lainnya",
+      "reasons": {
+        "capacity": "Kapasitas pengiriman penuh",
+        "routeUnavailable": "Rute tidak dilayani / tidak tersedia",
+        "incompleteCargo": "Informasi kargo tidak lengkap / tidak valid",
+        "prohibitedCargo": "Kargo mengandung barang terlarang / berbahaya tanpa izin"
+      }
+    },
+    "detailPage": {
+      "back": "Kembali",
+      "loadFailed": "Gagal memuat booking."
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "AdminShipments": {
+    "pageTitle": "Shipment Management",
+    "pageSubtitle": "Real-time shipment, container, and rack monitoring.",
+    "listTitle": "Shipment List",
+    "searchPlaceholder": "Search shipment number or CN…",
+    "filterStatus": "Filter Status",
+    "columns": {
+      "cnNumber": "CN Number",
+      "origin": "Origin",
+      "destination": "Destination"
+    },
+    "stats": {
+      "planning": "Planning",
+      "readyForDeparture": "Ready for Departure",
+      "inTransit": "In Transit",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "viewDetail": "View Shipment Detail",
+      "cnActionsMenu": "CN actions menu",
+      "cnActionsMenuWithNumber": "CN {number} actions menu",
+      "service": "Service",
+      "route": "Route",
+      "empty": "No shipments found.",
+      "updatedCaption": "Updated shipment data"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load shipments."
+    },
+    "invalidId": "Invalid shipment ID."
+  }
+}

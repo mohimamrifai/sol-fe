@@ -1,0 +1,99 @@
+{
+  "AdminPayments": {
+    "pageTitle": "Payment / AR Management",
+    "pageSubtitle": "Payments, Midtrans, and receivables for all customers.",
+    "listTitle": "Payment List",
+    "recordPayment": "Record Payment",
+    "searchPlaceholder": "Search Midtrans order or invoice number…",
+    "columns": {
+      "refPayment": "Payment Ref",
+      "orderId": "Order ID",
+      "invoiceNo": "Invoice No",
+      "amount": "Amount",
+      "paidAt": "Paid At",
+      "method": "Method"
+    },
+    "stats": {
+      "unpaid": "Unpaid",
+      "partiallyPaid": "Partially Paid",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "filters": {
+      "expire": "Expire",
+      "cancel": "Cancel",
+      "settlement": "Settlement",
+      "capture": "Capture",
+      "authorize": "Authorize",
+      "deny": "Deny",
+      "failure": "Failure",
+      "refund": "Refund",
+      "partialRefund": "Partial Refund",
+      "chargeback": "Chargeback"
+    },
+    "actions": {
+      "viewDetail": "View payment detail",
+      "actionsMenu": "Payment actions menu",
+      "refreshMidtrans": "Refresh Midtrans status",
+      "syncing": "Syncing…",
+      "manualVerify": "Manual verify",
+      "verifyTitle": "Manually verify payment?",
+      "verifyDescription": "The related invoice will be marked as paid. Only use if transfer/cash has been verified.",
+      "verifyNotes": "Notes (optional)",
+      "verifyPlaceholder": "e.g. Transfer received to BCA account 02/04/2026",
+      "verifyConfirm": "Yes, verify",
+      "processing": "Processing…"
+    },
+    "detail": {
+      "title": "Payment detail",
+      "titleWithRef": "Payment detail {ref}",
+      "description": "Midtrans payment summary and related invoice.",
+      "loading": "Loading detail…",
+      "fallbackNote": "Showing data from the list.",
+      "orderIdLabel": "Midtrans Order ID",
+      "orderId": "Midtrans Order ID",
+      "transactionId": "Transaction ID",
+      "method": "Method / type",
+      "amount": "Amount",
+      "paidAt": "Paid at",
+      "recordedAt": "Recorded at",
+      "relatedInvoice": "Related invoice",
+      "invoiceNo": "Invoice number",
+      "shipment": "Shipment / waybill",
+      "invoiceTotal": "Invoice total",
+      "invoiceStatus": "Invoice status",
+      "midtransPayload": "Midtrans response payload (technical)"
+    },
+    "recordDialog": {
+      "title": "Record Payment",
+      "loadingEligible": "Loading eligible invoices…",
+      "noEligible": "No eligible invoices.",
+      "select": "Select",
+      "dueDate": "Due Date",
+      "outstanding": "Outstanding",
+      "paymentMethod": "Payment Method",
+      "paymentDate": "Payment Date",
+      "companyBank": "Company Bank",
+      "account": "Account",
+      "paymentAmount": "Payment Amount",
+      "referenceNo": "Reference No",
+      "remark": "Remark",
+      "methodTransfer": "Transfer",
+      "methodGiro": "Giro",
+      "methodCash": "Cash",
+      "methodVirtualAccount": "Virtual Account",
+      "methodMidtrans": "Midtrans",
+      "recorded": "Payment recorded.",
+      "recordFailed": "Failed to record payment."
+    },
+    "toasts": {
+      "loadFailed": "Failed to load payments.",
+      "detailLoadFailed": "Failed to load detail.",
+      "invalidId": "Invalid payment ID.",
+      "syncing": "Syncing status from Midtrans…",
+      "syncFailed": "Failed to sync from Midtrans.",
+      "verifying": "Verifying payment…",
+      "verifyFailed": "Failed to verify manually."
+    }
+  }
+}

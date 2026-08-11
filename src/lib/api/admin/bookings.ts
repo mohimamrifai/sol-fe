@@ -57,3 +57,19 @@ export async function convertBookingToShipment(id: number) {
     { method: "POST", body: JSON.stringify({}) }
   );
 }
+
+export async function fetchAdminBookingStats() {
+  return apiFetch<{ data: Record<string, number> }>(`/admin/bookings/stats`, { method: "GET" });
+}
+
+export async function submitAdminBooking(id: number) {
+  return apiFetch(`/admin/bookings/${id}/submit`, { method: "POST", body: JSON.stringify({}) });
+}
+
+export async function confirmAdminBooking(id: number) {
+  return apiFetch(`/admin/bookings/${id}/confirm`, { method: "POST", body: JSON.stringify({}) });
+}
+
+export async function deleteAdminBooking(id: number) {
+  return apiFetch(`/admin/bookings/${id}`, { method: "DELETE" });
+}

@@ -14,6 +14,27 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
+    "trackingStatus": {
+      "booking_created": "Booking Created",
+      "created": "Created",
+      "survey_completed": "Survey Completed",
+      "cargo_received": "Cargo Received",
+      "stuffing_container": "Stuffing Container",
+      "container_sealed": "Container Sealed",
+      "train_departed": "Train Departed",
+      "departed": "Departed",
+      "train_arrived": "Train Arrived",
+      "arrived": "Arrived",
+      "container_unloading": "Container Unloading",
+      "unloading": "Unloading",
+      "ready_for_pickup": "Ready for Pickup",
+      "planning": "Planning",
+      "in_progress": "In Progress",
+      "ready_for_departure": "Ready for Departure",
+      "in_transit": "In Transit",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
     "filter": {
       "title": "Filter",
       "clear": "Reset",

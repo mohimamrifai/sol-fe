@@ -3,7 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import { shipmentStatusBadgeClass, shipmentStatusLabel } from "@/lib/shipment-status";
+import { shipmentStatusBadgeClass } from "@/lib/shipment-status";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
 
@@ -13,6 +14,8 @@ interface ShipmentHeaderProps {
 }
 
 export function ShipmentHeader({ cnNumber, status }: ShipmentHeaderProps) {
+  const shipmentStatusLabel = useShipmentStatusLabel();
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Link

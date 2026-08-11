@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 import type { Row } from "@/components/dashboard/admin/company-admin-dialog/types";
+import { BranchCityRegionFields } from "@/components/dashboard/admin/company-admin-dialog/branch-city-region-fields";
 
 type Props = {
   open: boolean;
@@ -68,10 +69,7 @@ export function BranchDialog(props: Props) {
             <Label>Alamat</Label>
             <Input value={bAddr} onChange={(e) => setBAddr(e.target.value)} placeholder="Alamat cabang" />
           </div>
-          <div className="space-y-1">
-            <Label>Kota</Label>
-            <Input value={bCity} onChange={(e) => setBCity(e.target.value)} placeholder="Kota" />
-          </div>
+          <BranchCityRegionFields city={bCity} onCityChange={setBCity} />
           <div className="space-y-1">
             <Label>Telepon</Label>
             <Input

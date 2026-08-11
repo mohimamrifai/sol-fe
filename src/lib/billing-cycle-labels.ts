@@ -1,3 +1,19 @@
+/** FSD super-admin billing cycle options */
+export const FSD_BILLING_CYCLE_OPTIONS = [
+  { value: "per_shipment", label: "Per Shipment" },
+  { value: "semi_monthly", label: "Semi Monthly" },
+  { value: "monthly", label: "Monthly" },
+] as const;
+
+export const FSD_PAYMENT_TERM_OPTIONS = [
+  { value: "cod", label: "COD" },
+  { value: "net_7", label: "Net 7" },
+  { value: "net_14", label: "Net 14" },
+  { value: "net_30", label: "Net 30" },
+  { value: "net_45", label: "Net 45" },
+  { value: "net_60", label: "Net 60" },
+] as const;
+
 /** Opsi siklus penagihan (nilai API → label UI). */
 export const BILLING_CYCLE_OPTIONS = [
   { value: "half_monthly_1", label: "Setengah bulan (tanggal 1–15)" },

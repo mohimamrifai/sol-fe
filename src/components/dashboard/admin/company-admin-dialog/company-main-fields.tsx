@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { BILLING_CYCLE_OPTIONS, billingCycleLabel } from "@/lib/billing-cycle-labels";
 import type { CompanyDialogMode } from "@/components/dashboard/admin/company-admin-dialog/types";
+import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 
 type Props = {
   mode: CompanyDialogMode;
@@ -157,7 +158,7 @@ export function CompanyMainFields({
           />
         </div>
       )}
-      <div className="space-y-2 md:col-span-1">
+      <div className="space-y-2 md:col-span-2">
         <Label htmlFor="co-addr">Alamat</Label>
         <Textarea
           id="co-addr"
@@ -168,38 +169,22 @@ export function CompanyMainFields({
           rows={3}
         />
       </div>
-      <div className="space-y-2 md:col-span-1">
-        <Label htmlFor="co-city">Kota</Label>
-        <Input
-          id="co-city"
-          value={city}
-          onChange={(e) => onCityChange(e.target.value)}
-          placeholder={mode === "create" ? "Kota / kabupaten" : undefined}
-          disabled={readOnly}
-        />
-      </div>
-      <div className="space-y-2 md:col-span-1">
-        <Label htmlFor="co-prov">Provinsi</Label>
-        <Input
-          id="co-prov"
-          value={province}
-          onChange={(e) => onProvinceChange(e.target.value)}
-          placeholder={mode === "create" ? "Provinsi" : undefined}
-          disabled={readOnly}
-        />
-      </div>
-      <div className="space-y-2 md:col-span-1">
-        <Label htmlFor="co-post">Kode pos</Label>
-        <Input
-          id="co-post"
-          value={postalCode}
-          onChange={(e) => onPostalCodeChange(e.target.value)}
-          placeholder={mode === "create" ? "00000" : undefined}
-          disabled={readOnly}
-          inputMode="numeric"
-          pattern="[0-9]*"
-        />
-      </div>
+      <ControlledAddressRegionFields
+        className="md:col-span-2"
+        idPrefix="co"
+        value={{ province, city, postal_code: postalCode }}
+        onChange={(patch) => {
+          if (patch.province !== undefined) onProvinceChange(patch.province);
+          if (patch.city !== undefined) onCityChange(patch.city);
+          if (patch.postal_code !== undefined) onPostalCodeChange(patch.postal_code);
+        }}
+        disabled={readOnly}
+        labels={{
+          province: "Provinsi",
+          city: "Kota",
+          postalCode: "Kode pos",
+        }}
+      />
       <div className="space-y-2 md:col-span-1">
         <Label htmlFor="co-pic">PIC</Label>
         <Input

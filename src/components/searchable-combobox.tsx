@@ -23,6 +23,34 @@ export interface ComboboxOption {
   label: string;
 }
 
+/** Prefer an option from the list before falling back to free text. */
+function findOptionForQuery(
+  options: ComboboxOption[],
+  query: string,
+): ComboboxOption | undefined {
+  const trimmed = query.trim();
+  if (!trimmed) return undefined;
+
+  const q = trimmed.toLowerCase();
+
+  const exact = options.find((o) => o.label.toLowerCase() === q);
+  if (exact) return exact;
+
+  const partial = options.filter((o) => o.label.toLowerCase().includes(q));
+  if (partial.length === 1) return partial[0];
+  if (partial.length > 1) {
+    const wordMatch = partial.find((o) =>
+      o.label
+        .toLowerCase()
+        .split(/\s+/)
+        .some((word) => word.startsWith(q)),
+    );
+    return wordMatch ?? partial[0];
+  }
+
+  return undefined;
+}
+
 interface SearchableComboboxProps {
   value: string;
   onChange: (value: string) => void;
@@ -99,13 +127,16 @@ export function SearchableCombobox({
 
   const commit = (next: string) => {
     if (!next.trim()) return;
-    if (allowFreeInput) {
+    const match = findOptionForQuery(options, next);
+    if (match) {
+      onChange(match.value);
+    } else if (allowFreeInput) {
       onChange(next.trim());
     } else {
-      const match = options.find(
+      const exact = options.find(
         (o) => o.label.toLowerCase() === next.trim().toLowerCase(),
       );
-      if (match) onChange(match.value);
+      if (exact) onChange(exact.value);
     }
     setOpen(false);
   };
@@ -159,7 +190,15 @@ export function SearchableCombobox({
             value={draft}
             onValueChange={setDraft}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && allowFreeInput && draft.trim()) {
+              if (e.key !== "Enter" || !draft.trim()) return;
+              const match = findOptionForQuery(options, draft);
+              if (match) {
+                e.preventDefault();
+                onChange(match.value);
+                setOpen(false);
+                return;
+              }
+              if (allowFreeInput) {
                 e.preventDefault();
                 commit(draft);
               }

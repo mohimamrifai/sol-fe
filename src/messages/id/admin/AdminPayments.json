@@ -1,0 +1,99 @@
+{
+  "AdminPayments": {
+    "pageTitle": "Payment / AR Management",
+    "pageSubtitle": "Pembayaran, Midtrans, dan piutang semua customer.",
+    "listTitle": "Daftar pembayaran",
+    "recordPayment": "Record Payment",
+    "searchPlaceholder": "Cari order Midtrans atau nomor invoice…",
+    "columns": {
+      "refPayment": "Ref payment",
+      "orderId": "Order ID",
+      "invoiceNo": "Nomor Invoice",
+      "amount": "Jumlah",
+      "paidAt": "Waktu Bayar",
+      "method": "Metode"
+    },
+    "stats": {
+      "unpaid": "Unpaid",
+      "partiallyPaid": "Partially Paid",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "filters": {
+      "expire": "Expire",
+      "cancel": "Cancel",
+      "settlement": "Settlement",
+      "capture": "Capture",
+      "authorize": "Authorize",
+      "deny": "Deny",
+      "failure": "Failure",
+      "refund": "Refund",
+      "partialRefund": "Refund sebagian",
+      "chargeback": "Chargeback"
+    },
+    "actions": {
+      "viewDetail": "Lihat detail pembayaran",
+      "actionsMenu": "Menu aksi pembayaran",
+      "refreshMidtrans": "Refresh status Midtrans",
+      "syncing": "Menyinkronkan…",
+      "manualVerify": "Verifikasi manual",
+      "verifyTitle": "Verifikasi manual pembayaran?",
+      "verifyDescription": "Invoice terkait akan ditandai lunas. Hanya gunakan jika transfer/kas sudah diverifikasi.",
+      "verifyNotes": "Catatan (opsional)",
+      "verifyPlaceholder": "Contoh: Transfer masuk ke rek BCA 02/04/2026",
+      "verifyConfirm": "Ya, verifikasi",
+      "processing": "Memproses…"
+    },
+    "detail": {
+      "title": "Detail pembayaran",
+      "titleWithRef": "Detail pembayaran {ref}",
+      "description": "Ringkasan pembayaran Midtrans dan invoice terkait.",
+      "loading": "Memuat detail…",
+      "fallbackNote": "Menampilkan data dari daftar.",
+      "orderIdLabel": "Order ID Midtrans",
+      "orderId": "Order ID Midtrans",
+      "transactionId": "Transaction ID",
+      "method": "Metode / tipe",
+      "amount": "Jumlah",
+      "paidAt": "Waktu bayar",
+      "recordedAt": "Dicatat",
+      "relatedInvoice": "Invoice terkait",
+      "invoiceNo": "Nomor invoice",
+      "shipment": "Shipment / waybill",
+      "invoiceTotal": "Total invoice",
+      "invoiceStatus": "Status invoice",
+      "midtransPayload": "Payload respons Midtrans (teknis)"
+    },
+    "recordDialog": {
+      "title": "Record Payment",
+      "loadingEligible": "Memuat invoice eligible…",
+      "noEligible": "Tidak ada invoice eligible.",
+      "select": "Pilih",
+      "dueDate": "Due Date",
+      "outstanding": "Outstanding",
+      "paymentMethod": "Payment Method",
+      "paymentDate": "Payment Date",
+      "companyBank": "Company Bank",
+      "account": "Account",
+      "paymentAmount": "Payment Amount",
+      "referenceNo": "Reference No",
+      "remark": "Remark",
+      "methodTransfer": "Transfer",
+      "methodGiro": "Giro",
+      "methodCash": "Cash",
+      "methodVirtualAccount": "Virtual Account",
+      "methodMidtrans": "Midtrans",
+      "recorded": "Pembayaran dicatat.",
+      "recordFailed": "Gagal mencatat pembayaran."
+    },
+    "toasts": {
+      "loadFailed": "Gagal memuat pembayaran.",
+      "detailLoadFailed": "Gagal memuat detail.",
+      "invalidId": "ID pembayaran tidak valid.",
+      "syncing": "Menyinkronkan status dari Midtrans…",
+      "syncFailed": "Gagal menyinkronkan dari Midtrans.",
+      "verifying": "Memverifikasi pembayaran…",
+      "verifyFailed": "Gagal verifikasi manual."
+    }
+  }
+}

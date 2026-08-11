@@ -24,6 +24,7 @@ import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete
 import { createAdminBranch, deleteAdminBranch, updateAdminBranch } from "@/lib/admin-api";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
+import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 
 interface BranchManagementProps {
   companyId: number;
@@ -43,6 +44,7 @@ export function BranchManagement({
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
+  const [province, setProvince] = useState("");
   const [phone, setPhone] = useState("");
   const [pic, setPic] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -56,6 +58,7 @@ export function BranchManagement({
       setName(String(row.name ?? ""));
       setAddress(String(row.address ?? ""));
       setCity(String(row.city ?? ""));
+      setProvince("");
       setPhone(String(row.phone ?? ""));
       setPic(String(row.contact_person ?? ""));
       setIsActive(row.is_active !== false);
@@ -64,6 +67,7 @@ export function BranchManagement({
       setName("");
       setAddress("");
       setCity("");
+      setProvince("");
       setPhone("");
       setPic("");
       setIsActive(true);
@@ -184,10 +188,20 @@ export function BranchManagement({
                 placeholder="Alamat cabang"
               />
             </div>
-            <div className="space-y-1">
-              <Label>Kota</Label>
-              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Kota" />
-            </div>
+            <ControlledAddressRegionFields
+              className="grid-cols-1 gap-3"
+              idPrefix="branch"
+              value={{ province, city }}
+              onChange={(patch) => {
+                if (patch.province !== undefined) setProvince(patch.province);
+                if (patch.city !== undefined) setCity(patch.city);
+              }}
+              showPostalCode={false}
+              labels={{
+                province: "Provinsi",
+                city: "Kota",
+              }}
+            />
             <div className="space-y-1">
               <Label>Telepon</Label>
               <Input

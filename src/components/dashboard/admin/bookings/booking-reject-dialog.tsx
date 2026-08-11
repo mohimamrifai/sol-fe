@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,14 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 
-const REJECT_REASONS = [
-  "Kapasitas pengiriman penuh",
-  "Rute tidak dilayani / tidak tersedia",
-  "Informasi kargo tidak lengkap / tidak valid",
-  "Kargo mengandung barang terlarang / berbahaya tanpa izin",
-  "Lainnya"
-];
+const REJECT_REASON_KEYS = [
+  "capacity",
+  "routeUnavailable",
+  "incompleteCargo",
+  "prohibitedCargo",
+  "other",
+] as const;
 
 interface BookingRejectDialogProps {
   open: boolean;
@@ -40,8 +41,19 @@ export function BookingRejectDialog({
   loading,
   onSubmit,
 }: BookingRejectDialogProps) {
+  const t = useTranslations("AdminBookings.rejectDialog");
+  const tc = useTranslations("AdminCommon.actions");
   const [reasonType, setReasonType] = useState("");
   const [reasonOther, setReasonOther] = useState("");
+
+  const reasonOptions = useMemo(
+    () =>
+      REJECT_REASON_KEYS.map((key) => ({
+        key,
+        label: key === "other" ? t("other") : t(`reasons.${key}` as "reasons.capacity"),
+      })),
+    [t]
+  );
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -51,46 +63,47 @@ export function BookingRejectDialog({
     onOpenChange(newOpen);
   };
 
-  const finalReason = reasonType === "Lainnya" ? reasonOther : reasonType;
+  const isOther = reasonType === "other";
+  const finalReason = isOther ? reasonOther : reasonOptions.find((r) => r.key === reasonType)?.label ?? "";
   const canSubmit = finalReason.trim().length > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Tolak booking</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="reject-reason-type">Alasan Penolakan</Label>
+            <Label htmlFor="reject-reason-type">{t("reasonLabel")}</Label>
             <Select value={reasonType} onValueChange={(v) => setReasonType(v || "")} disabled={loading}>
               <SelectTrigger id="reject-reason-type" className="w-full">
-                <SelectValue placeholder="Pilih alasan..." />
+                <SelectValue placeholder={t("selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent className="w-full">
-                {REJECT_REASONS.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                {reasonOptions.map(({ key, label }) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
-          {reasonType === "Lainnya" && (
+
+          {isOther ? (
             <div className="space-y-2">
-              <Label htmlFor="reject-reason-other">Alasan Spesifik</Label>
+              <Label htmlFor="reject-reason-other">{t("otherLabel")}</Label>
               <Input
                 id="reject-reason-other"
-                placeholder="Ketikkan alasan penolakan..."
+                placeholder={t("otherPlaceholder")}
                 value={reasonOther}
                 onChange={(e) => setReasonOther(e.target.value)}
                 disabled={loading}
               />
             </div>
-          )}
+          ) : null}
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} disabled={loading}>
-            Batal
+            {tc("cancel")}
           </Button>
           <Button
             type="button"
@@ -98,7 +111,7 @@ export function BookingRejectDialog({
             disabled={!canSubmit || loading}
             onClick={() => onSubmit(finalReason.trim())}
           >
-            {loading ? "Menyimpan…" : "Tolak"}
+            {loading ? tc("saving") : tc("reject")}
           </Button>
         </DialogFooter>
       </DialogContent>

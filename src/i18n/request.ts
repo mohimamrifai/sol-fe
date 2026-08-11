@@ -40,6 +40,12 @@ const NAMESPACE_PATHS: Record<string, string> = {
   Profile: "settings",
   Vendor: "vendor",
   AdminNav: "admin",
+  AdminCommon: "admin",
+  AdminCustomers: "admin",
+  AdminBookings: "admin",
+  AdminShipments: "admin",
+  AdminInvoices: "admin",
+  AdminPayments: "admin",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

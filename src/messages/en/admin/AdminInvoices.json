@@ -1,0 +1,87 @@
+{
+  "AdminInvoices": {
+    "pageTitle": "Customer Invoice Management",
+    "pageSubtitle": "Invoices, issuance, and Midtrans payment links.",
+    "listTitle": "Invoice List",
+    "searchPlaceholder": "Search invoice number…",
+    "generateInvoice": "Generate Invoice",
+    "createManual": "Create Manual Invoice",
+    "columns": {
+      "invoiceNo": "Invoice No",
+      "shipment": "Shipment",
+      "amount": "Amount",
+      "issuedDate": "Issued Date",
+      "dueDate": "Due Date"
+    },
+    "stats": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "partiallyPaid": "Partially Paid",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "viewDetail": "View invoice detail",
+      "downloadPdf": "Download PDF",
+      "issue": "Issue Invoice",
+      "createMidtransLink": "Create Midtrans Link",
+      "creatingLink": "Creating link…",
+      "edit": "Edit invoice",
+      "delete": "Delete invoice"
+    },
+    "detail": {
+      "title": "Invoice Detail",
+      "internalRef": "Internal reference #{id}",
+      "invoiceLabel": "Invoice",
+      "description": "Description",
+      "company": "Company",
+      "shipment": "Shipment / waybill",
+      "issuedDate": "Issued date",
+      "dueDate": "Due date",
+      "createdBy": "Created by",
+      "summary": "Amount summary",
+      "subtotal": "Subtotal",
+      "tax": "Tax (VAT)",
+      "total": "Total",
+      "notes": "Notes",
+      "lineItems": "Line items",
+      "noItems": "No items.",
+      "quantity": "Qty",
+      "unitPrice": "Unit Price",
+      "amount": "Amount",
+      "payments": "Payments"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load invoices.",
+      "detailLoadFailed": "Failed to load invoice detail.",
+      "deleted": "Invoice deleted.",
+      "deleteFailed": "Failed to delete invoice.",
+      "linkCreating": "Creating payment link…",
+      "linkCreated": "Link created and copied to clipboard!",
+      "linkFailed": "Failed to create link.",
+      "pdfDownloaded": "Invoice PDF downloaded.",
+      "pdfFailed": "Failed to download PDF.",
+      "issued": "Invoice issued.",
+      "issueFailed": "Failed to issue invoice."
+    },
+    "deleteDialog": {
+      "title": "Delete invoice?",
+      "description": "Are you sure you want to delete invoice \"{number}\"? The invoice will be archived (soft delete). It cannot be deleted if a successful payment exists."
+    },
+    "generateDialog": {
+      "title": "Generate Invoice",
+      "description": "Completed shipments without an invoice. Select one or more to create draft invoices.",
+      "loading": "Loading shipments…",
+      "noEligible": "No eligible shipments.",
+      "columns": {
+        "shipmentNo": "Shipment No",
+        "cnNo": "CN No",
+        "customer": "Customer",
+        "service": "Service",
+        "completed": "Completed"
+      },
+      "success": "{count} draft invoice(s) created.",
+      "failed": "Failed to generate invoice."
+    }
+  }
+}

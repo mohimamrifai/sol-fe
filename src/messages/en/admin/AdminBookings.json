@@ -1,0 +1,85 @@
+{
+  "AdminBookings": {
+    "title": "Bookings",
+    "pageTitle": "Booking Management",
+    "pageSubtitle": "Customer bookings and conversion to shipments.",
+    "addBooking": "Add Booking",
+    "listTitle": "Booking List",
+    "searchPlaceholder": "Search booking number or cargo…",
+    "columns": {
+      "bookingNo": "Booking No",
+      "customer": "Customer",
+      "origin": "Origin",
+      "destination": "Destination",
+      "route": "Route",
+      "service": "Service",
+      "coverage": "Coverage",
+      "bookingDate": "Booking Date",
+      "status": "Status"
+    },
+    "filters": {
+      "submitted": "Submitted",
+      "confirmed": "Confirmed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "stats": {
+      "draft": "Draft",
+      "draftHint": "Booking not yet submitted.",
+      "submitted": "Submitted",
+      "submittedHint": "Awaiting internal confirmation.",
+      "confirmed": "Confirmed",
+      "confirmedHint": "Confirmed, ready to convert to shipment.",
+      "converted": "Converted to Shipment"
+    },
+    "actions": {
+      "detail": "Detail",
+      "submit": "Submit",
+      "confirm": "Confirm",
+      "reject": "Reject",
+      "convert": "Convert to Shipment",
+      "viewShipment": "View Shipment",
+      "delete": "Delete",
+      "editBooking": "Edit Booking"
+    },
+    "toasts": {
+      "submitted": "Booking submitted.",
+      "deleted": "Booking deleted.",
+      "confirmed": "Booking confirmed.",
+      "converted": "Booking converted to shipment.",
+      "rejected": "Booking rejected.",
+      "updated": "Booking updated successfully.",
+      "detailUpdated": "Booking details updated.",
+      "submitFailed": "Failed to submit.",
+      "deleteFailed": "Failed to delete.",
+      "confirmFailed": "Failed to confirm.",
+      "convertFailed": "Failed to convert.",
+      "rejectFailed": "Failed to reject.",
+      "updateFailed": "Failed to update booking.",
+      "loadFailed": "Failed to load bookings.",
+      "editLoadFailed": "Failed to load booking edit form."
+    },
+    "confirm": {
+      "deleteDraft": "Delete this draft booking?"
+    },
+    "rejectDialog": {
+      "title": "Reject Booking",
+      "reasonLabel": "Rejection Reason",
+      "selectPlaceholder": "Select a reason…",
+      "otherLabel": "Specific Reason",
+      "otherPlaceholder": "Enter rejection reason…",
+      "other": "Other",
+      "reasons": {
+        "capacity": "Shipping capacity full",
+        "routeUnavailable": "Route not served / unavailable",
+        "incompleteCargo": "Incomplete / invalid cargo information",
+        "prohibitedCargo": "Prohibited / dangerous goods without permit"
+      }
+    },
+    "detailPage": {
+      "back": "Back",
+      "loadFailed": "Failed to load booking."
+    }
+  }
+}

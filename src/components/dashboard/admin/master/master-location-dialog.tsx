@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 import { cn } from "@/lib/utils";
+import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 
 const TYPES = [
   { value: "port", label: "Pelabuhan" },
@@ -179,26 +180,22 @@ export function MasterLocationDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="loc-city">Kota</Label>
-            <Input
-              id="loc-city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              disabled={readOnly}
-              placeholder={mode === "create" ? "Kota / kabupaten" : undefined}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="loc-prov">Provinsi</Label>
-            <Input
-              id="loc-prov"
-              value={province}
-              onChange={(e) => setProvince(e.target.value)}
-              disabled={readOnly}
-              placeholder={mode === "create" ? "Provinsi" : undefined}
-            />
-          </div>
+          <ControlledAddressRegionFields
+            className="grid-cols-1"
+            idPrefix="master-loc"
+            value={{ province, city }}
+            onChange={(patch) => {
+              if (patch.province !== undefined) setProvince(patch.province);
+              if (patch.city !== undefined) setCity(patch.city);
+            }}
+            disabled={readOnly}
+            showPostalCode={false}
+            comboboxClassName="h-10"
+            labels={{
+              province: "Provinsi",
+              city: "Kota / kabupaten",
+            }}
+          />
           <div className="space-y-2">
             <Label htmlFor="loc-addr">Alamat</Label>
             <Input

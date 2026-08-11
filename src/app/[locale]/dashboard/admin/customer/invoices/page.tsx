@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -9,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -29,25 +28,27 @@ import {
 } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { invoiceStatusBadgeClass, invoiceStatusLabelFromApi } from "@/lib/invoice-status";
+import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useInvoiceStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useTranslations } from "next-intl";
 import {
-  AlertCircle,
   CheckCircle2,
   Download,
   Eye,
   FileText,
   MoreHorizontal,
   Pencil,
-  Receipt,
   Trash2,
   Link as LinkIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InvoicePdfDownloadProgressDialog } from "@/components/invoice-pdf-download-progress-dialog";
 import { InvoiceCreateDialog } from "@/components/dashboard/admin/invoice-create-dialog";
+import { InvoiceGenerateDialog } from "@/components/dashboard/admin/invoices/invoice-generate-dialog";
+import { InvoiceStatsCards } from "@/components/dashboard/admin/invoices/invoice-stats-cards";
 import { InvoiceDetailView } from "@/components/dashboard/admin/invoice-detail-view";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import { InvoiceEditDialog } from "@/components/dashboard/admin/invoice-edit-dialog";
@@ -62,8 +63,10 @@ import {
   deleteAdminInvoice,
   downloadAdminInvoicePdf,
   fetchAdminInvoice,
+  fetchAdminInvoiceStats,
   fetchAdminInvoices,
   generateAdminMidtransLink,
+  issueAdminInvoice,
 } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
@@ -71,15 +74,6 @@ import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 const PER_PAGE = 10;
-const STATS_CAP = 1000;
-
-const INVOICE_STATUS_FILTERS = [
-  { value: "all", label: "Semua status" },
-  { value: "unpaid", label: "Belum bayar" },
-  { value: "paid", label: "Lunas" },
-  { value: "overdue", label: "Jatuh tempo" },
-  { value: "cancelled", label: "Dibatalkan" },
-];
 
 const actionsHeadClass =
   "w-12 max-md:sticky max-md:right-0 max-md:z-20 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] md:static md:z-auto md:border-l-0 md:bg-transparent md:shadow-none text-right";
@@ -97,6 +91,7 @@ function AdminInvoiceActionsMenu({
   onViewDetail,
   onEdit,
   onDelete,
+  onIssued,
 }: {
   invoiceId: number;
   invoiceNumber: string;
@@ -105,26 +100,29 @@ function AdminInvoiceActionsMenu({
   onViewDetail: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onIssued?: () => void;
 }) {
+  const t = useTranslations("AdminInvoices");
+  const tc = useTranslations("AdminCommon");
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfProgress, setPdfProgress] = useState<number | null>(null);
   const [linkLoading, setLinkLoading] = useState(false);
 
   const onGenerateLink = async () => {
-    const toastId = toast.loading("Membuat link pembayaran...");
+    const toastId = toast.loading(t("toasts.linkCreating"));
     setLinkLoading(true);
     try {
       const res = await generateAdminMidtransLink(invoiceId);
       const url = res.data?.payment_url;
       if (url) {
         await navigator.clipboard.writeText(url);
-        toast.success("Link berhasil dibuat dan disalin ke clipboard!", { id: toastId, duration: 4000 });
+        toast.success(t("toasts.linkCreated"), { id: toastId, duration: 4000 });
       } else {
         toast.success(res.message, { id: toastId });
       }
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal membuat link.", { id: toastId });
+      toast.error(e instanceof ApiError ? e.message : t("toasts.linkFailed"), { id: toastId });
     } finally {
       setLinkLoading(false);
     }
@@ -152,9 +150,9 @@ function AdminInvoiceActionsMenu({
       a.click();
       URL.revokeObjectURL(url);
       await new Promise((r) => setTimeout(r, 150));
-      toast.success("PDF invoice berhasil diunduh.");
+      toast.success(t("toasts.pdfDownloaded"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal mengunduh PDF.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.pdfFailed"));
     } finally {
       setPdfBusy(false);
       setPdfDialogOpen(false);
@@ -176,40 +174,57 @@ function AdminInvoiceActionsMenu({
         className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
       >
         <MoreHorizontal className="h-4 w-4" />
-        <span className="sr-only">Menu aksi</span>
+        <span className="sr-only">{tc("actions.actionsMenu")}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-52">
         <DropdownMenuItem className="cursor-pointer" onClick={onViewDetail}>
           <Eye className="h-4 w-4" />
-          Lihat detail invoice
+          {t("actions.viewDetail")}
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" onClick={() => void onPdf()}>
           <Download className="h-4 w-4" />
-          Unduh PDF
+          {t("actions.downloadPdf")}
         </DropdownMenuItem>
         {canManageInvoices ? (
           <>
             <DropdownMenuSeparator />
-            {(status === "unpaid" || status === "overdue") && (
-              <DropdownMenuItem 
-                className="cursor-pointer" 
+            {status === "draft" ? (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={async () => {
+                  try {
+                    await issueAdminInvoice(invoiceId);
+                    toast.success(t("toasts.issued"));
+                    onIssued?.();
+                  } catch (e) {
+                    toast.error(e instanceof ApiError ? e.message : t("toasts.issueFailed"));
+                  }
+                }}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                {t("actions.issue")}
+              </DropdownMenuItem>
+            ) : null}
+            {(status === "unpaid" || status === "overdue" || status === "issued" || status === "partially_paid") && (
+              <DropdownMenuItem
+                className="cursor-pointer"
                 onClick={() => void onGenerateLink()}
                 disabled={linkLoading}
               >
                 <LinkIcon className="h-4 w-4" />
-                {linkLoading ? "Membuat link..." : "Buat Link Midtrans"}
+                {linkLoading ? t("actions.creatingLink") : t("actions.createMidtransLink")}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem className="cursor-pointer" onClick={onEdit}>
               <Pencil className="h-4 w-4" />
-              Edit invoice
+              {t("actions.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer text-destructive focus:text-destructive"
               onClick={onDelete}
             >
               <Trash2 className="h-4 w-4" />
-              Hapus invoice
+              {t("actions.delete")}
             </DropdownMenuItem>
           </>
         ) : null}
@@ -220,14 +235,16 @@ function AdminInvoiceActionsMenu({
 }
 
 export default function AdminInvoicesPage() {
+  const t = useTranslations("AdminInvoices");
+  const tc = useTranslations("AdminCommon");
+  const invoiceStatusLabel = useInvoiceStatusLabel();
   const authHydrated = useAuthPersistHydrated();
   const { user } = useAuthStore();
   const roles = user?.roles ?? [];
   const canManageInvoices = authHydrated && (roles.includes("super_admin") || roles.includes("finance"));
 
   const [rows, setRows] = useState<InvRow[]>([]);
-  const [statsRows, setStatsRows] = useState<InvRow[]>([]);
-  const [statsMeta, setStatsMeta] = useState<LaravelPaginated<InvRow> | null>(null);
+  const [invoiceStats, setInvoiceStats] = useState<Record<string, number> | null>(null);
   const [meta, setMeta] = useState<LaravelPaginated<InvRow> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -237,7 +254,20 @@ export default function AdminInvoicesPage() {
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const invoiceStatusFilters = useMemo(
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      { value: "draft", label: t("stats.draft") },
+      { value: "issued", label: t("stats.issued") },
+      { value: "partially_paid", label: t("stats.partiallyPaid") },
+      { value: "paid", label: t("stats.paid") },
+      { value: "cancelled", label: t("stats.cancelled") },
+    ],
+    [t, tc]
+  );
+
   const [createOpen, setCreateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<number | null>(null);
   const [detailData, setDetailData] = useState<InvRow | null>(null);
@@ -258,16 +288,10 @@ export default function AdminInvoicesPage() {
   const loadStats = useCallback(async () => {
     if (!authHydrated) return;
     try {
-      const res = await fetchAdminInvoices({
-        page: 1,
-        perPage: STATS_CAP,
-      });
-      const paginated = res as LaravelPaginated<InvRow>;
-      setStatsRows(paginated.data ?? []);
-      setStatsMeta(paginated);
+      const res = await fetchAdminInvoiceStats();
+      setInvoiceStats((res as { data: Record<string, number> }).data);
     } catch {
-      setStatsRows([]);
-      setStatsMeta(null);
+      setInvoiceStats(null);
     }
   }, [authHydrated]);
 
@@ -286,13 +310,13 @@ export default function AdminInvoicesPage() {
       setRows(paginated.data ?? []);
       setMeta(paginated);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Gagal memuat invoice.");
+      setError(e instanceof ApiError ? e.message : t("toasts.loadFailed"));
       setRows([]);
       setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, statusParam]);
+  }, [authHydrated, page, debouncedSearch, statusParam, t]);
 
   useEffect(() => {
     void loadStats();
@@ -302,10 +326,11 @@ export default function AdminInvoicesPage() {
     void load();
   }, [load]);
 
-  const countUnpaid = statsRows.filter((i) => String(i.status).toLowerCase() === "unpaid").length;
-  const countOverdue = statsRows.filter((i) => String(i.status).toLowerCase() === "overdue").length;
-  const countPaid = statsRows.filter((i) => String(i.status).toLowerCase() === "paid").length;
-  const totalStats = statsMeta?.total ?? 0;
+  const countDraft = invoiceStats?.draft ?? 0;
+  const countIssued = invoiceStats?.issued ?? 0;
+  const countPartial = invoiceStats?.partially_paid ?? 0;
+  const countPaid = invoiceStats?.paid ?? 0;
+  const countCancelled = invoiceStats?.cancelled ?? 0;
 
   const openInvoiceDetail = async (id: number) => {
     setDetailId(id);
@@ -317,7 +342,7 @@ export default function AdminInvoicesPage() {
       const res = await fetchAdminInvoice(id);
       setDetailData((res as { data: InvRow }).data ?? null);
     } catch (e) {
-      setDetailError(e instanceof ApiError ? e.message : "Gagal memuat detail invoice.");
+      setDetailError(e instanceof ApiError ? e.message : t("toasts.detailLoadFailed"));
     } finally {
       setDetailLoading(false);
     }
@@ -328,7 +353,7 @@ export default function AdminInvoicesPage() {
     setDeleteLoading(true);
     try {
       await deleteAdminInvoice(Number(deleteRow.id));
-      toast.success("Invoice berhasil dihapus.");
+      toast.success(t("toasts.deleted"));
       setDeleteOpen(false);
       setDeleteRow(null);
       if (editOpen && editRow?.id === deleteRow.id) {
@@ -338,7 +363,7 @@ export default function AdminInvoicesPage() {
       void loadStats();
       void load();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menghapus invoice.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.deleteFailed"));
     } finally {
       setDeleteLoading(false);
     }
@@ -349,6 +374,14 @@ export default function AdminInvoicesPage() {
       <InvoiceCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
+        onCreated={() => {
+          void loadStats();
+          void load();
+        }}
+      />
+      <InvoiceGenerateDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
         onCreated={() => {
           void loadStats();
           void load();
@@ -366,14 +399,14 @@ export default function AdminInvoicesPage() {
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detail invoice</DialogTitle>
+            <DialogTitle>{t("detail.title")}</DialogTitle>
             <DialogDescription>
-              {detailId != null ? `Referensi internal #${detailId}` : null}
+              {detailId != null ? t("detail.internalRef", { id: detailId }) : null}
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2">
             {detailLoading ? (
-              <p className="text-sm text-muted-foreground">Memuat…</p>
+              <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
             ) : detailError ? (
               <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">{detailError}</p>
             ) : (
@@ -386,8 +419,10 @@ export default function AdminInvoicesPage() {
       <ConfirmDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Hapus invoice?"
-        description={`Yakin hapus invoice "${String(deleteRow?.invoice_number ?? "")}"? Invoice akan diarsipkan (soft delete). Tidak dapat dihapus jika sudah ada pembayaran sukses.`}
+        title={t("deleteDialog.title")}
+        description={t("deleteDialog.description", {
+          number: String(deleteRow?.invoice_number ?? ""),
+        })}
         loading={deleteLoading}
         onConfirm={handleDeleteInvoice}
       />
@@ -398,14 +433,19 @@ export default function AdminInvoicesPage() {
             <FileText className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">Invoice Management</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Invoice semua customer: status, jatuh tempo & PDF.</p>
+            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">{t("pageTitle")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("pageSubtitle")}</p>
           </div>
         </div>
         {canManageInvoices ? (
-          <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-            Buat invoice
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" size="sm" variant="outline" onClick={() => setGenerateOpen(true)}>
+              {t("generateInvoice")}
+            </Button>
+            <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+              {t("createManual")}
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -413,95 +453,44 @@ export default function AdminInvoicesPage() {
         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between gap-2">
-              <CardDescription>Belum dibayar</CardDescription>
-              <span className="rounded-md bg-sky-100 p-1.5 text-sky-700">
-                <Receipt className="h-3.5 w-3.5" aria-hidden />
-              </span>
-            </div>
-            <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-              <span>{countUnpaid}</span>
-              <span className="text-xs font-normal text-muted-foreground">Unpaid</span>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between gap-2">
-              <CardDescription>Lewat jatuh tempo</CardDescription>
-              <span className="rounded-md bg-red-100 p-1.5 text-red-700">
-                <AlertCircle className="h-3.5 w-3.5" aria-hidden />
-              </span>
-            </div>
-            <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-              <span>{countOverdue}</span>
-              <span className="text-xs font-normal text-muted-foreground">Overdue</span>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between gap-2">
-              <CardDescription>Lunas</CardDescription>
-              <span className="rounded-md bg-emerald-100 p-1.5 text-emerald-700">
-                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-              </span>
-            </div>
-            <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-              <span>{countPaid}</span>
-              <span className="text-xs font-normal text-emerald-600">Paid</span>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between gap-2">
-              <CardDescription>Total invoice</CardDescription>
-              <span className="rounded-md bg-violet-100 p-1.5 text-violet-700">
-                <FileText className="h-3.5 w-3.5" aria-hidden />
-              </span>
-            </div>
-            <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-              <span>{totalStats}</span>
-              <span className="text-xs font-normal text-muted-foreground">semua invoice</span>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+      <InvoiceStatsCards
+        draft={countDraft}
+        issued={countIssued}
+        partiallyPaid={countPartial}
+        paid={countPaid}
+        cancelled={countCancelled}
+      />
 
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
-          <CardTitle>Daftar invoice</CardTitle>
+          <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableToolbar
-            searchPlaceholder="Cari nomor invoice…"
+            searchPlaceholder={t("searchPlaceholder")}
             searchValue={searchInput}
             onSearchChange={setSearchInput}
-            filterLabel="Status"
+            filterLabel={tc("filters.status")}
             filterValue={statusFilter}
             onFilterChange={setStatusFilter}
-            filterOptions={INVOICE_STATUS_FILTERS}
+            filterOptions={invoiceStatusFilters}
           />
           {loading ? (
-            <p className="text-sm text-muted-foreground">Memuat…</p>
+            <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-14">No</TableHead>
-                    <TableHead className="w-[130px]">No. Invoice</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead className="min-w-[100px]">Shipment</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Due date</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="w-14">{tc("table.no")}</TableHead>
+                    <TableHead className="w-[130px]">{t("columns.invoiceNo")}</TableHead>
+                    <TableHead>{tc("table.customer")}</TableHead>
+                    <TableHead className="min-w-[100px]">{t("columns.shipment")}</TableHead>
+                    <TableHead className="text-right">{t("columns.amount")}</TableHead>
+                    <TableHead>{t("columns.dueDate")}</TableHead>
+                    <TableHead>{tc("table.status")}</TableHead>
                     <TableHead className={actionsHeadClass}>
-                      <span className="max-md:sr-only">Aksi</span>
+                      <span className="max-md:sr-only">{tc("actions.actions")}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -529,7 +518,7 @@ export default function AdminInvoicesPage() {
                         <TableCell>{due}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={invoiceStatusBadgeClass(st)}>
-                            {invoiceStatusLabelFromApi(st)}
+                            {invoiceStatusLabel(st)}
                           </Badge>
                         </TableCell>
                         <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
@@ -548,6 +537,10 @@ export default function AdminInvoicesPage() {
                                 setDeleteRow(invoice);
                                 setDeleteOpen(true);
                               }}
+                              onIssued={() => {
+                                void loadStats();
+                                void load();
+                              }}
                             />
                           </div>
                         </TableCell>
@@ -556,9 +549,9 @@ export default function AdminInvoicesPage() {
                   })}
                 </TableBody>
                 {rows.length === 0 ? (
-                  <TableCaption className="text-xs">Belum ada invoice.</TableCaption>
+                  <TableCaption className="text-xs">{tc("table.empty")}</TableCaption>
                 ) : (
-                  <TableCaption className="text-xs">Baris pada halaman ini.</TableCaption>
+                  <TableCaption className="text-xs">{tc("table.rowsOnPage")}</TableCaption>
                 )}
               </Table>
               {meta ? (

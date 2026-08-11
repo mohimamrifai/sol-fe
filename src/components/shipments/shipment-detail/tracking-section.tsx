@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 
 export interface TrackingEntry {
   occurred_at?: string | null;
@@ -56,6 +57,7 @@ function nodeTone(status: string | undefined) {
 
 export function TrackingSection({ entries }: Props) {
   const t = useTranslations("Shipments.detail.section5");
+  const shipmentStatusLabel = useShipmentStatusLabel();
   const sorted = [...entries].sort(
     (a, b) =>
       new Date(a.occurred_at ?? 0).getTime() -
@@ -84,7 +86,7 @@ export function TrackingSection({ entries }: Props) {
                 />
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-sm font-medium text-zinc-900">
-                    {e.title ?? e.status ?? "—"}
+                    {e.title ?? (e.status ? shipmentStatusLabel(e.status) : "—")}
                   </p>
                   <time className="font-mono text-[11px] tabular-nums text-zinc-500">
                     {fmtDate(e.occurred_at)}

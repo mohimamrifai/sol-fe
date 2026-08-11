@@ -72,3 +72,41 @@ export async function generateAdminMidtransLink(invoiceId: number) {
     { method: "POST" }
   );
 }
+
+export async function fetchAdminInvoiceStats() {
+  return apiFetch<{ data: Record<string, number> }>(`/admin/invoices/stats`, { method: "GET" });
+}
+
+export async function fetchAdminEligibleShipments(input?: ListQueryParams) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/admin/invoices/eligible-shipments${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+export async function issueAdminInvoice(id: number, body?: Record<string, unknown>) {
+  return apiFetch(`/admin/invoices/${id}/issue`, {
+    method: "POST",
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
+export async function fetchAdminPaymentStats() {
+  return apiFetch<{ data: Record<string, number> }>(`/admin/payments/stats`, { method: "GET" });
+}
+
+export async function fetchAdminEligibleInvoices(input?: ListQueryParams) {
+  const params = normalizeListParams(input);
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/admin/payments/eligible-invoices${buildListQuery(params)}`,
+    { method: "GET" }
+  );
+}
+
+export async function recordAdminPayment(invoiceId: number, body: Record<string, unknown>) {
+  return apiFetch(`/admin/invoices/${invoiceId}/record-payment`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

@@ -1,12 +1,12 @@
 
 const BOOKING_LABELS: Record<string, string> = {
   draft: "Draft",
-  submitted: "Diajukan",
-  approved: "Disetujui",
-  rejected: "Ditolak",
-  // Legacy / fallback labels
-  confirmed: "Terkonfirmasi",
-  cancelled: "Dibatalkan",
+  submitted: "Submitted",
+  approved: "Confirmed",
+  confirmed: "Confirmed",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+  converted: "Converted to Shipment",
 };
 
 export function bookingStatusLabelFromApi(status: string): string {
@@ -34,15 +34,16 @@ export function bookingStatusBadgeClass(status: string): string {
   }
 }
 
-// The 4 active lifecycle statuses. UI selects, status filters and stat cards
-// must only ever iterate this list.
+/** Customer portal lifecycle keys (legacy) */
 export const BOOKING_STATUS_KEYS = ["draft", "submitted", "approved", "rejected"] as const;
 export type BookingStatusKey = (typeof BOOKING_STATUS_KEYS)[number];
 
-// Stat card meta. Re-used by the dashboard, the bookings list page and the
-// new booking detail page.
-export const BOOKING_STATUS_META: Record<
-  BookingStatusKey,
+/** FSD dashboard cards: Draft, Submitted, Confirmed */
+export const BOOKING_FSD_STAT_KEYS = ["draft", "submitted", "confirmed"] as const;
+export type BookingFsdStatKey = (typeof BOOKING_FSD_STAT_KEYS)[number];
+
+export const BOOKING_FSD_STAT_META: Record<
+  BookingFsdStatKey,
   { label: string; description: string; iconBg: string; iconColor: string }
 > = {
   draft: {
@@ -53,23 +54,27 @@ export const BOOKING_STATUS_META: Record<
   },
   submitted: {
     label: BOOKING_LABELS.submitted,
-    description: "Menunggu review internal.",
+    description: "Menunggu konfirmasi internal.",
     iconBg: "bg-amber-100",
     iconColor: "text-amber-700",
   },
-  approved: {
-    label: BOOKING_LABELS.approved,
-    description: "Disetujui dan siap diproses menjadi Shipment.",
+  confirmed: {
+    label: BOOKING_LABELS.confirmed,
+    description: "Dikonfirmasi, siap dikonversi ke shipment.",
     iconBg: "bg-emerald-100",
     iconColor: "text-emerald-700",
   },
-  rejected: {
-    label: BOOKING_LABELS.rejected,
-    description: "Ditolak. Periksa alasan untuk detail.",
-    iconBg: "bg-rose-100",
-    iconColor: "text-rose-700",
-  },
 };
+
+/** Map backend `approved` to FSD "Confirmed" stat bucket */
+export function bookingFsdStatCount(
+  stats: Record<string, number> | undefined,
+  key: BookingFsdStatKey
+): number {
+  if (!stats) return 0;
+  if (key === "confirmed") return Number(stats.confirmed ?? stats.approved ?? 0);
+  return Number(stats[key] ?? 0);
+}
 
 export const SHIPMENT_COVERAGE_LABELS: Record<string, string> = {
   port_to_port: "Port to Port",

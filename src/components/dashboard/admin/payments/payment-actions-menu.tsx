@@ -38,6 +38,7 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { PaymentDetailView } from "@/components/dashboard/admin/payment-detail-view";
 import { PayRow } from "./types";
+import { useTranslations } from "next-intl";
 
 interface PaymentActionsMenuProps {
   payment: PayRow;
@@ -52,6 +53,9 @@ export function PaymentActionsMenu({
   canManageAR,
   onPaymentsChanged,
 }: PaymentActionsMenuProps) {
+  const t = useTranslations("AdminPayments");
+  const tc = useTranslations("AdminCommon");
+
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<PayRow | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -79,7 +83,7 @@ export function PaymentActionsMenu({
       return;
     }
     if (!Number.isFinite(paymentId)) {
-      setDetailError("ID pembayaran tidak valid.");
+      setDetailError(t("toasts.invalidId"));
       setDetailData(null);
       return;
     }
@@ -90,13 +94,13 @@ export function PaymentActionsMenu({
         const res = await fetchAdminPayment(paymentId);
         setDetailData((res as { data: PayRow }).data ?? null);
       } catch (e) {
-        setDetailError(e instanceof ApiError ? e.message : "Gagal memuat detail.");
+        setDetailError(e instanceof ApiError ? e.message : t("toasts.detailLoadFailed"));
         setDetailData(paymentRowRef.current);
       } finally {
         setDetailLoading(false);
       }
     })();
-  }, [detailOpen, paymentId]);
+  }, [detailOpen, paymentId, t]);
 
   async function refetchDetailIfOpen(opts?: { showLoading?: boolean }) {
     if (!detailOpenRef.current || !Number.isFinite(paymentId)) return;
@@ -106,7 +110,7 @@ export function PaymentActionsMenu({
       const res = await fetchAdminPayment(paymentId);
       setDetailData((res as { data: PayRow }).data ?? null);
     } catch {
-      /* biarkan tampilan lama */
+      /* keep existing display */
     } finally {
       if (showLoading) setDetailLoading(false);
     }
@@ -114,7 +118,7 @@ export function PaymentActionsMenu({
 
   async function handleSyncMidtrans() {
     if (!Number.isFinite(paymentId)) return;
-    const toastId = toast.loading("Menyinkronkan status dari Midtrans…");
+    const toastId = toast.loading(t("toasts.syncing"));
     setSyncLoading(true);
     try {
       const res = await syncAdminPaymentMidtrans(paymentId);
@@ -122,7 +126,7 @@ export function PaymentActionsMenu({
       onPaymentsChanged();
       await refetchDetailIfOpen({ showLoading: true });
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menyinkronkan dari Midtrans.", {
+      toast.error(e instanceof ApiError ? e.message : t("toasts.syncFailed"), {
         id: toastId,
         duration: 6000,
       });
@@ -133,7 +137,7 @@ export function PaymentActionsMenu({
 
   async function handleVerifyManual() {
     if (!Number.isFinite(paymentId)) return;
-    const toastId = toast.loading("Memverifikasi pembayaran…");
+    const toastId = toast.loading(t("toasts.verifying"));
     setVerifyLoading(true);
     try {
       const res = await verifyAdminPaymentManual(paymentId, {
@@ -145,7 +149,7 @@ export function PaymentActionsMenu({
       onPaymentsChanged();
       await refetchDetailIfOpen({ showLoading: true });
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal verifikasi manual.", {
+      toast.error(e instanceof ApiError ? e.message : t("toasts.verifyFailed"), {
         id: toastId,
         duration: 6000,
       });
@@ -161,7 +165,7 @@ export function PaymentActionsMenu({
           className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
           disabled={syncLoading || verifyLoading}
           aria-busy={syncLoading || verifyLoading}
-          aria-label="Menu aksi pembayaran"
+          aria-label={t("actions.actionsMenu")}
         >
           {syncLoading || verifyLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -172,7 +176,7 @@ export function PaymentActionsMenu({
         <DropdownMenuContent align="end" className="min-w-52">
           <DropdownMenuItem className="cursor-pointer" onClick={() => setDetailOpen(true)}>
             <Eye className="h-4 w-4" />
-            Lihat detail pembayaran
+            {t("actions.viewDetail")}
           </DropdownMenuItem>
           {canManageAR ? (
             <>
@@ -187,7 +191,7 @@ export function PaymentActionsMenu({
                 ) : (
                   <RefreshCw className="h-4 w-4" aria-hidden />
                 )}
-                {syncLoading ? "Menyinkronkan…" : "Refresh status Midtrans"}
+                {syncLoading ? t("actions.syncing") : t("actions.refreshMidtrans")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -198,7 +202,7 @@ export function PaymentActionsMenu({
                 }}
               >
                 <CreditCard className="h-4 w-4" aria-hidden />
-                Verifikasi manual
+                {t("actions.manualVerify")}
               </DropdownMenuItem>
             </>
           ) : null}
@@ -215,26 +219,24 @@ export function PaymentActionsMenu({
       >
         <AlertDialogContent className="max-w-md sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Verifikasi manual pembayaran?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Invoice terkait akan ditandai lunas. Hanya gunakan jika transfer/kas sudah diverifikasi.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("actions.verifyTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("actions.verifyDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="grid gap-2">
             <label htmlFor={`pay-verify-note-${paymentId}`} className="text-sm font-medium">
-              Catatan (opsional)
+              {t("actions.verifyNotes")}
             </label>
             <Textarea
               id={`pay-verify-note-${paymentId}`}
               rows={3}
-              placeholder="Contoh: Transfer masuk ke rek BCA 02/04/2026"
+              placeholder={t("actions.verifyPlaceholder")}
               value={verifyNote}
               onChange={(e) => setVerifyNote(e.target.value)}
               disabled={verifyLoading}
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={verifyLoading}>Batal</AlertDialogCancel>
+            <AlertDialogCancel disabled={verifyLoading}>{tc("actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={verifyLoading}
               className="gap-2"
@@ -246,10 +248,10 @@ export function PaymentActionsMenu({
               {verifyLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
-                  Memproses…
+                  {t("actions.processing")}
                 </>
               ) : (
-                "Ya, verifikasi"
+                t("actions.verifyConfirm")
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -259,19 +261,19 @@ export function PaymentActionsMenu({
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detail pembayaran {paymentRef || "—"}</DialogTitle>
-            <DialogDescription>Ringkasan pembayaran Midtrans dan invoice terkait.</DialogDescription>
+            <DialogTitle>{t("detail.titleWithRef", { ref: paymentRef || "—" })}</DialogTitle>
+            <DialogDescription>{t("detail.description")}</DialogDescription>
           </DialogHeader>
           {detailLoading ? (
             <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-              Memuat detail…
+              {t("detail.loading")}
             </div>
           ) : (
             <>
               {detailError && (
                 <p className="rounded-md border border-amber-200/80 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                  {detailError} Menampilkan data dari daftar.
+                  {detailError} {t("detail.fallbackNote")}
                 </p>
               )}
               <PaymentDetailView data={detailData} />

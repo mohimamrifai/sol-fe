@@ -1,88 +1,44 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CheckCircle2, Clock, AlertCircle, CreditCard } from "lucide-react";
-import { PayRow } from "./types";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import {
+  AlertCircle,
+  CheckCircle2,
+  CircleDollarSign,
+  Clock,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface PaymentStatsProps {
-  statsRows: PayRow[];
-  totalRecords: number;
+  stats: Record<string, number> | null;
 }
 
-export function PaymentStats({ statsRows, totalRecords }: PaymentStatsProps) {
-  const countSuccess = statsRows.filter((p) => {
-    const s = String(p.status).toLowerCase();
-    return s === "success" || s === "settlement";
-  }).length;
+export function PaymentStats({ stats }: PaymentStatsProps) {
+  const t = useTranslations("AdminPayments");
 
-  const countPending = statsRows.filter((p) => {
-    const s = String(p.status).toLowerCase();
-    return s === "pending" || s === "capture" || s === "authorize";
-  }).length;
-
-  const countFailed = statsRows.filter((p) => {
-    const s = String(p.status).toLowerCase();
-    return s === "failure" || s === "deny" || s === "expire" || s === "cancel";
-  }).length;
+  const cards: Array<{ key: string; count: number; icon: LucideIcon; color: string }> = [
+    { key: "unpaid", count: stats?.unpaid ?? 0, icon: Clock, color: "text-sky-600 bg-sky-50" },
+    { key: "partiallyPaid", count: stats?.partially_paid ?? 0, icon: CircleDollarSign, color: "text-amber-600 bg-amber-50" },
+    { key: "paid", count: stats?.paid ?? 0, icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
+    { key: "overdue", count: stats?.overdue ?? 0, icon: AlertCircle, color: "text-red-600 bg-red-50" },
+  ];
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Berhasil</CardDescription>
-            <span className="rounded-md bg-emerald-100 p-1.5 text-emerald-700">
-              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{countSuccess}</span>
-            <span className="text-xs font-normal text-emerald-600">Sukses</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Menunggu</CardDescription>
-            <span className="rounded-md bg-amber-100 p-1.5 text-amber-700">
-              <Clock className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{countPending}</span>
-            <span className="text-xs font-normal text-muted-foreground">Pending</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Gagal / expired</CardDescription>
-            <span className="rounded-md bg-red-100 p-1.5 text-red-700">
-              <AlertCircle className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{countFailed}</span>
-            <span className="text-xs font-normal text-muted-foreground">Bermasalah</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardDescription>Total transaksi</CardDescription>
-            <span className="rounded-md bg-violet-100 p-1.5 text-violet-700">
-              <CreditCard className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </div>
-          <CardTitle className="flex flex-col gap-0.5 text-2xl font-semibold">
-            <span>{totalRecords}</span>
-            <span className="text-xs font-normal text-muted-foreground">semua pembayaran</span>
-          </CardTitle>
-        </CardHeader>
-      </Card>
+      {cards.map(({ key, count, icon: Icon, color }) => (
+        <Card key={key}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between gap-2">
+              <CardDescription className="font-medium">{t(`stats.${key}` as "stats.unpaid")}</CardDescription>
+              <span className={`rounded-md p-1.5 ${color}`}>
+                <Icon className="h-3.5 w-3.5" aria-hidden />
+              </span>
+            </div>
+            <CardTitle className="text-2xl font-semibold">{count}</CardTitle>
+          </CardHeader>
+        </Card>
+      ))}
     </div>
   );
 }

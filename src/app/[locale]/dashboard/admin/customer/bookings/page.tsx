@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -19,12 +19,15 @@ import {
 } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import { bookingFsdStatCount, bookingStatusBadgeClass } from "@/lib/booking-status";
+import { useBookingStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import {
   fetchAdminBooking,
+  fetchAdminBookingStats,
   fetchAdminBookings,
   rejectBooking,
   updateAdminBooking,
@@ -37,6 +40,7 @@ import {
   ClipboardList,
   Plus,
 } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -49,17 +53,6 @@ import { BookingDetailDialog } from "@/components/dashboard/admin/bookings/booki
 import { BookingEditDialog } from "@/components/dashboard/admin/bookings/booking-edit-dialog";
 import { BookingRejectDialog } from "@/components/dashboard/admin/bookings/booking-reject-dialog";
 import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
-
-
-const BOOKING_STATUS_FILTERS = [
-  { value: "all", label: "Semua status" },
-  { value: "draft", label: "Draft" },
-  { value: "submitted", label: "Diajukan" },
-  { value: "confirmed", label: "Terkonfirmasi" },
-  { value: "approved", label: "Disetujui" },
-  { value: "rejected", label: "Ditolak" },
-  { value: "cancelled", label: "Dibatalkan" },
-];
 
 const actionsHeadClass =
   "w-12 max-md:sticky max-md:right-0 max-md:z-20 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] md:static md:z-auto md:border-l-0 md:bg-transparent md:shadow-none text-right";
@@ -81,6 +74,11 @@ type BookingRow = {
 
 export default function AdminBookingsPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = String(params?.locale ?? "id");
+  const t = useTranslations("AdminBookings");
+  const tc = useTranslations("AdminCommon");
+  const bookingStatusLabel = useBookingStatusLabel();
   const [mounted, setMounted] = useState(false);
   const authHydrated = useAuthPersistHydrated();
   const { user } = useAuthStore();
@@ -89,7 +87,6 @@ export default function AdminBookingsPage() {
     authHydrated && (roles.includes("super_admin") || roles.includes("operations"));
 
   const PER_PAGE = 10;
-  const STATS_CAP = 1000;
 
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
@@ -98,7 +95,7 @@ export default function AdminBookingsPage() {
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<BookingDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const detailLoading = false;
   const [detailSaving, setDetailSaving] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editData, setEditData] = useState<BookingDetail | null>(null);
@@ -109,29 +106,33 @@ export default function AdminBookingsPage() {
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectSaving, setRejectSaving] = useState(false);
 
+  const bookingStatusFilters = useMemo(
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      { value: "draft", label: t("stats.draft") },
+      { value: "submitted", label: t("filters.submitted") },
+      { value: "confirmed", label: t("filters.confirmed") },
+      { value: "approved", label: t("filters.approved") },
+      { value: "rejected", label: t("filters.rejected") },
+      { value: "cancelled", label: t("filters.cancelled") },
+    ],
+    [t, tc]
+  );
+
   const statusParam = statusFilter === "all" ? undefined : statusFilter;
 
   const {
-    data: paginatedStatsBookings,
+    data: bookingStats,
     refetch: refetchStats,
   } = useQuery({
-    queryKey: ["adminBookingsStats", debouncedSearch, statusParam],
-    queryFn: async ({ signal }) => {
+    queryKey: ["adminBookingsStatsApi"],
+    queryFn: async () => {
       if (!mounted || !authHydrated) return null;
-      const res = await fetchAdminBookings(
-        {
-          page: 1,
-          perPage: STATS_CAP,
-          search: debouncedSearch.trim() || undefined,
-          status: statusParam,
-        },
-        signal
-      );
-      return res as LaravelPaginated<BookingRow>;
+      const res = await fetchAdminBookingStats();
+      return (res as { data: Record<string, number> }).data;
     },
     enabled: mounted && authHydrated,
-    placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60 * 5, // 5 minutes stale time
+    staleTime: 1000 * 60 * 5,
   });
 
   const {
@@ -161,11 +162,8 @@ export default function AdminBookingsPage() {
 
   const bookings = paginatedBookings?.data ?? [];
   const meta = paginatedBookings;
-  const loadError = tableError ? (tableError instanceof ApiError ? tableError.message : "Gagal memuat booking") : null;
+  const loadError = tableError ? (tableError instanceof ApiError ? tableError.message : t("toasts.loadFailed")) : null;
   const loadingTable = isLoadingTable;
-
-  const statsRows = paginatedStatsBookings?.data ?? [];
-  const statsMeta = paginatedStatsBookings;
 
   const reloadAll = useCallback(async () => {
     await refetchStats();
@@ -180,28 +178,17 @@ export default function AdminBookingsPage() {
       setRejectOpen(false);
       setRejectId(null);
       await reloadAll();
-      toast.success("Booking ditolak.");
+      toast.success(t("toasts.rejected"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menolak.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.rejectFailed"));
     } finally {
       setRejectSaving(false);
     }
   }, [rejectId, reloadAll]);
 
-  const openBookingDetail = useCallback(async (id: number) => {
-    setDetailOpen(true);
-    setDetailLoading(true);
-    setDetailData(null);
-    try {
-      const res = await fetchAdminBooking(id);
-      setDetailData((res as { data: BookingDetail }).data);
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memuat detail booking.");
-      setDetailOpen(false);
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
+  const openBookingDetail = useCallback((bookingId: number) => {
+    router.push(`/${locale}/dashboard/admin/customer/bookings/${bookingId}`);
+  }, [router, locale]);
 
   const openBookingEdit = useCallback(async (id: number) => {
     setEditOpen(true);
@@ -211,7 +198,7 @@ export default function AdminBookingsPage() {
       const res = await fetchAdminBooking(id);
       setEditData((res as { data: BookingDetail }).data);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memuat form edit booking.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.editLoadFailed"));
       setEditOpen(false);
     } finally {
       setEditLoading(false);
@@ -234,9 +221,9 @@ export default function AdminBookingsPage() {
       const res = await updateAdminBooking(detailData.id, payload);
       setDetailData((res as { data: BookingDetail }).data);
       await reloadAll();
-      toast.success("Detail booking berhasil diperbarui.");
+      toast.success(t("toasts.detailUpdated"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memperbarui booking.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
       throw e;
     } finally {
       setDetailSaving(false);
@@ -250,9 +237,9 @@ export default function AdminBookingsPage() {
       const res = await updateAdminBooking(editData.id, payload);
       setEditData((res as { data: BookingDetail }).data);
       await reloadAll();
-      toast.success("Booking berhasil diperbarui.");
+      toast.success(t("toasts.updated"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memperbarui booking.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
       throw e;
     } finally {
       setEditSaving(false);
@@ -277,10 +264,9 @@ export default function AdminBookingsPage() {
 
   if (!mounted) return null;
 
-  const countDraft = statsRows.filter((b) => b.status.toLowerCase() === "draft").length;
-  const countSubmitted = statsRows.filter((b) => b.status.toLowerCase() === "submitted").length;
-  const countApproved = statsRows.filter((b) => b.status.toLowerCase() === "approved").length;
-  const totalStats = statsMeta?.total ?? 0;
+  const countDraft = bookingFsdStatCount(bookingStats ?? undefined, "draft");
+  const countSubmitted = bookingFsdStatCount(bookingStats ?? undefined, "submitted");
+  const countConfirmed = bookingFsdStatCount(bookingStats ?? undefined, "confirmed");
 
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2">
@@ -291,10 +277,10 @@ export default function AdminBookingsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
-              Booking Management
+              {t("pageTitle")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Approval booking & konversi ke shipment.
+              {t("pageSubtitle")}
             </p>
           </div>
         </div>
@@ -306,7 +292,7 @@ export default function AdminBookingsPage() {
               onClick={() => router.push("/dashboard/admin/customer/bookings/create")}
             >
               <Plus className="h-4 w-4 shrink-0" />
-              Tambah Booking
+              {t("addBooking")}
             </Button>
           </div>
         )}
@@ -319,23 +305,22 @@ export default function AdminBookingsPage() {
       <BookingStats
         countDraft={countDraft}
         countSubmitted={countSubmitted}
-        countApproved={countApproved}
-        totalStats={totalStats}
+        countConfirmed={countConfirmed}
       />
 
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
-          <CardTitle>Daftar Booking</CardTitle>
+          <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableToolbar
-            searchPlaceholder="Cari nomor booking atau kargo…"
+            searchPlaceholder={t("searchPlaceholder")}
             searchValue={searchInput}
             onSearchChange={setSearchInput}
-            filterLabel="Status"
+            filterLabel={tc("filters.status")}
             filterValue={statusFilter}
             onFilterChange={setStatusFilter}
-            filterOptions={BOOKING_STATUS_FILTERS}
+            filterOptions={bookingStatusFilters}
           />
           {loadingTable ? (
             <div className="space-y-3">
@@ -354,15 +339,15 @@ export default function AdminBookingsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-14">No</TableHead>
-                    <TableHead className="w-[120px]">Kode Booking</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Origin</TableHead>
-                    <TableHead>Destination</TableHead>
-                    <TableHead>Service</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="w-14">{tc("table.no")}</TableHead>
+                    <TableHead className="w-[120px]">{t("columns.bookingNo")}</TableHead>
+                    <TableHead>{t("columns.customer")}</TableHead>
+                    <TableHead>{t("columns.origin")}</TableHead>
+                    <TableHead>{t("columns.destination")}</TableHead>
+                    <TableHead>{t("columns.service")}</TableHead>
+                    <TableHead>{t("columns.status")}</TableHead>
                     <TableHead className={actionsHeadClass}>
-                      <span className="max-md:sr-only">Aksi</span>
+                      <span className="max-md:sr-only">{tc("table.actions")}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -379,7 +364,7 @@ export default function AdminBookingsPage() {
                       <TableCell>{booking.service_type?.name ?? booking.service_type?.code ?? "—"}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={bookingStatusBadgeClass(booking.status)}>
-                          {bookingStatusLabelFromApi(booking.status)}
+                          {bookingStatusLabel(booking.status)}
                         </Badge>
                       </TableCell>
                       <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
@@ -401,7 +386,7 @@ export default function AdminBookingsPage() {
                   ))}
                 </TableBody>
                 <TableCaption className="text-xs">
-                  {bookings.length === 0 ? "Tidak ada data." : `${bookings.length} baris di halaman ini.`}
+                  {bookings.length === 0 ? tc("table.empty") : tc("table.rowsOnPage")}
                 </TableCaption>
               </Table>
               {meta ? (

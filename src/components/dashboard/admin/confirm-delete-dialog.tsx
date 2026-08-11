@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 
 type Props = {
   open: boolean;
@@ -27,11 +28,13 @@ export function ConfirmDeleteDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Hapus",
-  loadingLabel = "Menghapus…",
+  confirmLabel,
+  loadingLabel,
   loading = false,
   onConfirm,
 }: Props) {
+  const t = useTranslations("AdminCommon.deleteDialog");
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
@@ -40,7 +43,7 @@ export function ConfirmDeleteDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Batal</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             disabled={loading}
             className="bg-red-600 text-white hover:bg-red-700"
@@ -49,7 +52,7 @@ export function ConfirmDeleteDialog({
               void onConfirm();
             }}
           >
-            {loading ? loadingLabel : confirmLabel}
+            {loading ? (loadingLabel ?? t("deleting")) : (confirmLabel ?? t("confirm"))}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

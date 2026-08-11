@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { TRACKING_STATUS_OPTIONS } from "@/lib/shipment-tracking-config";
+import { TRACKING_STATUS_VALUES } from "@/lib/shipment-tracking-config";
+import { useShipmentStatusLabel } from "@/hooks/use-shipment-status-label";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 
 interface TrackingUpdateDialogProps {
@@ -48,6 +49,8 @@ export function TrackingUpdateDialog({
   saving,
   onSave,
 }: TrackingUpdateDialogProps) {
+  const shipmentStatusLabel = useShipmentStatusLabel();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton className="sm:max-w-md">
@@ -62,9 +65,9 @@ export function TrackingUpdateDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TRACKING_STATUS_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
+                {TRACKING_STATUS_VALUES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {shipmentStatusLabel(value)}
                   </SelectItem>
                 ))}
               </SelectContent>

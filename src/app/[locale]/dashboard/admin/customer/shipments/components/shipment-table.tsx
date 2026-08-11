@@ -18,12 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { shipmentStatusBadgeClass, shipmentStatusLabel } from "@/lib/shipment-status";
+import { shipmentStatusBadgeClass } from "@/lib/shipment-status";
 import { cn } from "@/lib/utils";
 import { Eye, MoreHorizontal } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { rowNumber } from "@/lib/list-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useShipmentStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useTranslations } from "next-intl";
 
 interface ShipmentTableProps {
   rows: Array<{
@@ -53,13 +55,17 @@ const actionsCellClass =
 
 function ShipmentActionsMenu({ shipmentId, cnNumber }: { shipmentId: number; cnNumber: string }) {
   const router = useRouter();
+  const t = useTranslations("AdminShipments");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
       >
         <MoreHorizontal className="h-4 w-4" />
-        <span className="sr-only">Menu aksi CN {cnNumber}</span>
+        <span className="sr-only">
+          {cnNumber ? t("table.cnActionsMenuWithNumber", { number: cnNumber }) : t("table.cnActionsMenu")}
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-52">
         <DropdownMenuItem
@@ -67,7 +73,7 @@ function ShipmentActionsMenu({ shipmentId, cnNumber }: { shipmentId: number; cnN
           onClick={() => router.push(`/dashboard/admin/customer/shipments/${shipmentId}`)}
         >
           <Eye className="h-4 w-4" />
-          Lihat detail shipment
+          {t("table.viewDetail")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -75,6 +81,10 @@ function ShipmentActionsMenu({ shipmentId, cnNumber }: { shipmentId: number; cnN
 }
 
 export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTableProps) {
+  const t = useTranslations("AdminShipments");
+  const tc = useTranslations("AdminCommon");
+  const shipmentStatusLabel = useShipmentStatusLabel();
+
   const preparedRows = useMemo(
     () =>
       rows.map((shipment) => {
@@ -120,14 +130,14 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
     <Table>
       <TableHeader>
         <TableRow className="bg-zinc-50/50">
-          <TableHead className="w-14 pl-4">No</TableHead>
-          <TableHead className="w-[180px]">CN Number</TableHead>
-          <TableHead>Customer</TableHead>
-          <TableHead>Service</TableHead>
-          <TableHead>Rute</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead className="w-14 pl-4">{tc("table.no")}</TableHead>
+          <TableHead className="w-[180px]">{t("columns.cnNumber")}</TableHead>
+          <TableHead>{tc("table.customer")}</TableHead>
+          <TableHead>{t("table.service")}</TableHead>
+          <TableHead>{t("table.route")}</TableHead>
+          <TableHead>{tc("table.status")}</TableHead>
           <TableHead className={actionsHeadClass}>
-            <span className="max-md:sr-only">Aksi</span>
+            <span className="max-md:sr-only">{tc("actions.actions")}</span>
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -160,10 +170,10 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
         })}
       </TableBody>
       {preparedRows.length === 0 ? (
-        <TableCaption className="text-xs py-10">Belum ada shipment ditemukan.</TableCaption>
+        <TableCaption className="text-xs py-10">{t("table.empty")}</TableCaption>
       ) : (
         <TableCaption className="text-[10px] text-muted-foreground uppercase tracking-widest pb-4">
-          Data Shipment Terupdate
+          {t("table.updatedCaption")}
         </TableCaption>
       )}
     </Table>

@@ -2,10 +2,10 @@ const INV_LABELS: Record<string, string> = {
   draft: "Draft",
   issued: "Issued",
   partially_paid: "Partially Paid",
-  unpaid: "Belum bayar",
-  paid: "Lunas",
-  overdue: "Jatuh tempo",
-  cancelled: "Dibatalkan",
+  unpaid: "Unpaid",
+  paid: "Paid",
+  overdue: "Overdue",
+  cancelled: "Cancelled",
 };
 
 export function invoiceStatusLabelFromApi(status: string): string {
