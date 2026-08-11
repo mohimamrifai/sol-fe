@@ -1,13 +1,14 @@
 "use client";
 
 import { useAuthStore } from "@/lib/store";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { getDashboardUiRole } from "@/lib/auth-role";
 import {
   fetchAdminDashboard,
   fetchCustomerDashboard,
+  type AdminDashboardFilters,
   type AdminDashboardPayload,
   type CustomerDashboardPayload,
 } from "@/lib/dashboard-api";
@@ -59,6 +60,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState<AdminDashboardPayload | null>(null);
   const [customerData, setCustomerData] = useState<CustomerDashboardPayload | null>(null);
+  const [adminFilters, setAdminFilters] = useState<AdminDashboardFilters>({
+    period: "today",
+    businessDate: new Date().toISOString().slice(0, 10),
+  });
+
+  const loadAdminDashboard = useCallback(async (filters: AdminDashboardFilters) => {
+    const r = await fetchAdminDashboard(filters);
+    setAdminData(r.data);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -71,8 +81,7 @@ export default function DashboardPage() {
       setLoading(true);
       try {
         if (user.user_type === "internal") {
-          const r = await fetchAdminDashboard();
-          if (!cancelled) setAdminData(r.data);
+          if (!cancelled) await loadAdminDashboard(adminFilters);
         } else if (user.user_type === "vendor") {
           const r = await fetchVendorDashboard();
           if (!cancelled) setAdminData(r.data as unknown as AdminDashboardPayload);
@@ -92,7 +101,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, adminFilters, loadAdminDashboard]);
 
   if (!mounted) return null;
 
@@ -100,18 +109,45 @@ export default function DashboardPage() {
   const effectiveRole = uiRole === "internal_other" ? "operations" : uiRole;
 
   const renderDashboardByRole = () => {
-    const adminProps = { data: adminData, loading };
     const customerProps = { data: customerData, loading };
 
     switch (effectiveRole) {
       case "super_admin":
-        return <DashboardSuperAdmin {...adminProps} />;
+        return (
+          <DashboardSuperAdmin
+            data={adminData}
+            loading={loading}
+            filters={adminFilters}
+            onFiltersChange={setAdminFilters}
+          />
+        );
       case "operations":
-        return <DashboardOperations {...adminProps} />;
+        return (
+          <DashboardOperations
+            data={adminData}
+            loading={loading}
+            filters={adminFilters}
+            onFiltersChange={setAdminFilters}
+          />
+        );
       case "finance":
-        return <DashboardFinance {...adminProps} />;
+        return (
+          <DashboardFinance
+            data={adminData}
+            loading={loading}
+            filters={adminFilters}
+            onFiltersChange={setAdminFilters}
+          />
+        );
       case "sales":
-        return <DashboardSales {...adminProps} />;
+        return (
+          <DashboardSales
+            data={adminData}
+            loading={loading}
+            filters={adminFilters}
+            onFiltersChange={setAdminFilters}
+          />
+        );
       case "company_admin":
         return <DashboardCompanyAdmin {...customerProps} />;
       case "ops_pic":

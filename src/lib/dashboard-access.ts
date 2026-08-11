@@ -1,5 +1,9 @@
 import type { AuthUser } from "./auth-api";
 import { getDashboardUiRole, isCustomerUser, isInternalUser, isVendorUser } from "./auth-role";
+import {
+  canAccessAdminNavItem,
+  getAllAdminNavItems,
+} from "./admin-nav-config";
 
 /**
  * Definisi item sidebar + aturan akses rute (satu sumber kebenaran).
@@ -242,6 +246,25 @@ export function evaluateDashboardPathAccess(user: AuthUser, pathname: string): A
     if (!isInternalUser(user)) {
       return { redirectTo: "/dashboard" };
     }
+
+    const menuRole = effectiveMenuRole(user);
+    if (!menuRole) {
+      return { redirectTo: "/dashboard" };
+    }
+
+    const permissions = (user.permissions as string[]) ?? [];
+    const userRoles = (user.roles as string[]) ?? [];
+    const matchedItem = getAllAdminNavItems()
+      .filter((item) => path === item.url || path.startsWith(`${item.url}/`))
+      .sort((a, b) => b.url.length - a.url.length)[0];
+
+    if (
+      matchedItem &&
+      !canAccessAdminNavItem(matchedItem, menuRole, permissions, userRoles)
+    ) {
+      return { redirectTo: "/dashboard" };
+    }
+
     return null;
   }
 

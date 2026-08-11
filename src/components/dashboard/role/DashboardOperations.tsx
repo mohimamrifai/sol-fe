@@ -1,9 +1,11 @@
 import { DashboardSuperAdmin } from "./DashboardSuperAdmin";
-import type { AdminDashboardPayload } from "@/lib/dashboard-api";
+import type { AdminDashboardFilters, AdminDashboardPayload } from "@/lib/dashboard-api";
 
 export function DashboardOperations(props: {
   data: AdminDashboardPayload | null;
   loading?: boolean;
+  filters?: AdminDashboardFilters;
+  onFiltersChange?: (filters: AdminDashboardFilters) => void;
 }) {
   return <DashboardSuperAdmin {...props} />;
 }

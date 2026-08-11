@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   LayoutDashboard,
   Package,
@@ -11,10 +11,6 @@ import {
   LogOut,
   User,
   Users,
-  Truck,
-  Tags,
-  ShieldCheck,
-  Settings,
   FolderArchive,
   MapPin,
   ClipboardList,
@@ -34,11 +30,11 @@ import {
   SidebarRail,
   SidebarGroup,
   SidebarGroupLabel,
-} from "@/components/ui/sidebar"
-import { useTranslations } from "next-intl"
-import { Link, usePathname } from "@/i18n/routing"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/sidebar";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useAuthStore } from "@/lib/store";
 import { getDashboardUiRole } from "@/lib/auth-role";
@@ -53,17 +49,19 @@ import {
 } from "@/lib/dashboard-access";
 import type { LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { AdminSidebarNav } from "@/components/dashboard/admin-sidebar-nav";
+import { cn } from "@/lib/utils";
 
 const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
   dashboard: LayoutDashboard,
   customerManagement: Users,
   bookingManagement: FileText,
-  shipmentManagement: Truck,
-  masterOperational: Settings,
+  shipmentManagement: Package,
+  masterOperational: Building,
   invoiceManagement: FileText,
   paymentManagement: CreditCard,
-  vendorPricing: Tags,
-  roleManagement: ShieldCheck,
+  vendorPricing: Building2,
+  roleManagement: Users,
   internalUsers: Users,
   myBookings: FileText,
   myShipments: Package,
@@ -81,11 +79,11 @@ const MENU_ICONS: Record<DashboardMenuKey, LucideIcon> = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const t = useTranslations("Dashboard.menu")
-  const pathname = usePathname()
-  const router = useRouter()
-  const { user } = useAuthStore()
-  const hydrated = useAuthPersistHydrated()
+  const t = useTranslations("Dashboard.menu");
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const hydrated = useAuthPersistHydrated();
   const queryClient = useQueryClient();
 
   const allMenuItems = useMemo(
@@ -102,11 +100,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const uiRole = hydrated && user ? getDashboardUiRole(user) : null;
   const menuRole = uiRole === "internal_other" ? "operations" : uiRole;
   const userPerms = useMemo(() => (user?.permissions as string[]) ?? [], [user?.permissions]);
+  const isInternal = user?.user_type === "internal";
 
   const navItems = useMemo(() => {
     if (!menuRole) return [];
-    const isInternal = user?.user_type === "internal";
-    const isVendor = user?.user_type === "vendor";
 
     return allMenuItems.filter((item) => {
       const def = DASHBOARD_SIDEBAR_ITEM_DEFS.find((d) => d.url === item.url);
@@ -117,11 +114,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       const isVendorRoute = def.url.startsWith("/dashboard/vendor");
 
       if (!isDashboardHome) {
-        if (isInternalRoute && !isInternal) return false;
-        if (isVendorRoute && !isVendor) return false;
-        if (!isInternalRoute && !isVendorRoute && isInternal) return false;
-        if (!isInternalRoute && !isVendorRoute && isVendor) {
-          // Vendor juga boleh akses shared pages (company, users, settings)
+        if (isInternalRoute) return false;
+        if (isInternal) return false;
+        if (isVendorRoute && user?.user_type !== "vendor") return false;
+        if (!isInternalRoute && !isVendorRoute && user?.user_type === "vendor") {
           const isSharedRoute = ["/dashboard/company", "/dashboard/users", "/dashboard/settings"].includes(def.url);
           if (!isSharedRoute) return false;
         }
@@ -132,7 +128,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
       return item.roles.includes(menuRole);
     });
-  }, [allMenuItems, menuRole, userPerms, user?.user_type]);
+  }, [allMenuItems, menuRole, userPerms, user?.user_type, isInternal]);
 
   if (!hydrated) return null;
 
@@ -141,84 +137,87 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={
-              <Link href="/dashboard" className="min-w-0 gap-2 overflow-hidden">
-                <span className="flex min-w-0 flex-1 flex-col gap-1.5 text-left">
-                  <BrandLogo size="sm" className="max-w-[min(100%,11rem)]" />
-                </span>
-              </Link>
-            } />
+            <SidebarMenuButton
+              size="lg"
+              render={
+                <Link href="/dashboard" className="min-w-0 gap-2 overflow-hidden">
+                  <span className="flex min-w-0 flex-1 flex-col gap-1.5 text-left">
+                    <BrandLogo size="sm" className="max-w-[min(100%,11rem)]" />
+                  </span>
+                </Link>
+              }
+            />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm font-medium px-4 mb-2">Menu</SidebarGroupLabel>
-          <SidebarMenu className="gap-2 px-2">
-            {(() => {
-              let normalizedPathname = pathname
-              if (normalizedPathname.startsWith("/en/") || normalizedPathname.startsWith("/id/")) {
-                normalizedPathname = normalizedPathname.replace(/^\/[a-zA-Z-]+(?=\/)/, "")
-              }
-              if (normalizedPathname.length > 1 && normalizedPathname.endsWith("/")) {
-                normalizedPathname = normalizedPathname.slice(0, -1)
-              }
+      <SidebarContent className="overflow-y-auto overscroll-y-contain">
+        {isInternal && menuRole ? (
+          <AdminSidebarNav
+            menuRole={menuRole}
+            permissions={userPerms}
+            userRoles={(user?.roles as string[]) ?? []}
+          />
+        ) : (
+          <SidebarGroup>
+            <SidebarGroupLabel className="mb-2 px-4 text-sm font-medium text-zinc-500">Menu</SidebarGroupLabel>
+            <SidebarMenu className="gap-2 px-2">
+              {(() => {
+                let normalizedPathname = pathname;
+                if (normalizedPathname.startsWith("/en/") || normalizedPathname.startsWith("/id/")) {
+                  normalizedPathname = normalizedPathname.replace(/^\/[a-zA-Z-]+(?=\/)/, "");
+                }
+                if (normalizedPathname.length > 1 && normalizedPathname.endsWith("/")) {
+                  normalizedPathname = normalizedPathname.slice(0, -1);
+                }
 
-              const bestMatchUrl = navItems.reduce((longestMatchUrl, item) => {
-                if (item.url === "/dashboard") {
-                  if (normalizedPathname === "/dashboard") {
-                    return item.url;
+                const bestMatchUrl = navItems.reduce((longestMatchUrl, item) => {
+                  if (item.url === "/dashboard") {
+                    if (normalizedPathname === "/dashboard") return item.url;
+                    return longestMatchUrl;
+                  }
+                  if (normalizedPathname === item.url || normalizedPathname.startsWith(`${item.url}/`)) {
+                    if (item.url.length > longestMatchUrl.length) return item.url;
                   }
                   return longestMatchUrl;
-                }
-                if (normalizedPathname === item.url || normalizedPathname.startsWith(`${item.url}/`)) {
-                  if (item.url.length > longestMatchUrl.length) {
-                    return item.url;
-                  }
-                }
-                return longestMatchUrl;
-              }, "");
+                }, "");
 
-              return navItems.map((item) => {
-                const isActive = item.url === bestMatchUrl
+                return navItems.map((item) => {
+                  const isActive = item.url === bestMatchUrl;
 
-                const handleMouseEnter = () => {
-                  if (item.url === "/dashboard/booking") {
-                    void queryClient.prefetchQuery({
-                      queryKey: ["customerBookings", 1, "", "all"],
-                    });
-                  } else if (item.url === "/dashboard/shipments") {
-                    void queryClient.prefetchQuery({
-                      queryKey: ["customerShipments", 1, "", "all"],
-                    });
-                  }
-                };
-
-                return (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    tooltip={item.title}
-                    isActive={isActive}
-                    size="default"
-                    className={
-                      "h-9 text-sm font-medium px-3 rounded-md transition-colors " +
-                      (isActive
-                        ? "bg-[#0b1b69] text-white shadow-sm data-active:bg-[#0b1b69] data-active:text-white hover:bg-[#0d2280] hover:text-white [&_svg]:text-white"
-                        : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900")
+                  const handleMouseEnter = () => {
+                    if (item.url === "/dashboard/booking") {
+                      void queryClient.prefetchQuery({ queryKey: ["customerBookings", 1, "", "all"] });
+                    } else if (item.url === "/dashboard/shipments") {
+                      void queryClient.prefetchQuery({ queryKey: ["customerShipments", 1, "", "all"] });
                     }
-                    render={
-                      <Link href={item.url} className="flex items-center gap-3 w-full" onMouseEnter={handleMouseEnter}>
-                        {item.icon && <item.icon className="h-4 w-4" />}
-                        <span>{item.title}</span>
-                      </Link>
-                    }
-                  />
-                </SidebarMenuItem>
-              )
-              })
-            })()}
-          </SidebarMenu>
-        </SidebarGroup>
+                  };
+
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={isActive}
+                        size="default"
+                        className={cn(
+                          "h-9 rounded-md px-3 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-[#0b1b69] text-white shadow-sm data-active:bg-[#0b1b69] data-active:text-white hover:bg-[#0d2280] hover:text-white [&_svg]:text-white"
+                            : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 data-active:bg-zinc-100 data-active:text-zinc-900 [&_svg]:text-zinc-600"
+                        )}
+                        render={
+                          <Link href={item.url} className="flex w-full items-center gap-3 text-inherit" onMouseEnter={handleMouseEnter}>
+                            {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+                            <span>{item.title}</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                  );
+                });
+              })()}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
@@ -227,14 +226,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <DropdownMenuTrigger>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground w-full"
+                  className="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   render={
                     <div className="flex w-full items-center gap-3 px-1">
-                       <Avatar className="h-8 w-8 rounded-lg">
+                      <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage src={undefined} alt={user?.name} />
                         <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                       </Avatar>
-                      <div className="grid flex-1 text-left text-sm leading-tight overflow-hidden">
+                      <div className="grid flex-1 overflow-hidden text-left text-sm leading-tight">
                         <span className="truncate font-semibold">{user?.name}</span>
                         <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
                       </div>
@@ -244,7 +243,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 />
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                className="min-w-56 w-[--radix-dropdown-menu-trigger-width] rounded-lg"
                 side="bottom"
                 align="end"
                 sideOffset={4}
@@ -265,5 +264,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

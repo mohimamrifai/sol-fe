@@ -1,57 +1,90 @@
 import { apiFetch } from "./api-client";
 
+export type AdminDashboardPeriod = "today" | "week" | "month" | "custom";
+
+export type AdminDashboardFilters = {
+  period?: AdminDashboardPeriod;
+  businessDate?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
 export type AdminDashboardSummary = {
-  bookingsToday: number;
+  totalCustomers: number;
   activeShipments: number;
-  rackUtilization: number;
-  overdueInvoices: number;
-  activeCompanies: number;
-  pendingCompanyApprovals: number;
-  unpaidInvoices: number;
-  paymentsToday: number;
-  departuresToday?: number;
-  arrivalsToday?: number;
-  activeCustomers?: number;
-  newCustomersThisWeek?: number;
-  pendingProspects?: number;
+  bookingsToday: number;
+  revenueThisMonth: number;
+  outstandingReceivable: number;
+  outstandingPayable: number;
+  activeCompanies?: number;
+  overdueInvoices?: number;
+  pendingCompanyApprovals?: number;
+  paymentsToday?: number;
+  rackUtilization?: number;
+};
+
+export type AdminDashboardStatusBreakdown = Record<string, number>;
+
+export type AdminDashboardTodayOperations = {
+  pickupToday: number;
+  trainDepartureToday: number;
+  trainArrivalToday: number;
+  deliveryToday: number;
+  podWaitingUpload: number;
+};
+
+export type AdminDashboardFinanceSummary = {
+  customerInvoice: number;
+  customerPayment: number;
+  outstandingCustomer: number;
+  vendorInvoice: number;
+  vendorPayment: number;
+  outstandingVendor: number;
+};
+
+export type AdminDashboardContainerSummary = {
+  available: number;
+  reserved: number;
+  inTransit: number;
+  maintenance: number;
+  inactive: number;
+};
+
+export type AdminDashboardActivity = {
+  time: string;
+  module: string;
+  activity: string;
+  user: string;
+};
+
+export type AdminDashboardNotification = {
+  key: string;
+  count: number;
+  link?: string;
 };
 
 export type AdminDashboardPayload = {
+  filters?: {
+    period: AdminDashboardPeriod;
+    businessDate: string;
+    dateFrom: string;
+    dateTo: string;
+  };
   summary: AdminDashboardSummary;
-  pendingBookings: Array<{
-    id?: number;
-    code?: string;
-    booking_number?: string;
-    customer?: string;
-    route?: string;
-    serviceType?: string;
-    status?: string;
-  }>;
-  activeShipments: Array<{
-    id: string;
-    customer?: string;
-    route: string;
-    status: string;
-  }>;
-  overdueInvoices: Array<{
-    number: string;
-    customer?: string;
-    status: string;
-    dueDate?: string;
-    amount: number;
-  }>;
-  recentPayments: Array<{
-    ref: string;
-    customer?: string;
-    method: string;
-    amount: number;
-    status?: string;
-  }>;
-  /** Shipment baru per minggu (4 minggu), FCL vs LCL — dari API admin dashboard */
-  shipmentVolumeByWeek?: Array<{ week: string; fcl: number; lcl: number }>;
+  bookingStatusBreakdown: AdminDashboardStatusBreakdown;
+  shipmentStatusBreakdown: AdminDashboardStatusBreakdown;
+  todayOperations: AdminDashboardTodayOperations;
+  financeSummary: AdminDashboardFinanceSummary;
+  containerSummary: AdminDashboardContainerSummary;
+  recentActivity: AdminDashboardActivity[];
+  notifications: AdminDashboardNotification[];
+  pendingBookings?: unknown[];
+  activeShipments?: unknown[];
+  overdueInvoices?: unknown[];
+  recentPayments?: unknown[];
+  shipmentVolumeByWeek?: unknown[];
 };
 
-// ── Customer dashboard payload ────────────────────────────────────────
 export type CustomerDashboardCards = {
   booking_draft: number;
   booking_submitted: number;
@@ -134,8 +167,19 @@ export type CustomerDashboardPayload = {
   notifications: CustomerDashboardNotification[];
 };
 
-export async function fetchAdminDashboard() {
-  return apiFetch<{ data: AdminDashboardPayload }>("/admin/dashboard", {
+function buildDashboardQuery(filters?: AdminDashboardFilters): string {
+  if (!filters) return "";
+  const params = new URLSearchParams();
+  if (filters.period) params.set("period", filters.period);
+  if (filters.businessDate) params.set("business_date", filters.businessDate);
+  if (filters.dateFrom) params.set("date_from", filters.dateFrom);
+  if (filters.dateTo) params.set("date_to", filters.dateTo);
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+export async function fetchAdminDashboard(filters?: AdminDashboardFilters) {
+  return apiFetch<{ data: AdminDashboardPayload }>(`/admin/dashboard${buildDashboardQuery(filters)}`, {
     method: "GET",
   });
 }
@@ -144,4 +188,12 @@ export async function fetchCustomerDashboard() {
   return apiFetch<{ data: CustomerDashboardPayload }>("/customer/dashboard", {
     method: "GET",
   });
+}
+
+export function formatDashboardCurrency(value: number, locale = "id-ID"): string {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value ?? 0);
 }

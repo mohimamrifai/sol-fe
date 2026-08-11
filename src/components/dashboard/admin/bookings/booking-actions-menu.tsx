@@ -123,7 +123,7 @@ export function BookingActionsMenu({
                 const payload = res as { data?: { id?: number } };
                 const sid = payload?.data?.id;
                 if (typeof sid === "number") {
-                  router.push(`/dashboard/admin/shipments/${sid}`);
+                  router.push(`/dashboard/admin/customer/shipments/${sid}`);
                 }
                 onDone();
               } catch (e) {

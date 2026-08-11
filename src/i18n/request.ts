@@ -17,6 +17,7 @@ const NAMESPACE_PATHS: Record<string, string> = {
   Invoices: "invoices",
   Payments: "payments",
   Dashboard: "dashboard",
+  DashboardAdmin: "dashboard",
   Hero: "landing",
   Landing: "landing",
   LandingCtaFinal: "landing",
@@ -38,6 +39,7 @@ const NAMESPACE_PATHS: Record<string, string> = {
   Users: "users",
   Profile: "settings",
   Vendor: "vendor",
+  AdminNav: "admin",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

@@ -1,10 +1,3 @@
-import { redirect } from "next/navigation";
+import { createLegacyRedirectPage } from "@/lib/admin-legacy-redirect-page";
 
-export default async function AdminMasterIndexPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  redirect(`/${locale}/dashboard/admin/master/locations`);
-}
+export default createLegacyRedirectPage("/dashboard/admin/master/route");

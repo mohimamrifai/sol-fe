@@ -1,0 +1,101 @@
+{
+  "DashboardAdmin": {
+    "filters": {
+      "period": "Period",
+      "businessDate": "Business Date",
+      "periodToday": "Today",
+      "periodWeek": "This Week",
+      "periodMonth": "This Month",
+      "periodCustom": "Custom Date",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "apply": "Apply"
+    },
+    "summary": {
+      "totalCustomers": "Total Customers",
+      "activeShipments": "Total Active Shipments",
+      "bookingsToday": "Total Booking Today",
+      "revenueThisMonth": "Revenue This Month",
+      "outstandingReceivable": "Outstanding Receivable",
+      "outstandingPayable": "Outstanding Payable"
+    },
+    "sections": {
+      "bookingSummary": "Booking Summary",
+      "shipmentSummary": "Shipment Summary",
+      "todayOperations": "Today's Operation",
+      "financeSummary": "Finance Summary",
+      "containerSummary": "Container Summary",
+      "recentActivity": "Recent Activity",
+      "notifications": "Notifications",
+      "quickActions": "Quick Actions"
+    },
+    "bookingStatus": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "under_review": "Under Review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "shipmentStatus": {
+      "planning": "Planning",
+      "ready_operation": "Ready Operation",
+      "pickup": "Pickup",
+      "gate_in_origin": "Gate In Origin",
+      "loading": "Loading",
+      "train_departure": "Train Departure",
+      "train_arrival": "Train Arrival",
+      "gate_out_destination": "Gate Out Destination",
+      "delivery": "Delivery",
+      "proof_of_delivery": "Proof of Delivery",
+      "completed": "Completed"
+    },
+    "operations": {
+      "pickupToday": "Pickup Today",
+      "trainDepartureToday": "Train Departure Today",
+      "trainArrivalToday": "Train Arrival Today",
+      "deliveryToday": "Delivery Today",
+      "podWaitingUpload": "POD Waiting Upload"
+    },
+    "finance": {
+      "customerInvoice": "Customer Invoice",
+      "customerPayment": "Customer Payment",
+      "outstandingCustomer": "Outstanding Customer",
+      "vendorInvoice": "Vendor Invoice",
+      "vendorPayment": "Vendor Payment",
+      "outstandingVendor": "Outstanding Vendor"
+    },
+    "container": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "inTransit": "In Transit",
+      "maintenance": "Maintenance",
+      "inactive": "Inactive"
+    },
+    "activity": {
+      "time": "Time",
+      "module": "Module",
+      "activity": "Activity",
+      "user": "User",
+      "empty": "No recent activity."
+    },
+    "notifications": {
+      "pendingBookings": "{count} bookings waiting for approval.",
+      "readyOperation": "{count} shipments ready for operation.",
+      "trainDepartureToday": "{count} trains departing today.",
+      "podWaitingUpload": "{count} POD documents not uploaded yet.",
+      "invoicesDueToday": "{count} customer invoices due today.",
+      "vendorInvoicesPending": "{count} vendor invoices pending verification.",
+      "expiredPayments": "{count} Midtrans payment links expired.",
+      "empty": "No notifications."
+    },
+    "quickActions": {
+      "createCustomer": "Create Customer",
+      "createBooking": "Create Booking",
+      "shipmentPlanning": "Shipment Planning",
+      "customerInvoice": "Customer Invoice",
+      "vendorJobOrder": "Vendor Job Order",
+      "reports": "Reports"
+    },
+    "loading": "Loading dashboard…"
+  }
+}

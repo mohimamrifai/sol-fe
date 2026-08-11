@@ -1,0 +1,101 @@
+{
+  "DashboardAdmin": {
+    "filters": {
+      "period": "Periode",
+      "businessDate": "Tanggal Bisnis",
+      "periodToday": "Hari Ini",
+      "periodWeek": "Minggu Ini",
+      "periodMonth": "Bulan Ini",
+      "periodCustom": "Tanggal Kustom",
+      "dateFrom": "Dari",
+      "dateTo": "Sampai",
+      "apply": "Terapkan"
+    },
+    "summary": {
+      "totalCustomers": "Total Customers",
+      "activeShipments": "Total Active Shipments",
+      "bookingsToday": "Total Booking Today",
+      "revenueThisMonth": "Revenue This Month",
+      "outstandingReceivable": "Outstanding Receivable",
+      "outstandingPayable": "Outstanding Payable"
+    },
+    "sections": {
+      "bookingSummary": "Ringkasan Booking",
+      "shipmentSummary": "Ringkasan Shipment",
+      "todayOperations": "Operasi Hari Ini",
+      "financeSummary": "Ringkasan Keuangan",
+      "containerSummary": "Ringkasan Container",
+      "recentActivity": "Aktivitas Terbaru",
+      "notifications": "Notifikasi",
+      "quickActions": "Aksi Cepat"
+    },
+    "bookingStatus": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "under_review": "Under Review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "shipmentStatus": {
+      "planning": "Planning",
+      "ready_operation": "Ready Operation",
+      "pickup": "Pickup",
+      "gate_in_origin": "Gate In Origin",
+      "loading": "Loading",
+      "train_departure": "Train Departure",
+      "train_arrival": "Train Arrival",
+      "gate_out_destination": "Gate Out Destination",
+      "delivery": "Delivery",
+      "proof_of_delivery": "Proof of Delivery",
+      "completed": "Completed"
+    },
+    "operations": {
+      "pickupToday": "Pickup Today",
+      "trainDepartureToday": "Train Departure Today",
+      "trainArrivalToday": "Train Arrival Today",
+      "deliveryToday": "Delivery Today",
+      "podWaitingUpload": "POD Waiting Upload"
+    },
+    "finance": {
+      "customerInvoice": "Customer Invoice",
+      "customerPayment": "Customer Payment",
+      "outstandingCustomer": "Outstanding Customer",
+      "vendorInvoice": "Vendor Invoice",
+      "vendorPayment": "Vendor Payment",
+      "outstandingVendor": "Outstanding Vendor"
+    },
+    "container": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "inTransit": "In Transit",
+      "maintenance": "Maintenance",
+      "inactive": "Inactive"
+    },
+    "activity": {
+      "time": "Waktu",
+      "module": "Modul",
+      "activity": "Aktivitas",
+      "user": "User",
+      "empty": "Belum ada aktivitas terbaru."
+    },
+    "notifications": {
+      "pendingBookings": "{count} Booking menunggu approval.",
+      "readyOperation": "{count} Shipment Ready Operation.",
+      "trainDepartureToday": "{count} Train akan berangkat hari ini.",
+      "podWaitingUpload": "{count} POD belum diupload.",
+      "invoicesDueToday": "{count} Customer Invoice jatuh tempo hari ini.",
+      "vendorInvoicesPending": "{count} Vendor Invoice belum diverifikasi.",
+      "expiredPayments": "{count} Payment Link Midtrans expired.",
+      "empty": "Tidak ada notifikasi."
+    },
+    "quickActions": {
+      "createCustomer": "Create Customer",
+      "createBooking": "Create Booking",
+      "shipmentPlanning": "Shipment Planning",
+      "customerInvoice": "Customer Invoice",
+      "vendorJobOrder": "Vendor Job Order",
+      "reports": "Reports"
+    },
+    "loading": "Memuat dashboard…"
+  }
+}
