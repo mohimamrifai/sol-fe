@@ -83,3 +83,50 @@ export async function downloadAdminWaybillPdf(shipmentId: number) {
 export async function fetchAdminShipmentStats() {
   return apiFetch<{ data: Record<string, number> }>(`/admin/shipments/stats`, { method: "GET" });
 }
+
+export async function readyAdminShipmentForDeparture(id: number) {
+  return apiFetch(`/admin/shipments/${id}/ready-for-departure`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function cancelAdminShipment(id: number, reason: string) {
+  return apiFetch(`/admin/shipments/${id}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function fetchAdminAvailableContainers(
+  shipmentId: number,
+  params?: { ownership?: string; container_type_id?: number; search?: string }
+) {
+  const qs = new URLSearchParams();
+  if (params?.ownership) qs.set("ownership", params.ownership);
+  if (params?.container_type_id) qs.set("container_type_id", String(params.container_type_id));
+  if (params?.search) qs.set("search", params.search);
+  const q = qs.toString();
+  return apiFetch<{ data: Array<Record<string, unknown>> }>(
+    `/admin/shipments/${shipmentId}/available-containers${q ? `?${q}` : ""}`,
+    { method: "GET" }
+  );
+}
+
+export async function assignAdminContainerSlot(
+  shipmentId: number,
+  containerId: number,
+  body: Record<string, unknown>
+) {
+  return apiFetch(`/admin/shipments/${shipmentId}/containers/${containerId}/assign`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function registerAdminVendorContainer(shipmentId: number, body: Record<string, unknown>) {
+  return apiFetch(`/admin/shipments/${shipmentId}/register-vendor-container`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

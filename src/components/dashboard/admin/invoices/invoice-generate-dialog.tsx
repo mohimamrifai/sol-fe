@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { createAdminInvoice, fetchAdminEligibleShipments } from "@/lib/admin-api";
+import { generateAdminInvoiceFromShipment, fetchAdminEligibleShipments } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import type { LaravelPaginated } from "@/lib/types-api";
@@ -26,6 +26,12 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 type EligibleRow = Record<string, unknown>;
+
+function fmtIdr(v: unknown): string {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return `Rp ${n.toLocaleString("id-ID")}`;
+}
 
 export function InvoiceGenerateDialog({
   open,
@@ -67,21 +73,8 @@ export function InvoiceGenerateDialog({
     if (selected.size === 0) return;
     setSaving(true);
     try {
-      for (const shipId of selected) {
-        const row = rows.find((r) => Number(r.id) === shipId);
-        if (!row) continue;
-        const companyId = Number(row.company_id ?? (row.company as { id?: number })?.id);
-        const amount = Number(row.total_amount ?? row.estimated_amount ?? 8000000);
-        await createAdminInvoice({
-          shipment_id: shipId,
-          company_id: companyId,
-          status: "draft",
-          items: [
-            { description: "Rail Freight", quantity: 1, unit_price: amount * 0.85 },
-            { description: "Pickup", quantity: 1, unit_price: amount * 0.075 },
-            { description: "Delivery", quantity: 1, unit_price: amount * 0.075 },
-          ],
-        });
+        for (const shipId of selected) {
+        await generateAdminInvoiceFromShipment(shipId, { status: "draft" });
       }
       toast.success(t("generateDialog.success", { count: selected.size }));
       onOpenChange(false);
@@ -113,12 +106,13 @@ export function InvoiceGenerateDialog({
                   <TableHead>{t("generateDialog.columns.customer")}</TableHead>
                   <TableHead>{t("generateDialog.columns.service")}</TableHead>
                   <TableHead>{t("generateDialog.columns.completed")}</TableHead>
+                  <TableHead className="text-right">{t("generateDialog.columns.amount")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-muted-foreground">
+                    <TableCell colSpan={7} className="text-muted-foreground">
                       {t("generateDialog.noEligible")}
                     </TableCell>
                   </TableRow>
@@ -137,6 +131,7 @@ export function InvoiceGenerateDialog({
                         <TableCell>{company?.name ?? "—"}</TableCell>
                         <TableCell>{service?.name ?? "—"}</TableCell>
                         <TableCell>{row.updated_at ? String(row.updated_at).slice(0, 10) : "—"}</TableCell>
+                        <TableCell className="text-right tabular-nums">{fmtIdr(row.estimated_amount)}</TableCell>
                       </TableRow>
                     );
                   })

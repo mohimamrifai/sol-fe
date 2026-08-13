@@ -77,6 +77,9 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
 
   const payments = (data.payments ?? data.Payments) as Inv[] | undefined;
   const payRows = Array.isArray(payments) ? payments : [];
+  const paidTotal = payRows.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+  const totalAmount = Number(data.total_amount) || 0;
+  const outstanding = Math.max(0, totalAmount - paidTotal);
 
   return (
     <div className="space-y-4">
@@ -120,6 +123,14 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
         <div className="flex justify-between border-t pt-2 text-sm font-semibold">
           <span>{t("detail.total")}</span>
           <span className="tabular-nums">{fmtIdr(data.total_amount)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">{t("detail.paidAmount")}</span>
+          <span className="tabular-nums">{fmtIdr(paidTotal)}</span>
+        </div>
+        <div className="flex justify-between text-sm font-medium">
+          <span className="text-muted-foreground">{t("detail.outstanding")}</span>
+          <span className="tabular-nums">{fmtIdr(outstanding)}</span>
         </div>
       </div>
 
@@ -168,6 +179,22 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
             </Table>
           </div>
         )}
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">{t("detail.documents")}</p>
+        <ul className="space-y-2 text-sm">
+          <li className="flex items-center justify-between rounded-md border px-3 py-2">
+            <span>{t("detail.invoicePdf")}</span>
+            <span className="text-xs text-muted-foreground">{num !== "—" ? t("detail.available") : "—"}</span>
+          </li>
+          <li className="flex items-center justify-between rounded-md border px-3 py-2">
+            <span>{t("detail.taxInvoice")}</span>
+            <span className="text-xs text-muted-foreground">{st === "paid" ? t("detail.available") : t("detail.uploadWhenPaid")}</span>
+          </li>
+        </ul>
       </div>
 
       {payRows.length > 0 ? (

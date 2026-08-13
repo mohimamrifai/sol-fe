@@ -39,6 +39,8 @@ import { ApiError } from "@/lib/api-client";
 import { PaymentDetailView } from "@/components/dashboard/admin/payment-detail-view";
 import { PayRow } from "./types";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
+import { useParams } from "next/navigation";
 
 interface PaymentActionsMenuProps {
   payment: PayRow;
@@ -55,6 +57,9 @@ export function PaymentActionsMenu({
 }: PaymentActionsMenuProps) {
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
+  const router = useRouter();
+  const params = useParams();
+  const locale = String(params?.locale ?? "id");
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<PayRow | null>(null);
@@ -71,6 +76,11 @@ export function PaymentActionsMenu({
   const [verifyLoading, setVerifyLoading] = useState(false);
 
   const paymentId = Number(payment.id);
+  const isArOnly = payment.is_ar_only === true;
+  const invoiceId = Number(
+    (payment.invoice_id as number | undefined) ??
+      ((payment.invoice as { id?: number } | undefined)?.id)
+  );
   const orderIdRaw = String(payment.midtrans_order_id ?? "").trim();
   const canSyncMidtrans = orderIdRaw.length > 0;
   const payStatus = String(payment.status ?? "").toLowerCase();
@@ -174,11 +184,20 @@ export function PaymentActionsMenu({
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-52">
-          <DropdownMenuItem className="cursor-pointer" onClick={() => setDetailOpen(true)}>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => {
+              if (isArOnly && Number.isFinite(invoiceId)) {
+                router.push(`/${locale}/dashboard/admin/customer/invoices/${invoiceId}`);
+                return;
+              }
+              router.push(`/${locale}/dashboard/admin/customer/payments/${paymentId}`);
+            }}
+          >
             <Eye className="h-4 w-4" />
             {t("actions.viewDetail")}
           </DropdownMenuItem>
-          {canManageAR ? (
+          {canManageAR && !isArOnly ? (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem

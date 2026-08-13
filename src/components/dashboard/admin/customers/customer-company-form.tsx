@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { DiscountManagement } from "@/components/dashboard/admin/customers/discount-management";
 import { StatusManagerSection } from "@/components/dashboard/admin/customers/status-manager-section";
 import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
+import { CustomerOperationalFields } from "@/components/dashboard/admin/customers/customer-operational-fields";
 
 export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations("AdminCustomers");
@@ -60,7 +61,12 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
+  const [country, setCountry] = useState("Indonesia");
   const [postalCode, setPostalCode] = useState("");
+  const [businessCategory, setBusinessCategory] = useState("");
+  const [businessCategoryOther, setBusinessCategoryOther] = useState("");
+  const [monthlyShipmentEstimate, setMonthlyShipmentEstimate] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -86,7 +92,12 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
       setAddress(String(d.address ?? ""));
       setCity(String(d.city ?? ""));
       setProvince(String(d.province ?? ""));
+      setDistrict(String(d.district ?? ""));
+      setCountry(String(d.country ?? "Indonesia"));
       setPostalCode(String(d.postal_code ?? ""));
+      setBusinessCategory(String(d.business_category ?? ""));
+      setBusinessCategoryOther(String(d.business_category_other ?? ""));
+      setMonthlyShipmentEstimate(String(d.monthly_shipment_estimate ?? ""));
       setContactPerson(String(d.contact_person ?? ""));
       setEmail(String(d.email ?? ""));
       setPhone(String(d.phone ?? ""));
@@ -132,7 +143,12 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
         address: address.trim() || null,
         city: city.trim() || null,
         province: province.trim() || null,
+        district: district.trim() || null,
+        country: country.trim() || null,
         postal_code: postalCode.trim() || null,
+        business_category: businessCategory || null,
+        business_category_other: businessCategory === "others" ? businessCategoryOther.trim() || null : null,
+        monthly_shipment_estimate: monthlyShipmentEstimate || null,
         contact_person: contactPerson.trim() || null,
         email: email.trim() || null,
         phone: cleanedPhone || null,
@@ -297,18 +313,31 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
         </div>
         <ControlledAddressRegionFields
           className="md:col-span-2"
-          value={{ province, city, postal_code: postalCode }}
+          value={{ country, province, city, district, postal_code: postalCode }}
           onChange={(patch) => {
+            if (patch.country !== undefined) setCountry(patch.country);
             if (patch.province !== undefined) setProvince(patch.province);
             if (patch.city !== undefined) setCity(patch.city);
+            if (patch.district !== undefined) setDistrict(patch.district);
             if (patch.postal_code !== undefined) setPostalCode(patch.postal_code);
           }}
           disabled={!canEdit}
+          showCountry
+          showDistrict
           labels={{
             province: t("form.province"),
             city: t("form.city"),
             postalCode: t("form.postalCode"),
           }}
+        />
+        <CustomerOperationalFields
+          businessCategory={businessCategory}
+          businessCategoryOther={businessCategoryOther}
+          monthlyShipmentEstimate={monthlyShipmentEstimate}
+          onBusinessCategoryChange={setBusinessCategory}
+          onBusinessCategoryOtherChange={setBusinessCategoryOther}
+          onMonthlyShipmentEstimateChange={setMonthlyShipmentEstimate}
+          disabled={!canEdit}
         />
         <div className="space-y-2">
           <Label>{t("form.pic")}</Label>

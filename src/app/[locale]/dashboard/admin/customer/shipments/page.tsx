@@ -19,6 +19,14 @@ import { useShipmentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
 import { ShipmentStatsCards } from "./components/shipment-stats-cards";
 import { ShipmentTable } from "./components/shipment-table";
+import {
+  AdminListFilters,
+  dateParamFromFilter,
+  masterSelectOptions,
+  paramFromFilter,
+  stringParamFromFilter,
+} from "@/components/data-table/admin-list-filters";
+import { COVERAGE_FILTER_OPTIONS, useAdminListMasters } from "@/hooks/use-admin-list-masters";
 
 const PER_PAGE = 10;
 
@@ -29,6 +37,7 @@ export default function AdminShipmentsPage() {
   const tc = useTranslations("AdminCommon");
   const shipmentStatusLabel = useShipmentStatusLabel();
   const authHydrated = useAuthPersistHydrated();
+  const masters = useAdminListMasters();
   const [rows, setRows] = useState<ShipRow[]>([]);
   const [shipmentStats, setShipmentStats] = useState<Record<string, number> | null>(null);
   const [meta, setMeta] = useState<LaravelPaginated<ShipRow> | null>(null);
@@ -39,6 +48,13 @@ export default function AdminShipmentsPage() {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [serviceTypeFilter, setServiceTypeFilter] = useState("all");
+  const [coverageFilter, setCoverageFilter] = useState("all");
+  const [originFilter, setOriginFilter] = useState("all");
+  const [destinationFilter, setDestinationFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const shipmentStatusFilters = useMemo(
     () => [
@@ -54,7 +70,17 @@ export default function AdminShipmentsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [
+    debouncedSearch,
+    statusFilter,
+    companyFilter,
+    serviceTypeFilter,
+    coverageFilter,
+    originFilter,
+    destinationFilter,
+    dateFrom,
+    dateTo,
+  ]);
 
   const statusParam = statusFilter === "all" ? undefined : statusFilter;
 
@@ -78,6 +104,13 @@ export default function AdminShipmentsPage() {
         perPage: PER_PAGE,
         search: debouncedSearch.trim() || undefined,
         status: statusParam,
+        companyId: paramFromFilter(companyFilter),
+        serviceTypeId: paramFromFilter(serviceTypeFilter),
+        shipmentCoverage: stringParamFromFilter(coverageFilter),
+        originLocationId: paramFromFilter(originFilter),
+        destinationLocationId: paramFromFilter(destinationFilter),
+        dateFrom: dateParamFromFilter(dateFrom),
+        dateTo: dateParamFromFilter(dateTo),
       });
       const paginated = res as LaravelPaginated<ShipRow>;
       setRows(paginated.data ?? []);
@@ -89,7 +122,20 @@ export default function AdminShipmentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, statusParam, t]);
+  }, [
+    authHydrated,
+    page,
+    debouncedSearch,
+    statusParam,
+    companyFilter,
+    serviceTypeFilter,
+    coverageFilter,
+    originFilter,
+    destinationFilter,
+    dateFrom,
+    dateTo,
+    t,
+  ]);
 
   useEffect(() => {
     void loadStats();
@@ -139,6 +185,66 @@ export default function AdminShipmentsPage() {
               filterValue={statusFilter}
               onFilterChange={setStatusFilter}
               filterOptions={shipmentStatusFilters}
+            />
+            <AdminListFilters
+              className="mt-3"
+              selects={[
+                {
+                  id: "shipment-company",
+                  label: tc("table.customer"),
+                  value: companyFilter,
+                  onChange: setCompanyFilter,
+                  options: masterSelectOptions(masters.companies, tc("filters.all")),
+                },
+                {
+                  id: "shipment-service",
+                  label: t("table.service"),
+                  value: serviceTypeFilter,
+                  onChange: setServiceTypeFilter,
+                  options: masterSelectOptions(masters.serviceTypes, tc("filters.all")),
+                },
+                {
+                  id: "shipment-coverage",
+                  label: t("columns.coverage"),
+                  value: coverageFilter,
+                  onChange: setCoverageFilter,
+                  options: [
+                    { value: "all", label: tc("filters.all") },
+                    ...COVERAGE_FILTER_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    })),
+                  ],
+                },
+                {
+                  id: "shipment-origin",
+                  label: t("filters.origin"),
+                  value: originFilter,
+                  onChange: setOriginFilter,
+                  options: masterSelectOptions(masters.locations, tc("filters.all")),
+                },
+                {
+                  id: "shipment-destination",
+                  label: t("filters.destination"),
+                  value: destinationFilter,
+                  onChange: setDestinationFilter,
+                  options: masterSelectOptions(masters.locations, tc("filters.all")),
+                },
+              ]}
+              dates={[
+                {
+                  id: "shipment-date-from",
+                  label: `${t("filters.departureDate")} (${tc("filters.from")})`,
+                  value: dateFrom,
+                  onChange: setDateFrom,
+                },
+                {
+                  id: "shipment-date-to",
+                  label: `${t("filters.departureDate")} (${tc("filters.to")})`,
+                  value: dateTo,
+                  onChange: setDateTo,
+                },
+              ]}
             />
           </div>
 

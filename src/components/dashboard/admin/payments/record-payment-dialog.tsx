@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchAdminEligibleInvoices, recordAdminPayment } from "@/lib/admin-api";
+import { fetchAdminEligibleInvoices, fetchAdminPaymentOptions, recordAdminPayment } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import type { LaravelPaginated } from "@/lib/types-api";
@@ -73,6 +73,14 @@ export function RecordPaymentDialog({
   const [amount, setAmount] = useState("");
   const [referenceNo, setReferenceNo] = useState("");
   const [remark, setRemark] = useState("");
+  const [companyBanks, setCompanyBanks] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    void fetchAdminPaymentOptions()
+      .then((res) => setCompanyBanks(res.data.company_banks ?? []))
+      .catch(() => setCompanyBanks([]));
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -97,6 +105,10 @@ export function RecordPaymentDialog({
 
   const submit = async () => {
     if (invoiceId == null) return;
+    if (method === "transfer" && !companyBank.trim()) {
+      toast.error(t("recordDialog.companyBankRequired"));
+      return;
+    }
     setSaving(true);
     try {
       await recordAdminPayment(invoiceId, {
@@ -193,7 +205,19 @@ export function RecordPaymentDialog({
                   <>
                     <div className="space-y-2">
                       <Label>{t("recordDialog.companyBank")}</Label>
-                      <Input className="h-9" value={companyBank} onChange={(e) => setCompanyBank(e.target.value)} />
+                      {companyBanks.length > 0 ? (
+                        <Select value={companyBank || "none"} onValueChange={(v) => setCompanyBank(!v || v === "none" ? "" : v)}>
+                          <SelectTrigger className="h-9 w-full"><SelectValue placeholder={t("recordDialog.companyBank")} /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">—</SelectItem>
+                            {companyBanks.map((b) => (
+                              <SelectItem key={b} value={b}>{b}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input className="h-9" value={companyBank} onChange={(e) => setCompanyBank(e.target.value)} />
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label>{t("recordDialog.account")}</Label>

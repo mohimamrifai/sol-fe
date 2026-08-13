@@ -200,6 +200,8 @@ export default function AdminCustomersPage() {
       { value: "all", label: tc("filters.allStatus") },
       { value: "active", label: t("filters.active") },
       { value: "pending", label: t("filters.pending") },
+      { value: "suspended", label: tc("status.customer.suspended") },
+      { value: "rejected", label: tc("status.customer.rejected") },
       { value: "inactive", label: t("filters.inactive") },
     ],
     [t, tc]

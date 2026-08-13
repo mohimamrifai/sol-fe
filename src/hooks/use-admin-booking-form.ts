@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import type { AttachmentDraft, ContainerRow, PackageRow } from "@/hooks/use-booking-form";
 import {
   fetchAdminAdditionalServices,
   fetchAdminCompanies,
@@ -77,6 +78,10 @@ export function useAdminBookingForm() {
   const [itemWidth, setItemWidth] = useState("");
   const [itemHeight, setItemHeight] = useState("");
   const [pickupDate, setPickupDate] = useState("");
+  const [departureDate, setDepartureDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+  const [pickupNotes, setPickupNotes] = useState("");
+  const [shipmentCoverage, setShipmentCoverage] = useState("port_to_port");
   const [cargo, setCargo] = useState("");
   const [cargoCategoryId, setCargoCategoryId] = useState("");
 
@@ -91,6 +96,10 @@ export function useAdminBookingForm() {
   const [equipmentCondition, setEquipmentCondition] = useState("");
   const [temperature, setTemperature] = useState("");
   const [selectedAddOns, setSelectedAddOns] = useState<number[]>([]);
+  const [containerResponsibility, setContainerResponsibility] = useState("COC");
+  const [packages, setPackages] = useState<PackageRow[]>([]);
+  const [containers, setContainers] = useState<ContainerRow[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
 
   const [estimate, setEstimate] = useState<string | null>(null);
   const [estimateBreakdown, setEstimateBreakdown] = useState<EstimateBreakdown | null>(null);
@@ -261,6 +270,10 @@ export function useAdminBookingForm() {
     itemWidth, setItemWidth,
     itemHeight, setItemHeight,
     pickupDate, setPickupDate,
+    departureDate, setDepartureDate,
+    pickupTime, setPickupTime,
+    pickupNotes, setPickupNotes,
+    shipmentCoverage, setShipmentCoverage,
     cargo, setCargo,
     cargoCategoryId, setCargoCategoryId,
     shipper, setShipper,
@@ -272,6 +285,10 @@ export function useAdminBookingForm() {
     equipmentCondition, setEquipmentCondition,
     temperature, setTemperature,
     selectedAddOns, setSelectedAddOns,
+    containerResponsibility, setContainerResponsibility,
+    packages, setPackages,
+    containers, setContainers,
+    attachments, setAttachments,
 
     // Derived
     selectedST,

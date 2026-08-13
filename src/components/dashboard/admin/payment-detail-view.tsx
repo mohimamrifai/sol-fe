@@ -1,8 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
 import { paymentStatusBadgeClass } from "@/lib/payment-status";
 import { cn } from "@/lib/utils";
@@ -17,11 +25,17 @@ function fmtIdr(v: unknown): string {
   return `Rp ${n.toLocaleString("id-ID")}`;
 }
 
+function fmtDate(v: unknown): string {
+  if (v == null || v === "") return "—";
+  const d = new Date(String(v));
+  if (Number.isNaN(d.getTime())) return String(v);
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
 function fmtDateTime(v: unknown): string {
   if (v == null || v === "") return "—";
-  const s = String(v);
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return s;
+  const d = new Date(String(v));
+  if (Number.isNaN(d.getTime())) return String(v);
   return d.toLocaleString("id-ID", {
     day: "numeric",
     month: "short",
@@ -31,16 +45,25 @@ function fmtDateTime(v: unknown): string {
   });
 }
 
-function rowDt(label: string, value: ReactNode) {
+function sectionTitle(title: string) {
+  return <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>;
+}
+
+function fieldRow(label: string, value: ReactNode) {
   return (
-    <div className="grid gap-0.5 sm:grid-cols-[140px_1fr] sm:gap-3">
-      <dt className="text-xs font-medium text-muted-foreground sm:pt-0.5">{label}</dt>
-      <dd className="text-sm text-foreground">{value}</dd>
+    <div className="grid gap-0.5 sm:grid-cols-[160px_1fr] sm:gap-3">
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-sm">{value}</dd>
     </div>
   );
 }
 
-export function PaymentDetailView({ data }: { data: Row | null }) {
+type Props = {
+  data: Row | null;
+  locale?: string;
+};
+
+export function PaymentDetailView({ data, locale = "id" }: Props) {
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
   const paymentStatusLabel = usePaymentStatusLabel();
@@ -50,100 +73,132 @@ export function PaymentDetailView({ data }: { data: Row | null }) {
     return <p className="text-sm text-muted-foreground">—</p>;
   }
 
-  const orderId = String(data.midtrans_order_id ?? "—");
-  const txnId = String(data.midtrans_transaction_id ?? "—");
-  const st = String(data.status ?? "");
-  const payType = String(data.payment_type ?? "—");
-  const amount = data.amount;
+  const customerInfo = (data.customer_info ?? {}) as Row;
+  const invoice = (data.invoice ?? {}) as Row;
+  const paymentInfo = (data.payment_info ?? {}) as Row;
+  const onlinePayment = (data.online_payment ?? null) as Row | null;
+  const paymentHistory = (data.payment_history ?? []) as Row[];
+  const activityTimeline = (data.activity_timeline ?? []) as Row[];
 
-  const inv = (data.invoice ?? data.Invoice) as Row | undefined;
-  const company = (inv?.company ?? inv?.Company) as { name?: string } | undefined;
-  const ship = (inv?.shipment ?? inv?.Shipment) as {
-    waybill_number?: string;
-    shipment_number?: string;
-  } | undefined;
-  const waybill = ship?.waybill_number ?? ship?.shipment_number ?? "—";
-  const invNo = inv != null ? String(inv.invoice_number ?? "—") : "—";
-  const invSt = inv != null ? String(inv.status ?? "") : "";
-  const invTotal = inv?.total_amount;
-
-  const rawMidtrans = data.midtrans_response;
-  let midtransJson = "";
-  if (rawMidtrans != null) {
-    try {
-      midtransJson =
-        typeof rawMidtrans === "string"
-          ? rawMidtrans
-          : JSON.stringify(rawMidtrans, null, 2);
-    } catch {
-      midtransJson = String(rawMidtrans);
-    }
-  }
+  const arStatus = String(data.invoice_ar_status ?? invoice.status ?? "");
+  const invoiceId = invoice.id != null ? Number(invoice.id) : null;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-sm font-semibold tracking-tight">{orderId}</p>
-          <p className="text-xs text-muted-foreground">{t("detail.orderIdLabel")}</p>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-muted/20 p-4">
+        <div className="space-y-1">
+          <p className="font-mono text-sm font-semibold">{String(data.payment_number ?? data.payment_no ?? "—")}</p>
+          <p className="text-xs text-muted-foreground">{tc("table.customer")}: {String(customerInfo.customer_name ?? "—")}</p>
+          {invoiceId ? (
+            <Link
+              href={`/${locale}/dashboard/admin/customer/invoices/${invoiceId}`}
+              className="text-xs text-primary underline-offset-2 hover:underline"
+            >
+              {String(invoice.invoice_number ?? "—")}
+            </Link>
+          ) : (
+            <p className="text-xs">{String(invoice.invoice_number ?? "—")}</p>
+          )}
+          <p className="text-xs text-muted-foreground">{t("detail.recordedAt")}: {fmtDateTime(data.created_at)}</p>
         </div>
-        {st ? (
-          <Badge variant="outline" className={paymentStatusBadgeClass(st)}>
-            {paymentStatusLabel(st)}
+        {arStatus ? (
+          <Badge variant="outline" className={cn(invoiceStatusBadgeClass(arStatus))}>
+            {invoiceStatusLabel(arStatus)}
           </Badge>
         ) : null}
       </div>
 
-      <Separator />
-
-      <div className="space-y-3">
-        {rowDt(t("detail.transactionId"), <span className="font-mono text-xs break-all">{txnId}</span>)}
-        {rowDt(t("detail.method"), payType)}
-        {rowDt(t("detail.amount"), <span className="font-medium tabular-nums">{fmtIdr(amount)}</span>)}
-        {rowDt(t("detail.paidAt"), fmtDateTime(data.paid_at))}
-        {rowDt(t("detail.recordedAt"), fmtDateTime(data.created_at))}
+      <div className="space-y-3 rounded-lg border p-4">
+        {sectionTitle(t("detail.sectionCustomer"))}
+        {fieldRow(t("detail.customerCode"), String(customerInfo.customer_code ?? "—"))}
+        {fieldRow(t("detail.customerName"), String(customerInfo.customer_name ?? "—"))}
+        {fieldRow(t("detail.paymentTerms"), String(customerInfo.payment_terms ?? "—"))}
       </div>
 
-      {inv != null ? (
-        <>
-          <Separator />
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">{t("detail.relatedInvoice")}</p>
-            <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
-              {rowDt(t("detail.invoiceNo"), <span className="font-mono text-xs">{invNo}</span>)}
-              {rowDt(tc("table.customer"), company?.name ?? "—")}
-              {rowDt(t("detail.shipment"), <span className="font-mono text-xs">{waybill}</span>)}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className="text-xs text-muted-foreground">{t("detail.invoiceTotal")}</span>
-                <span className="text-sm font-medium tabular-nums">{fmtIdr(invTotal)}</span>
-              </div>
-              {invSt ? (
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-xs text-muted-foreground">{t("detail.invoiceStatus")}</span>
-                  <Badge variant="outline" className={cn("text-xs", invoiceStatusBadgeClass(invSt))}>
-                    {invoiceStatusLabel(invSt)}
-                  </Badge>
-                </div>
-              ) : null}
-            </div>
+      <div className="space-y-3 rounded-lg border p-4">
+        {sectionTitle(t("detail.sectionInvoice"))}
+        {fieldRow(t("detail.invoiceNo"), <span className="font-mono text-xs">{String(invoice.invoice_number ?? "—")}</span>)}
+        {fieldRow(t("detail.invoiceDate"), fmtDate(invoice.invoice_date))}
+        {fieldRow(t("detail.dueDate"), fmtDate(invoice.due_date))}
+        {fieldRow(t("detail.invoiceTotal"), <span className="tabular-nums font-medium">{fmtIdr(invoice.total_amount)}</span>)}
+        {fieldRow(t("detail.paidTotal"), <span className="tabular-nums">{fmtIdr(invoice.paid_amount ?? data.invoice_paid_amount)}</span>)}
+        {fieldRow(t("detail.outstanding"), <span className="tabular-nums font-medium">{fmtIdr(invoice.outstanding_amount ?? data.outstanding_amount)}</span>)}
+      </div>
+
+      <div className="space-y-3 rounded-lg border p-4">
+        {sectionTitle(t("detail.sectionPayment"))}
+        {fieldRow(t("detail.method"), String(paymentInfo.payment_method ?? data.method ?? "—"))}
+        {paymentInfo.company_bank ? fieldRow(t("recordDialog.companyBank"), String(paymentInfo.company_bank)) : null}
+        {paymentInfo.account ? fieldRow(t("recordDialog.account"), String(paymentInfo.account)) : null}
+        {fieldRow(t("detail.paidAt"), fmtDate(paymentInfo.payment_date ?? data.paid_at))}
+        {fieldRow(t("detail.amount"), <span className="tabular-nums font-medium">{fmtIdr(paymentInfo.payment_amount ?? data.amount)}</span>)}
+        {fieldRow(t("recordDialog.referenceNo"), String(paymentInfo.payment_reference_no ?? "—"))}
+        {paymentInfo.payment_remark ? fieldRow(t("recordDialog.remark"), String(paymentInfo.payment_remark)) : null}
+      </div>
+
+      {paymentHistory.length > 0 ? (
+        <div className="space-y-3 rounded-lg border p-4">
+          {sectionTitle(t("detail.paymentHistory"))}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("recordDialog.paymentDate")}</TableHead>
+                  <TableHead className="text-right">{t("detail.amount")}</TableHead>
+                  <TableHead>{t("detail.method")}</TableHead>
+                  <TableHead>{t("recordDialog.referenceNo")}</TableHead>
+                  <TableHead>{t("detail.recordedBy")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentHistory.map((p, i) => (
+                  <TableRow key={String(p.id ?? i)}>
+                    <TableCell>{fmtDate(p.payment_date)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtIdr(p.amount)}</TableCell>
+                    <TableCell>{String(p.payment_method ?? "—")}</TableCell>
+                    <TableCell className="font-mono text-xs">{String(p.reference_no ?? "—")}</TableCell>
+                    <TableCell>{String(p.recorded_by ?? "—")}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        </>
+        </div>
       ) : null}
 
-      {midtransJson ? (
-        <>
-          <Separator />
-          <details className="group rounded-md border bg-muted/20">
-            <summary className="cursor-pointer list-none px-3 py-2 text-xs font-medium text-muted-foreground marker:hidden [&::-webkit-details-marker]:hidden">
-              <span className="underline-offset-2 group-open:underline">
-                {t("detail.midtransPayload")}
-              </span>
-            </summary>
-            <pre className="max-h-48 overflow-auto border-t bg-muted/40 p-3 text-[11px] leading-relaxed">
-              {midtransJson}
-            </pre>
-          </details>
-        </>
+      {onlinePayment ? (
+        <div className="space-y-3 rounded-lg border p-4">
+          {sectionTitle(t("detail.sectionOnline"))}
+          {fieldRow(t("detail.midtransLink"), onlinePayment.payment_link ? (
+            <a href={String(onlinePayment.payment_link)} target="_blank" rel="noopener noreferrer" className="break-all text-sm text-primary underline-offset-2 hover:underline">
+              {String(onlinePayment.payment_link)}
+            </a>
+          ) : "—")}
+          {fieldRow(t("detail.linkStatus"), String(onlinePayment.link_status ?? "—"))}
+          {fieldRow(t("detail.expiredAt"), fmtDateTime(onlinePayment.expired_at))}
+          {fieldRow(t("detail.orderId"), <span className="font-mono text-xs">{String(onlinePayment.midtrans_order_id ?? "—")}</span>)}
+          {fieldRow(t("detail.transactionId"), <span className="font-mono text-xs">{String(onlinePayment.midtrans_transaction_id ?? "—")}</span>)}
+          {fieldRow(t("detail.midtransStatus"), onlinePayment.midtrans_status ? (
+            <Badge variant="outline" className={paymentStatusBadgeClass(String(onlinePayment.midtrans_status))}>
+              {paymentStatusLabel(String(onlinePayment.midtrans_status))}
+            </Badge>
+          ) : "—")}
+        </div>
+      ) : null}
+
+      {activityTimeline.length > 0 ? (
+        <div className="space-y-3 rounded-lg border p-4">
+          {sectionTitle(t("detail.sectionActivity"))}
+          <ul className="space-y-2 text-sm">
+            {activityTimeline.map((entry, i) => (
+              <li key={i} className="flex flex-wrap gap-x-2 gap-y-0.5 border-b pb-2 last:border-0">
+                <span className="text-muted-foreground">{fmtDateTime(entry.occurred_at)}</span>
+                <span>{String(entry.activity ?? "—")}</span>
+                {entry.user ? <span className="text-muted-foreground">· {String(entry.user)}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </div>
   );

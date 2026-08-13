@@ -493,5 +493,6 @@ export function useShipmentDetail(shipmentId: number) {
 
     // PDF
     pdf,
+    reload: load,
   };
 }

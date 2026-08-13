@@ -26,6 +26,20 @@ export async function deleteAdminUser(id: number) {
   return apiFetch(`/admin/users/${id}`, { method: "DELETE" });
 }
 
+export async function changeAdminUserStatus(id: number, status: string) {
+  return apiFetch(`/admin/users/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function resetAdminUserPassword(id: number, password: string, passwordConfirmation: string) {
+  return apiFetch(`/admin/users/${id}/reset-password`, {
+    method: "POST",
+    body: JSON.stringify({ password, password_confirmation: passwordConfirmation }),
+  });
+}
+
 export async function fetchAdminRoles() {
   return apiFetch<{ data: Record<string, unknown>[] }>(`/admin/roles`, { method: "GET" });
 }

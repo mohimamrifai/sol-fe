@@ -73,3 +73,10 @@ export async function confirmAdminBooking(id: number) {
 export async function deleteAdminBooking(id: number) {
   return apiFetch(`/admin/bookings/${id}`, { method: "DELETE" });
 }
+
+export async function duplicateAdminBooking(id: number) {
+  return apiFetch<{ data: Record<string, unknown>; message?: string }>(
+    `/admin/bookings/${id}/duplicate`,
+    { method: "POST", body: JSON.stringify({}) }
+  );
+}

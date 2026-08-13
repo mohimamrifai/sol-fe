@@ -33,6 +33,7 @@ interface ShipmentTableProps {
     status?: string;
     waybill_number?: string;
     shipment_number?: string;
+    booking?: { booking_number?: string };
     company?: { name?: string };
     Company?: { name?: string };
     origin_location?: { name?: string };
@@ -96,6 +97,8 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
           | undefined;
         const svc = (shipment.service_type ?? shipment.serviceType) as { name?: string } | undefined;
         const cnNum = String(shipment.waybill_number ?? shipment.shipment_number ?? "");
+        const shpNum = String(shipment.shipment_number ?? "");
+        const bookingNo = String(shipment.booking?.booking_number ?? "");
         const route = [origin?.name, dest?.name].filter(Boolean).join(" → ") || "—";
 
         return {
@@ -104,6 +107,8 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
           company,
           svc,
           cnNum,
+          shpNum,
+          bookingNo,
           route,
         };
       }),
@@ -131,6 +136,8 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
       <TableHeader>
         <TableRow className="bg-zinc-50/50">
           <TableHead className="w-14 pl-4">{tc("table.no")}</TableHead>
+          <TableHead className="w-[120px]">{t("columns.shipmentNo")}</TableHead>
+          <TableHead className="w-[120px]">{t("columns.bookingNo")}</TableHead>
           <TableHead className="w-[180px]">{t("columns.cnNumber")}</TableHead>
           <TableHead>{tc("table.customer")}</TableHead>
           <TableHead>{t("table.service")}</TableHead>
@@ -142,12 +149,14 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
         </TableRow>
       </TableHeader>
       <TableBody>
-        {preparedRows.map(({ shipment, st, company, svc, cnNum, route }, index) => {
+        {preparedRows.map(({ shipment, st, company, svc, cnNum, shpNum, bookingNo, route }, index) => {
           return (
             <TableRow key={cnNum || String(shipment.id)} className="group">
               <TableCell className="tabular-nums text-muted-foreground pl-4">
                 {rowNumber(meta?.current_page ?? 1, perPage, index)}
               </TableCell>
+              <TableCell className="font-mono text-xs">{shpNum || "—"}</TableCell>
+              <TableCell className="font-mono text-xs">{bookingNo || "—"}</TableCell>
               <TableCell className="font-mono text-xs font-bold text-zinc-900">{cnNum}</TableCell>
               <TableCell className="font-medium">{company?.name ?? "—"}</TableCell>
               <TableCell>{svc?.name ?? "—"}</TableCell>

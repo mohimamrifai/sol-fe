@@ -40,7 +40,7 @@ import {
   ClipboardList,
   Plus,
 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -53,6 +53,14 @@ import { BookingDetailDialog } from "@/components/dashboard/admin/bookings/booki
 import { BookingEditDialog } from "@/components/dashboard/admin/bookings/booking-edit-dialog";
 import { BookingRejectDialog } from "@/components/dashboard/admin/bookings/booking-reject-dialog";
 import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
+import {
+  AdminListFilters,
+  dateParamFromFilter,
+  masterSelectOptions,
+  paramFromFilter,
+  stringParamFromFilter,
+} from "@/components/data-table/admin-list-filters";
+import { COVERAGE_FILTER_OPTIONS, useAdminListMasters } from "@/hooks/use-admin-list-masters";
 
 const actionsHeadClass =
   "w-12 max-md:sticky max-md:right-0 max-md:z-20 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] md:static md:z-auto md:border-l-0 md:bg-transparent md:shadow-none text-right";
@@ -64,6 +72,8 @@ type BookingRow = {
   id: number;
   booking_number: string;
   status: string;
+  created_at?: string;
+  shipment_coverage?: string;
   shipment_exists?: boolean;
   shipment_id?: number | null;
   company?: { name?: string };
@@ -75,7 +85,9 @@ type BookingRow = {
 export default function AdminBookingsPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = String(params?.locale ?? "id");
+  const masters = useAdminListMasters();
   const t = useTranslations("AdminBookings");
   const tc = useTranslations("AdminCommon");
   const bookingStatusLabel = useBookingStatusLabel();
@@ -92,6 +104,13 @@ export default function AdminBookingsPage() {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [serviceTypeFilter, setServiceTypeFilter] = useState("all");
+  const [coverageFilter, setCoverageFilter] = useState("all");
+  const [originFilter, setOriginFilter] = useState("all");
+  const [destinationFilter, setDestinationFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<BookingDetail | null>(null);
@@ -141,7 +160,19 @@ export default function AdminBookingsPage() {
     error: tableError,
     refetch: refetchTable,
   } = useQuery({
-    queryKey: ["adminBookingsTable", page, debouncedSearch, statusParam],
+    queryKey: [
+      "adminBookingsTable",
+      page,
+      debouncedSearch,
+      statusParam,
+      companyFilter,
+      serviceTypeFilter,
+      coverageFilter,
+      originFilter,
+      destinationFilter,
+      dateFrom,
+      dateTo,
+    ],
     queryFn: async ({ signal }) => {
       if (!mounted || !authHydrated) return null;
       const res = await fetchAdminBookings(
@@ -150,6 +181,13 @@ export default function AdminBookingsPage() {
           perPage: PER_PAGE,
           search: debouncedSearch.trim() || undefined,
           status: statusParam,
+          companyId: paramFromFilter(companyFilter),
+          serviceTypeId: paramFromFilter(serviceTypeFilter),
+          shipmentCoverage: stringParamFromFilter(coverageFilter),
+          originLocationId: paramFromFilter(originFilter),
+          destinationLocationId: paramFromFilter(destinationFilter),
+          dateFrom: dateParamFromFilter(dateFrom),
+          dateTo: dateParamFromFilter(dateTo),
         },
         signal
       );
@@ -248,7 +286,24 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [
+    debouncedSearch,
+    statusFilter,
+    companyFilter,
+    serviceTypeFilter,
+    coverageFilter,
+    originFilter,
+    destinationFilter,
+    dateFrom,
+    dateTo,
+  ]);
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId) return;
+    const n = Number(editId);
+    if (Number.isFinite(n) && n > 0) void openBookingEdit(n);
+  }, [searchParams]);
 
   useEffect(() => {
     setMounted(true);
@@ -322,6 +377,65 @@ export default function AdminBookingsPage() {
             onFilterChange={setStatusFilter}
             filterOptions={bookingStatusFilters}
           />
+          <AdminListFilters
+            selects={[
+              {
+                id: "booking-company",
+                label: t("columns.customer"),
+                value: companyFilter,
+                onChange: setCompanyFilter,
+                options: masterSelectOptions(masters.companies, tc("filters.all")),
+              },
+              {
+                id: "booking-service",
+                label: t("columns.service"),
+                value: serviceTypeFilter,
+                onChange: setServiceTypeFilter,
+                options: masterSelectOptions(masters.serviceTypes, tc("filters.all")),
+              },
+              {
+                id: "booking-coverage",
+                label: t("columns.coverage"),
+                value: coverageFilter,
+                onChange: setCoverageFilter,
+                options: [
+                  { value: "all", label: tc("filters.all") },
+                  ...COVERAGE_FILTER_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
+                    value: o.value,
+                    label: o.label,
+                  })),
+                ],
+              },
+              {
+                id: "booking-origin",
+                label: t("columns.origin"),
+                value: originFilter,
+                onChange: setOriginFilter,
+                options: masterSelectOptions(masters.locations, tc("filters.all")),
+              },
+              {
+                id: "booking-destination",
+                label: t("columns.destination"),
+                value: destinationFilter,
+                onChange: setDestinationFilter,
+                options: masterSelectOptions(masters.locations, tc("filters.all")),
+              },
+            ]}
+            dates={[
+              {
+                id: "booking-date-from",
+                label: `${t("columns.bookingDate")} (${tc("filters.from")})`,
+                value: dateFrom,
+                onChange: setDateFrom,
+              },
+              {
+                id: "booking-date-to",
+                label: `${t("columns.bookingDate")} (${tc("filters.to")})`,
+                value: dateTo,
+                onChange: setDateTo,
+              },
+            ]}
+          />
           {loadingTable ? (
             <div className="space-y-3">
               {[...Array(PER_PAGE)].map((_, i) => (
@@ -345,6 +459,8 @@ export default function AdminBookingsPage() {
                     <TableHead>{t("columns.origin")}</TableHead>
                     <TableHead>{t("columns.destination")}</TableHead>
                     <TableHead>{t("columns.service")}</TableHead>
+                    <TableHead>{t("columns.coverage")}</TableHead>
+                    <TableHead>{t("columns.bookingDate")}</TableHead>
                     <TableHead>{t("columns.status")}</TableHead>
                     <TableHead className={actionsHeadClass}>
                       <span className="max-md:sr-only">{tc("table.actions")}</span>
@@ -362,6 +478,12 @@ export default function AdminBookingsPage() {
                       <TableCell>{booking.origin_location?.name ?? "—"}</TableCell>
                       <TableCell>{booking.destination_location?.name ?? "—"}</TableCell>
                       <TableCell>{booking.service_type?.name ?? booking.service_type?.code ?? "—"}</TableCell>
+                      <TableCell className="text-xs capitalize">
+                        {booking.shipment_coverage?.replace(/_/g, " ") ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {booking.created_at ? String(booking.created_at).slice(0, 10) : "—"}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={bookingStatusBadgeClass(booking.status)}>
                           {bookingStatusLabel(booking.status)}

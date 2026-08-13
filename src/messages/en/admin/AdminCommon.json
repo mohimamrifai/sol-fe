@@ -43,6 +43,9 @@
     },
     "filters": {
       "allStatus": "All statuses",
+      "all": "All",
+      "from": "From",
+      "to": "To",
       "status": "Status"
     },
     "deleteDialog": {

@@ -19,11 +19,10 @@ import {
 } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { paymentStatusBadgeClass } from "@/lib/payment-status";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
-import { usePaymentStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useInvoiceStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
 import { CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,9 +34,18 @@ import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import {
+  AdminListFilters,
+  dateParamFromFilter,
+  masterSelectOptions,
+  paramFromFilter,
+  stringParamFromFilter,
+} from "@/components/data-table/admin-list-filters";
+import { PAYMENT_METHOD_OPTIONS, useAdminListMasters } from "@/hooks/use-admin-list-masters";
 
 import { PaymentStats } from "@/components/dashboard/admin/payments/payment-stats";
 import { RecordPaymentDialog } from "@/components/dashboard/admin/payments/record-payment-dialog";
+import { GeneratePaymentLinkDialog } from "@/components/dashboard/admin/payments/generate-payment-link-dialog";
 import { PaymentActionsMenu } from "@/components/dashboard/admin/payments/payment-actions-menu";
 import type { PayRow } from "@/components/dashboard/admin/payments/types";
 
@@ -49,11 +57,37 @@ const actionsHeadClass =
 const actionsCellClass =
   "max-md:sticky max-md:right-0 max-md:z-10 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] max-md:group-hover:bg-muted/50 md:static md:z-auto md:border-l-0 md:shadow-none md:group-hover:bg-transparent";
 
+function arStatusBadgeClass(status: string): string {
+  switch (status) {
+    case "paid":
+      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    case "partially_paid":
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case "overdue":
+      return "border-red-200 bg-red-50 text-red-800";
+    case "unpaid":
+    default:
+      return "border-zinc-200 bg-zinc-50 text-zinc-700";
+  }
+}
+
+function formatMethod(method: string, t: ReturnType<typeof useTranslations<"AdminPayments">>): string {
+  const map: Record<string, string> = {
+    transfer: t("recordDialog.methodTransfer"),
+    giro: t("recordDialog.methodGiro"),
+    cash: t("recordDialog.methodCash"),
+    virtual_account: t("recordDialog.methodVirtualAccount"),
+    midtrans: t("recordDialog.methodMidtrans"),
+  };
+  return map[method] ?? method;
+}
+
 export default function AdminPaymentsPage() {
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
-  const paymentStatusLabel = usePaymentStatusLabel();
+  const invoiceStatusLabel = useInvoiceStatusLabel();
   const authHydrated = useAuthPersistHydrated();
+  const masters = useAdminListMasters({ includeServiceTypes: false });
   const { user } = useAuthStore();
   const roles = user?.roles ?? [];
   const canManageAR = authHydrated && (roles.includes("super_admin") || roles.includes("finance"));
@@ -61,20 +95,12 @@ export default function AdminPaymentsPage() {
   const paymentStatusFilters = useMemo(
     () => [
       { value: "all", label: tc("filters.allStatus") },
-      { value: "success", label: paymentStatusLabel("success") },
-      { value: "settlement", label: t("filters.settlement") },
-      { value: "pending", label: paymentStatusLabel("pending") },
-      { value: "capture", label: t("filters.capture") },
-      { value: "authorize", label: t("filters.authorize") },
-      { value: "deny", label: t("filters.deny") },
-      { value: "cancel", label: t("filters.cancel") },
-      { value: "expire", label: t("filters.expire") },
-      { value: "failure", label: t("filters.failure") },
-      { value: "refund", label: t("filters.refund") },
-      { value: "partial_refund", label: t("filters.partialRefund") },
-      { value: "chargeback", label: t("filters.chargeback") },
+      { value: "unpaid", label: t("stats.unpaid") },
+      { value: "partially_paid", label: t("stats.partiallyPaid") },
+      { value: "paid", label: t("stats.paid") },
+      { value: "overdue", label: t("stats.overdue") },
     ],
-    [t, tc, paymentStatusLabel]
+    [t, tc]
   );
 
   const [rows, setRows] = useState<PayRow[]>([]);
@@ -87,12 +113,16 @@ export default function AdminPaymentsPage() {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [methodFilter, setMethodFilter] = useState("all");
+  const [paymentDateFrom, setPaymentDateFrom] = useState("");
+  const [paymentDateTo, setPaymentDateTo] = useState("");
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [debouncedSearch, statusFilter, companyFilter, methodFilter, paymentDateFrom, paymentDateTo]);
 
-  const statusParam = statusFilter === "all" ? undefined : statusFilter;
+  const invoiceStatusParam = statusFilter === "all" ? undefined : statusFilter;
 
   const loadStats = useCallback(async () => {
     if (!authHydrated) return;
@@ -112,8 +142,13 @@ export default function AdminPaymentsPage() {
       const res = await fetchAdminPayments({
         page,
         perPage: PER_PAGE,
+        view: "ar",
         search: debouncedSearch.trim() || undefined,
-        status: statusParam,
+        invoiceStatus: invoiceStatusParam,
+        companyId: paramFromFilter(companyFilter),
+        paymentMethod: stringParamFromFilter(methodFilter),
+        paymentDateFrom: dateParamFromFilter(paymentDateFrom),
+        paymentDateTo: dateParamFromFilter(paymentDateTo),
       });
       const paginated = res as LaravelPaginated<PayRow>;
       setRows(paginated.data ?? []);
@@ -125,7 +160,7 @@ export default function AdminPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, statusParam, t]);
+  }, [authHydrated, page, debouncedSearch, invoiceStatusParam, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, t]);
 
   const refreshPayments = useCallback(() => {
     void load();
@@ -141,17 +176,23 @@ export default function AdminPaymentsPage() {
   }, [load]);
 
   const [recordOpen, setRecordOpen] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
+
+  const arLabel = (status: string) => {
+    if (status === "overdue") return t("stats.overdue");
+    if (status === "unpaid") return t("stats.unpaid");
+    return invoiceStatusLabel(status);
+  };
 
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2">
       <RecordPaymentDialog
         open={recordOpen}
         onOpenChange={setRecordOpen}
-        onRecorded={() => {
-          void loadStats();
-          void load();
-        }}
+        onRecorded={refreshPayments}
       />
+      <GeneratePaymentLinkDialog open={linkOpen} onOpenChange={setLinkOpen} />
+
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
         <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900/5 text-zinc-900">
@@ -163,9 +204,14 @@ export default function AdminPaymentsPage() {
           </div>
         </div>
         {canManageAR ? (
-          <Button size="sm" onClick={() => setRecordOpen(true)}>
-            {t("recordPayment")}
-          </Button>
+          <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto sm:justify-end">
+            <Button size="sm" variant="outline" onClick={() => setLinkOpen(true)}>
+              {t("generatePaymentLink")}
+            </Button>
+            <Button size="sm" onClick={() => setRecordOpen(true)}>
+              {t("recordPayment")}
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -189,6 +235,44 @@ export default function AdminPaymentsPage() {
             onFilterChange={setStatusFilter}
             filterOptions={paymentStatusFilters}
           />
+          <AdminListFilters
+            selects={[
+              {
+                id: "payment-company",
+                label: tc("table.customer"),
+                value: companyFilter,
+                onChange: setCompanyFilter,
+                options: masterSelectOptions(masters.companies, tc("filters.all")),
+              },
+              {
+                id: "payment-method",
+                label: t("columns.method"),
+                value: methodFilter,
+                onChange: setMethodFilter,
+                options: [
+                  { value: "all", label: tc("filters.all") },
+                  ...PAYMENT_METHOD_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
+                    value: o.value,
+                    label: formatMethod(o.value, t),
+                  })),
+                ],
+              },
+            ]}
+            dates={[
+              {
+                id: "payment-date-from",
+                label: `${t("columns.paidAt")} (${tc("filters.from")})`,
+                value: paymentDateFrom,
+                onChange: setPaymentDateFrom,
+              },
+              {
+                id: "payment-date-to",
+                label: `${t("columns.paidAt")} (${tc("filters.to")})`,
+                value: paymentDateTo,
+                onChange: setPaymentDateTo,
+              },
+            ]}
+          />
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -197,50 +281,70 @@ export default function AdminPaymentsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-14">{tc("table.no")}</TableHead>
-                    <TableHead className="w-[130px]">{t("columns.refPayment")}</TableHead>
-                    <TableHead className="w-[130px]">{t("columns.invoiceNo")}</TableHead>
+                    <TableHead className="w-[130px]">{t("columns.paymentNo")}</TableHead>
                     <TableHead>{tc("table.customer")}</TableHead>
+                    <TableHead className="w-[130px]">{t("columns.invoiceNo")}</TableHead>
+                    <TableHead className="text-right">{t("columns.invoiceAmount")}</TableHead>
+                    <TableHead className="text-right">{t("columns.paidAmount")}</TableHead>
                     <TableHead>{t("columns.method")}</TableHead>
-                    <TableHead className="text-right">{t("columns.amount")}</TableHead>
                     <TableHead>{tc("table.status")}</TableHead>
                     <TableHead className={actionsHeadClass}>
-                      <span className="max-md:sr-only">{tc("actions.actions")}</span>
+                      <span className="max-md:sr-only">{tc("table.actions")}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rows.map((payment, index) => {
                     const inv = payment.invoice as
-                      | { invoice_number?: string; company?: { name?: string } }
+                      | {
+                          id?: number;
+                          invoice_number?: string;
+                          company?: { name?: string };
+                          total_amount?: number;
+                        }
                       | undefined;
                     const invNo = inv?.invoice_number ?? "—";
                     const cust = inv?.company?.name ?? "—";
-                    const amt = Number(payment.amount ?? 0);
-                    const st = String(payment.status ?? "");
-                    const method = String(payment.payment_type ?? "Midtrans");
-                    const key = String(payment.midtrans_order_id ?? payment.id ?? "");
+                    const isArOnly = payment.is_ar_only === true;
+                    const paidAmt = Number(
+                      payment.invoice_paid_amount ?? payment.amount ?? 0
+                    );
+                    const invoiceAmt = Number(
+                      payment.invoice_amount ?? inv?.total_amount ?? 0
+                    );
+                    const paymentNo = isArOnly
+                      ? "—"
+                      : String(payment.payment_number ?? payment.midtrans_order_id ?? payment.id ?? "—");
+                    const method = isArOnly
+                      ? "—"
+                      : String(payment.method ?? payment.payment_type ?? "—");
+                    const arStatus = String(payment.invoice_ar_status ?? "");
+                    const key = `${String(payment.invoice_id ?? payment.id ?? paymentNo)}-${index}`;
                     return (
                       <TableRow key={key} className="group">
                         <TableCell className="tabular-nums text-muted-foreground">
                           {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
                         </TableCell>
-                        <TableCell className="font-mono text-xs">{key}</TableCell>
-                        <TableCell className="font-mono text-xs">{invNo}</TableCell>
+                        <TableCell className="font-mono text-xs">{paymentNo}</TableCell>
                         <TableCell className="font-medium">{cust}</TableCell>
-                        <TableCell className="max-w-[180px] wrap-break-word">{method}</TableCell>
-                        <TableCell className="text-right font-medium tabular-nums">
-                          Rp {amt.toLocaleString("id-ID")}
+                        <TableCell className="font-mono text-xs">{invNo}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          Rp {invoiceAmt.toLocaleString("id-ID")}
                         </TableCell>
+                        <TableCell className="text-right font-medium tabular-nums">
+                          Rp {paidAmt.toLocaleString("id-ID")}
+                        </TableCell>
+                        <TableCell>{method === "—" ? method : formatMethod(method, t)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={paymentStatusBadgeClass(st)}>
-                            {paymentStatusLabel(st)}
+                          <Badge variant="outline" className={arStatusBadgeClass(arStatus)}>
+                            {arLabel(arStatus)}
                           </Badge>
                         </TableCell>
                         <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                           <div className="flex justify-end">
                             <PaymentActionsMenu
                               payment={payment}
-                              paymentRef={key}
+                              paymentRef={paymentNo}
                               canManageAR={canManageAR}
                               onPaymentsChanged={refreshPayments}
                             />

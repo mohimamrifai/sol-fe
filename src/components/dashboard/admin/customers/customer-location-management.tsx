@@ -143,7 +143,7 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
   };
 
   const typeLabel = (type: string) =>
-    t(`locationTypes.${type}` as Parameters<typeof t>[0], { defaultValue: type });
+    t(`locationTypes.${type}` as Parameters<typeof t>[0]);
 
   return (
     <div className="space-y-4">
@@ -174,6 +174,10 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
           <div className="space-y-2">
             <Label>{t("locations.name")}</Label>
             <Input className="h-9" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("locations.phone")}</Label>
+            <Input className="h-9" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>{t("locations.address")}</Label>

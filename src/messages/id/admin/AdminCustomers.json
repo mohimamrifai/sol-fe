@@ -43,8 +43,11 @@
     "form": {
       "companyName": "Nama perusahaan",
       "customerCode": "Customer Code",
+      "customerCodeHint": "3 huruf A–Z, unik global. Terkunci setelah aktif.",
       "businessEntity": "Business Entity",
       "website": "Website",
+      "companyEmail": "Email Perusahaan",
+      "companyPhone": "Telepon Perusahaan",
       "npwp": "NPWP",
       "nib": "NIB",
       "billingSection": "Billing & Credit Information",
@@ -83,6 +86,7 @@
       "picName": "PIC Name",
       "picPhone": "PIC Phone",
       "picEmail": "PIC Email",
+      "phone": "Telepon",
       "empty": "Belum ada location.",
       "addTitle": "Tambah Location",
       "editTitle": "Edit Location",
@@ -111,7 +115,24 @@
       "created": "User ditambahkan.",
       "mobile": "Mobile",
       "passwordNew": "Password Baru (opsional)",
-      "passwordTemp": "Password Sementara"
+      "passwordTemp": "Password Sementara",
+      "locationAccess": "Location Access",
+      "featureAccess": "Feature Access",
+      "locationAccessHint": "Kosongkan untuk akses ke semua lokasi.",
+      "noLocations": "Belum ada lokasi.",
+      "allLocations": "Semua lokasi",
+      "useRoleDefault": "Gunakan default role",
+      "permissionsEnabled": "permission aktif",
+      "featureCount": "{count} permission",
+      "resetPassword": "Reset Password",
+      "resetPasswordPrompt": "Password baru (min. 8 karakter):",
+      "resetPasswordConfirm": "Konfirmasi password:",
+      "passwordMismatch": "Konfirmasi password tidak cocok.",
+      "passwordReset": "Password berhasil direset.",
+      "passwordResetFailed": "Gagal reset password.",
+      "deleteConfirm": "Hapus user ini?",
+      "deleted": "User dihapus.",
+      "deleteFailed": "Gagal menghapus user."
     },
     "review": {
       "salesPic": "Sales PIC",
@@ -122,6 +143,7 @@
       "reviewedDate": "Reviewed Date",
       "reviewedBy": "Reviewed By",
       "approvedDate": "Approved Date",
+      "approvedBy": "Approved By",
       "statusLabel": "Status",
       "saved": "Review information disimpan.",
       "saveFailed": "Gagal menyimpan review."
@@ -160,6 +182,21 @@
       "status": "Status",
       "activate": "Aktifkan",
       "reject": "Tolak"
+    },
+    "create": {
+      "title": "Tambah Customer",
+      "description": "Form input customer oleh tim internal.",
+      "sectionCompany": "Informasi Perusahaan",
+      "sectionAddress": "Alamat Perusahaan",
+      "sectionOperational": "Informasi Operasional",
+      "sectionAdmin": "Akun Admin",
+      "adminName": "Nama Admin",
+      "adminEmail": "Email Admin",
+      "mobileNumber": "Nomor HP",
+      "tempPassword": "Password Sementara",
+      "tempPasswordHint": "Minimal 8 karakter",
+      "saved": "Customer berhasil ditambahkan.",
+      "saveFailed": "Gagal menyimpan customer."
     }
   }
 }

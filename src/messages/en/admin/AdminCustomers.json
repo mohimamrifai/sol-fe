@@ -43,8 +43,11 @@
     "form": {
       "companyName": "Company Name",
       "customerCode": "Customer Code",
+      "customerCodeHint": "3 letters A–Z, unique globally. Locked after activation.",
       "businessEntity": "Business Entity",
       "website": "Website",
+      "companyEmail": "Company Email",
+      "companyPhone": "Company Phone",
       "npwp": "NPWP",
       "nib": "NIB",
       "billingSection": "Billing & Credit Information",
@@ -83,6 +86,7 @@
       "picName": "PIC Name",
       "picPhone": "PIC Phone",
       "picEmail": "PIC Email",
+      "phone": "Phone",
       "empty": "No locations yet.",
       "addTitle": "Add Location",
       "editTitle": "Edit Location",
@@ -111,7 +115,24 @@
       "created": "User added.",
       "mobile": "Mobile",
       "passwordNew": "New Password (optional)",
-      "passwordTemp": "Temporary Password"
+      "passwordTemp": "Temporary Password",
+      "locationAccess": "Location Access",
+      "featureAccess": "Feature Access",
+      "locationAccessHint": "Leave empty for access to all locations.",
+      "noLocations": "No locations configured.",
+      "allLocations": "All locations",
+      "useRoleDefault": "Use role default",
+      "permissionsEnabled": "permissions enabled",
+      "featureCount": "{count} permissions",
+      "resetPassword": "Reset Password",
+      "resetPasswordPrompt": "New password (min. 8 characters):",
+      "resetPasswordConfirm": "Confirm password:",
+      "passwordMismatch": "Password confirmation does not match.",
+      "passwordReset": "Password reset successfully.",
+      "passwordResetFailed": "Failed to reset password.",
+      "deleteConfirm": "Delete this user?",
+      "deleted": "User deleted.",
+      "deleteFailed": "Failed to delete user."
     },
     "review": {
       "salesPic": "Sales PIC",
@@ -122,6 +143,7 @@
       "reviewedDate": "Reviewed Date",
       "reviewedBy": "Reviewed By",
       "approvedDate": "Approved Date",
+      "approvedBy": "Approved By",
       "statusLabel": "Status",
       "saved": "Review information saved.",
       "saveFailed": "Failed to save review."
@@ -160,6 +182,21 @@
       "status": "Status",
       "activate": "Activate",
       "reject": "Reject"
+    },
+    "create": {
+      "title": "Add Customer",
+      "description": "Internal form to register a new customer company.",
+      "sectionCompany": "Company Information",
+      "sectionAddress": "Company Address",
+      "sectionOperational": "Operational Information",
+      "sectionAdmin": "Admin Account",
+      "adminName": "Admin Name",
+      "adminEmail": "Admin Email",
+      "mobileNumber": "Mobile Number",
+      "tempPassword": "Temporary Password",
+      "tempPasswordHint": "Minimum 8 characters",
+      "saved": "Customer added successfully.",
+      "saveFailed": "Failed to save customer."
     }
   }
 }

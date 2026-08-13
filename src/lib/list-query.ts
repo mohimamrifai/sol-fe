@@ -56,6 +56,10 @@ export type ListQueryParams = {
   paymentDateTo?: string;
   /** Payments list — invoice id filter */
   invoiceId?: number;
+  /** Payments list — invoice AR status (unpaid, partially_paid, paid, overdue) */
+  invoiceStatus?: string;
+  /** Payments list — view mode (payments | ar) */
+  view?: string;
   /** Locations list — province filter */
   province?: string;
   /** Locations list — city filter */
@@ -106,13 +110,13 @@ export function buildListQuery(params?: ListQueryParams): string {
   const udt = params?.uploadDateTo?.trim();
   if (udt) q.set("date_to", udt);
   const idf = params?.invoiceDateFrom?.trim();
-  if (idf) q.set("invoice_date_from", idf);
+  if (idf) q.set("date_from", idf);
   const idt = params?.invoiceDateTo?.trim();
-  if (idt) q.set("invoice_date_to", idt);
+  if (idt) q.set("date_to", idt);
   const ddf = params?.dueDateFrom?.trim();
-  if (ddf) q.set("due_date_from", ddf);
+  if (ddf) q.set("due_from", ddf);
   const ddt = params?.dueDateTo?.trim();
-  if (ddt) q.set("due_date_to", ddt);
+  if (ddt) q.set("due_to", ddt);
   const pm = params?.paymentMethod?.trim();
   if (pm) q.set("payment_method", pm);
   const pdf = params?.paymentDateFrom?.trim();
@@ -120,6 +124,10 @@ export function buildListQuery(params?: ListQueryParams): string {
   const pdt = params?.paymentDateTo?.trim();
   if (pdt) q.set("payment_date_to", pdt);
   if (params?.invoiceId != null) q.set("invoice_id", String(params.invoiceId));
+  const invSt = params?.invoiceStatus?.trim();
+  if (invSt) q.set("invoice_status", invSt);
+  const vw = params?.view?.trim();
+  if (vw) q.set("view", vw);
   const pv = params?.province?.trim();
   if (pv) q.set("province", pv);
   const ct = params?.city?.trim();

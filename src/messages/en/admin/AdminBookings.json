@@ -41,7 +41,9 @@
       "convert": "Convert to Shipment",
       "viewShipment": "View Shipment",
       "delete": "Delete",
-      "editBooking": "Edit Booking"
+      "editBooking": "Edit Booking",
+      "edit": "Edit Booking",
+      "duplicate": "Duplicate Booking"
     },
     "toasts": {
       "submitted": "Booking submitted.",
@@ -49,6 +51,7 @@
       "confirmed": "Booking confirmed.",
       "converted": "Booking converted to shipment.",
       "rejected": "Booking rejected.",
+      "duplicated": "Booking duplicated as draft.",
       "updated": "Booking updated successfully.",
       "detailUpdated": "Booking details updated.",
       "submitFailed": "Failed to submit.",

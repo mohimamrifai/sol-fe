@@ -43,6 +43,9 @@
     },
     "filters": {
       "allStatus": "Semua status",
+      "all": "Semua",
+      "from": "Dari",
+      "to": "Sampai",
       "status": "Status"
     },
     "deleteDialog": {

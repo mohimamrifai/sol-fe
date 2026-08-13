@@ -8,6 +8,7 @@ import {
   confirmAdminBooking,
   convertBookingToShipment,
   deleteAdminBooking,
+  duplicateAdminBooking,
   fetchAdminBooking,
   rejectBooking,
   submitAdminBooking,
@@ -16,8 +17,10 @@ import { ApiError } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { BookingDetailView } from "@/components/dashboard/admin/bookings/booking-detail-view";
+import { BookingEditDialog } from "@/components/dashboard/admin/bookings/booking-edit-dialog";
 import { BookingRejectDialog } from "@/components/dashboard/admin/bookings/booking-reject-dialog";
 import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
+import { updateAdminBooking } from "@/lib/admin-api";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -39,6 +42,8 @@ export default function AdminBookingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectSaving, setRejectSaving] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
 
   const load = useCallback(async () => {
     if (!Number.isFinite(id) || id < 1) return;
@@ -122,6 +127,25 @@ export default function AdminBookingDetailPage() {
         onClick: () => router.push(`/${locale}/dashboard/admin/customer/shipments/${data.shipment_id}`),
       });
     }
+    actions.push({
+      label: t("actions.duplicate"),
+      variant: "outline",
+      onClick: () =>
+        void duplicateAdminBooking(id).then((res) => {
+          toast.success(t("toasts.duplicated"));
+          const newId = (res as { data?: { id?: number } })?.data?.id;
+          if (typeof newId === "number") {
+            router.push(`/${locale}/dashboard/admin/customer/bookings/${newId}`);
+          }
+        }).catch((e) => toast.error(e instanceof ApiError ? e.message : tc("errors.loadFailed"))),
+    });
+    if (!hasShipment && st !== "cancelled" && st !== "rejected") {
+      actions.push({
+        label: t("actions.edit"),
+        variant: "outline",
+        onClick: () => setEditOpen(true),
+      });
+    }
     return actions;
   }, [canProcess, data, st, hasShipment, id, load, locale, router, t, tc]);
 
@@ -173,6 +197,29 @@ export default function AdminBookingDetailPage() {
             toast.error(e instanceof ApiError ? e.message : t("toasts.rejectFailed"));
           } finally {
             setRejectSaving(false);
+          }
+        }}
+      />
+
+      <BookingEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        data={data}
+        loading={loading}
+        saving={editSaving}
+        onSave={async (payload) => {
+          setEditSaving(true);
+          try {
+            const res = await updateAdminBooking(id, payload);
+            setData((res as { data: BookingDetail }).data);
+            setEditOpen(false);
+            toast.success(t("toasts.updated"));
+            void load();
+          } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
+            throw e;
+          } finally {
+            setEditSaving(false);
           }
         }}
       />

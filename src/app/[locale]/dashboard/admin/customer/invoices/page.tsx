@@ -49,20 +49,11 @@ import { InvoicePdfDownloadProgressDialog } from "@/components/invoice-pdf-downl
 import { InvoiceCreateDialog } from "@/components/dashboard/admin/invoice-create-dialog";
 import { InvoiceGenerateDialog } from "@/components/dashboard/admin/invoices/invoice-generate-dialog";
 import { InvoiceStatsCards } from "@/components/dashboard/admin/invoices/invoice-stats-cards";
-import { InvoiceDetailView } from "@/components/dashboard/admin/invoice-detail-view";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import { InvoiceEditDialog } from "@/components/dashboard/admin/invoice-edit-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   deleteAdminInvoice,
   downloadAdminInvoicePdf,
-  fetchAdminInvoice,
   fetchAdminInvoiceStats,
   fetchAdminInvoices,
   generateAdminMidtransLink,
@@ -72,6 +63,15 @@ import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useRouter } from "@/i18n/routing";
+import { useParams } from "next/navigation";
+import {
+  AdminListFilters,
+  dateParamFromFilter,
+  masterSelectOptions,
+  paramFromFilter,
+} from "@/components/data-table/admin-list-filters";
+import { useAdminListMasters } from "@/hooks/use-admin-list-masters";
 
 const PER_PAGE = 10;
 
@@ -235,10 +235,14 @@ function AdminInvoiceActionsMenu({
 }
 
 export default function AdminInvoicesPage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = String(params?.locale ?? "id");
   const t = useTranslations("AdminInvoices");
   const tc = useTranslations("AdminCommon");
   const invoiceStatusLabel = useInvoiceStatusLabel();
   const authHydrated = useAuthPersistHydrated();
+  const masters = useAdminListMasters({ includeServiceTypes: false });
   const { user } = useAuthStore();
   const roles = user?.roles ?? [];
   const canManageInvoices = authHydrated && (roles.includes("super_admin") || roles.includes("finance"));
@@ -253,6 +257,11 @@ export default function AdminInvoicesPage() {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [invoiceDateFrom, setInvoiceDateFrom] = useState("");
+  const [invoiceDateTo, setInvoiceDateTo] = useState("");
+  const [dueDateFrom, setDueDateFrom] = useState("");
+  const [dueDateTo, setDueDateTo] = useState("");
 
   const invoiceStatusFilters = useMemo(
     () => [
@@ -268,11 +277,6 @@ export default function AdminInvoicesPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailId, setDetailId] = useState<number | null>(null);
-  const [detailData, setDetailData] = useState<InvRow | null>(null);
-  const [detailError, setDetailError] = useState<string | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editRow, setEditRow] = useState<InvRow | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -281,7 +285,7 @@ export default function AdminInvoicesPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [debouncedSearch, statusFilter, companyFilter, invoiceDateFrom, invoiceDateTo, dueDateFrom, dueDateTo]);
 
   const statusParam = statusFilter === "all" ? undefined : statusFilter;
 
@@ -305,6 +309,11 @@ export default function AdminInvoicesPage() {
         perPage: PER_PAGE,
         search: debouncedSearch.trim() || undefined,
         status: statusParam,
+        companyId: paramFromFilter(companyFilter),
+        invoiceDateFrom: dateParamFromFilter(invoiceDateFrom),
+        invoiceDateTo: dateParamFromFilter(invoiceDateTo),
+        dueDateFrom: dateParamFromFilter(dueDateFrom),
+        dueDateTo: dateParamFromFilter(dueDateTo),
       });
       const paginated = res as LaravelPaginated<InvRow>;
       setRows(paginated.data ?? []);
@@ -316,7 +325,7 @@ export default function AdminInvoicesPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, statusParam, t]);
+  }, [authHydrated, page, debouncedSearch, statusParam, companyFilter, invoiceDateFrom, invoiceDateTo, dueDateFrom, dueDateTo, t]);
 
   useEffect(() => {
     void loadStats();
@@ -332,20 +341,8 @@ export default function AdminInvoicesPage() {
   const countPaid = invoiceStats?.paid ?? 0;
   const countCancelled = invoiceStats?.cancelled ?? 0;
 
-  const openInvoiceDetail = async (id: number) => {
-    setDetailId(id);
-    setDetailOpen(true);
-    setDetailLoading(true);
-    setDetailData(null);
-    setDetailError(null);
-    try {
-      const res = await fetchAdminInvoice(id);
-      setDetailData((res as { data: InvRow }).data ?? null);
-    } catch (e) {
-      setDetailError(e instanceof ApiError ? e.message : t("toasts.detailLoadFailed"));
-    } finally {
-      setDetailLoading(false);
-    }
+  const openInvoiceDetail = (id: number) => {
+    router.push(`/${locale}/dashboard/admin/customer/invoices/${id}`);
   };
 
   const handleDeleteInvoice = async () => {
@@ -396,25 +393,6 @@ export default function AdminInvoicesPage() {
           void load();
         }}
       />
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t("detail.title")}</DialogTitle>
-            <DialogDescription>
-              {detailId != null ? t("detail.internalRef", { id: detailId }) : null}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-2">
-            {detailLoading ? (
-              <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
-            ) : detailError ? (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">{detailError}</p>
-            ) : (
-              <InvoiceDetailView data={detailData} />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <ConfirmDeleteDialog
         open={deleteOpen}
@@ -475,6 +453,43 @@ export default function AdminInvoicesPage() {
             onFilterChange={setStatusFilter}
             filterOptions={invoiceStatusFilters}
           />
+          <AdminListFilters
+            selects={[
+              {
+                id: "invoice-company",
+                label: tc("table.customer"),
+                value: companyFilter,
+                onChange: setCompanyFilter,
+                options: masterSelectOptions(masters.companies, tc("filters.all")),
+              },
+            ]}
+            dates={[
+              {
+                id: "invoice-date-from",
+                label: `${t("columns.issuedDate")} (${tc("filters.from")})`,
+                value: invoiceDateFrom,
+                onChange: setInvoiceDateFrom,
+              },
+              {
+                id: "invoice-date-to",
+                label: `${t("columns.issuedDate")} (${tc("filters.to")})`,
+                value: invoiceDateTo,
+                onChange: setInvoiceDateTo,
+              },
+              {
+                id: "invoice-due-from",
+                label: `${t("columns.dueDate")} (${tc("filters.from")})`,
+                value: dueDateFrom,
+                onChange: setDueDateFrom,
+              },
+              {
+                id: "invoice-due-to",
+                label: `${t("columns.dueDate")} (${tc("filters.to")})`,
+                value: dueDateTo,
+                onChange: setDueDateTo,
+              },
+            ]}
+          />
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -487,6 +502,7 @@ export default function AdminInvoicesPage() {
                     <TableHead>{tc("table.customer")}</TableHead>
                     <TableHead className="min-w-[100px]">{t("columns.shipment")}</TableHead>
                     <TableHead className="text-right">{t("columns.amount")}</TableHead>
+                    <TableHead>{t("columns.issuedDate")}</TableHead>
                     <TableHead>{t("columns.dueDate")}</TableHead>
                     <TableHead>{tc("table.status")}</TableHead>
                     <TableHead className={actionsHeadClass}>
@@ -503,6 +519,7 @@ export default function AdminInvoicesPage() {
                     const wb = ship?.waybill_number ?? ship?.shipment_number ?? "—";
                     const amt = Number(invoice.total_amount ?? 0);
                     const due = String(invoice.due_date ?? "").slice(0, 10);
+                    const issued = String(invoice.issued_date ?? "").slice(0, 10);
                     const st = String(invoice.status ?? "");
                     return (
                       <TableRow key={id} className="group">
@@ -515,7 +532,8 @@ export default function AdminInvoicesPage() {
                         <TableCell className="text-right font-medium tabular-nums">
                           Rp {amt.toLocaleString("id-ID")}
                         </TableCell>
-                        <TableCell>{due}</TableCell>
+                        <TableCell>{issued || "—"}</TableCell>
+                        <TableCell>{due || "—"}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={invoiceStatusBadgeClass(st)}>
                             {invoiceStatusLabel(st)}

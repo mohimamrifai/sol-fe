@@ -24,6 +24,7 @@
       "viewDetail": "View invoice detail",
       "downloadPdf": "Download PDF",
       "issue": "Issue Invoice",
+      "cancelDraft": "Cancel Draft",
       "createMidtransLink": "Create Midtrans Link",
       "creatingLink": "Creating link…",
       "edit": "Edit invoice",
@@ -49,7 +50,20 @@
       "quantity": "Qty",
       "unitPrice": "Unit Price",
       "amount": "Amount",
-      "payments": "Payments"
+      "payments": "Payments",
+      "activityLog": "Activity log",
+      "paidAmount": "Paid",
+      "outstanding": "Outstanding",
+      "documents": "Supporting Documents",
+      "invoicePdf": "Invoice PDF",
+      "taxInvoice": "Tax Invoice",
+      "available": "Available",
+      "uploadWhenPaid": "Upload when paid",
+      "back": "Back to invoice list"
+    },
+    "generatePaymentLink": "Generate Payment Link",
+    "confirm": {
+      "cancelDraft": "Cancel this draft invoice?"
     },
     "toasts": {
       "loadFailed": "Failed to load invoices.",
@@ -62,7 +76,10 @@
       "pdfDownloaded": "Invoice PDF downloaded.",
       "pdfFailed": "Failed to download PDF.",
       "issued": "Invoice issued.",
-      "issueFailed": "Failed to issue invoice."
+      "issueFailed": "Failed to issue invoice.",
+      "cancelled": "Invoice cancelled.",
+      "cancelFailed": "Failed to cancel invoice.",
+      "linkCopied": "Payment link copied."
     },
     "deleteDialog": {
       "title": "Delete invoice?",
@@ -78,7 +95,8 @@
         "cnNo": "CN No",
         "customer": "Customer",
         "service": "Service",
-        "completed": "Completed"
+        "completed": "Completed",
+        "amount": "Amount"
       },
       "success": "{count} draft invoice(s) created.",
       "failed": "Failed to generate invoice."

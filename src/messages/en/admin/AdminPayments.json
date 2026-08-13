@@ -4,11 +4,15 @@
     "pageSubtitle": "Payments, Midtrans, and receivables for all customers.",
     "listTitle": "Payment List",
     "recordPayment": "Record Payment",
-    "searchPlaceholder": "Search Midtrans order or invoice number…",
+    "generatePaymentLink": "Generate Payment Link",
+    "searchPlaceholder": "Search payment no, invoice no, or customer…",
     "columns": {
+      "paymentNo": "Payment No",
       "refPayment": "Payment Ref",
       "orderId": "Order ID",
       "invoiceNo": "Invoice No",
+      "invoiceAmount": "Invoice Amount",
+      "paidAmount": "Paid Amount",
       "amount": "Amount",
       "paidAt": "Paid At",
       "method": "Method"
@@ -62,7 +66,39 @@
       "shipment": "Shipment / waybill",
       "invoiceTotal": "Invoice total",
       "invoiceStatus": "Invoice status",
-      "midtransPayload": "Midtrans response payload (technical)"
+      "midtransPayload": "Midtrans response payload (technical)",
+      "back": "Back to payment list",
+      "sectionCustomer": "Customer Information",
+      "sectionInvoice": "Invoice Information",
+      "sectionPayment": "Payment Information",
+      "sectionOnline": "Online Payment",
+      "sectionActivity": "Activity Log",
+      "customerCode": "Customer Code",
+      "customerName": "Customer Name",
+      "paymentTerms": "Payment Terms",
+      "invoiceDate": "Invoice Date",
+      "dueDate": "Due Date",
+      "outstanding": "Outstanding Amount",
+      "paidTotal": "Total Paid",
+      "paymentHistory": "Payment History",
+      "recordedBy": "Recorded By",
+      "midtransLink": "Payment Link",
+      "linkStatus": "Link Status",
+      "expiredAt": "Expired At",
+      "midtransStatus": "Midtrans Status",
+      "printReceipt": "Print Receipt",
+      "receiptDownloaded": "Receipt downloaded.",
+      "receiptFailed": "Failed to download receipt."
+    },
+    "generateLink": {
+      "title": "Generate Payment Link",
+      "action": "Generate Link",
+      "success": "Payment link generated.",
+      "failed": "Failed to generate payment link.",
+      "urlLabel": "Payment URL",
+      "copy": "Copy link",
+      "copied": "Link copied to clipboard.",
+      "copyFailed": "Failed to copy link."
     },
     "recordDialog": {
       "title": "Record Payment",
@@ -84,7 +120,8 @@
       "methodVirtualAccount": "Virtual Account",
       "methodMidtrans": "Midtrans",
       "recorded": "Payment recorded.",
-      "recordFailed": "Failed to record payment."
+      "recordFailed": "Failed to record payment.",
+      "companyBankRequired": "Company bank is required for transfer payments."
     },
     "toasts": {
       "loadFailed": "Failed to load payments.",

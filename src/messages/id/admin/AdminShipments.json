@@ -6,9 +6,17 @@
     "searchPlaceholder": "Cari Nomor Shipment atau CN…",
     "filterStatus": "Filter Status",
     "columns": {
+      "shipmentNo": "Shipment No",
+      "bookingNo": "Booking No",
       "cnNumber": "CN Number",
       "origin": "Origin",
-      "destination": "Destination"
+      "destination": "Destination",
+      "coverage": "Coverage"
+    },
+    "filters": {
+      "origin": "Origin",
+      "destination": "Destination",
+      "departureDate": "Tanggal Keberangkatan"
     },
     "stats": {
       "planning": "Planning",
@@ -28,6 +36,23 @@
     },
     "toasts": {
       "loadFailed": "Gagal memuat shipment."
+    },
+    "transport": {
+      "title": "Transport Assignment",
+      "originTitle": "Origin Transport",
+      "destinationTitle": "Destination Transport",
+      "vendor": "Vendor",
+      "selectVendor": "Pilih vendor",
+      "vehicleType": "Tipe Kendaraan",
+      "plateNumber": "Nomor Polisi",
+      "driverName": "Nama Driver",
+      "driverMobile": "HP Driver",
+      "vendorPic": "PIC Vendor",
+      "pickupDateTime": "Jadwal Pickup",
+      "deliveryDateTime": "Jadwal Delivery",
+      "remark": "Catatan",
+      "saved": "Transport assignment disimpan.",
+      "saveFailed": "Gagal menyimpan transport assignment."
     },
     "invalidId": "ID shipment tidak valid."
   }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createAdminCompany } from "@/lib/admin-api";
-import { BILLING_CYCLE_OPTIONS, billingCycleLabel } from "@/lib/billing-cycle-labels";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
@@ -23,18 +23,13 @@ import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { toast } from "sonner";
 import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
+import { CustomerOperationalFields } from "@/components/dashboard/admin/customers/customer-operational-fields";
 
-const BUSINESS_ENTITY_OPTIONS = [
-  { value: "PT", label: "PT" },
-  { value: "CV", label: "CV" },
-  { value: "Firma", label: "Firma" },
-  { value: "UD", label: "UD" },
-  { value: "Koperasi", label: "Koperasi" },
-  { value: "Yayasan", label: "Yayasan" },
-  { value: "Lainnya", label: "Lainnya" },
-];
+const BUSINESS_ENTITY_OPTIONS = ["PT", "CV", "UD", "Koperasi", "Yayasan", "Firma", "Perorangan", "Lainnya"];
 
 export default function AdminCustomerCreatePage() {
+  const t = useTranslations("AdminCustomers");
+  const tc = useTranslations("AdminCommon");
   const params = useParams();
   const router = useRouter();
   const locale = String(params?.locale ?? "id");
@@ -47,59 +42,48 @@ export default function AdminCustomerCreatePage() {
 
   const [businessEntityType, setBusinessEntityType] = useState("PT");
   const [companyCode, setCompanyCode] = useState("");
+  const [codeTouched, setCodeTouched] = useState(false);
   const [name, setName] = useState("");
   const [npwp, setNpwp] = useState("");
-  const [nib, setNib] = useState("");
-  const [billingCycle, setBillingCycle] = useState("end_of_month");
-  const [paymentType, setPaymentType] = useState<"prepaid" | "postpaid">("prepaid");
-  const [postpaidTermDays, setPostpaidTermDays] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
+  const [country, setCountry] = useState("Indonesia");
   const [postalCode, setPostalCode] = useState("");
+  const [website, setWebsite] = useState("");
+  const [businessCategory, setBusinessCategory] = useState("");
+  const [businessCategoryOther, setBusinessCategoryOther] = useState("");
+  const [monthlyShipmentEstimate, setMonthlyShipmentEstimate] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  
-  // Data PIC
   const [picEmail, setPicEmail] = useState("");
   const [picPhone, setPicPhone] = useState("");
   const [password, setPassword] = useState("");
-  
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const derivedCompanyCode = useMemo(() => {
     const raw = name.trim();
     if (!raw) return "";
-
-    const normalized = raw
-      .toUpperCase()
-      .replace(/[^A-Z0-9\s\-_]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
+    const normalized = raw.toUpperCase().replace(/[^A-Z0-9\s\-_]/g, " ").replace(/\s+/g, " ").trim();
     const tokens = normalized.split(/[\s\-_]+/).filter(Boolean);
-    const lettersOnly = normalized.replace(/[^A-Z]/g, "");
-
     let code = "";
     for (const token of tokens) {
       const ch = token.replace(/[^A-Z]/g, "").slice(0, 1);
       if (ch) code += ch;
       if (code.length >= 3) break;
     }
-
-    if (code.length < 3) {
-      code += lettersOnly.slice(code.length, 3);
-    }
-
+    const lettersOnly = normalized.replace(/[^A-Z]/g, "");
+    if (code.length < 3) code += lettersOnly.slice(code.length, 3);
     code = code.slice(0, 3);
     return code.length === 3 ? code : "";
   }, [name]);
 
   useEffect(() => {
-    setCompanyCode(derivedCompanyCode);
-  }, [derivedCompanyCode]);
+    if (!codeTouched) setCompanyCode(derivedCompanyCode);
+  }, [derivedCompanyCode, codeTouched]);
 
   const save = async () => {
     if (!canCreate) return;
@@ -108,7 +92,13 @@ export default function AdminCustomerCreatePage() {
     try {
       const cleanedPhone = phone.trim();
       if (cleanedPhone && !/^(0|62)\d+$/.test(cleanedPhone)) {
-        setError("Format telepon harus diawali 0 atau 62 tanpa tanda +.");
+        setError(t("form.phoneFormatError"));
+        setSaving(false);
+        return;
+      }
+      const code = companyCode.trim().toUpperCase();
+      if (code && !/^[A-Z]{3}$/.test(code)) {
+        setError(t("form.customerCodeHint"));
         setSaving(false);
         return;
       }
@@ -116,32 +106,28 @@ export default function AdminCustomerCreatePage() {
       await createAdminCompany({
         business_entity_type: businessEntityType,
         name: name.trim(),
-        company_code: companyCode || undefined,
+        company_code: code || undefined,
         npwp: npwp.trim() || null,
-        nib: nib.trim() || null,
-        billing_cycle: billingCycle,
-        payment_type: paymentType,
-        postpaid_term_days:
-          paymentType === "postpaid" && postpaidTermDays.trim() !== ""
-            ? Number(postpaidTermDays.trim())
-            : null,
         address: address.trim() || null,
         city: city.trim() || null,
         province: province.trim() || null,
+        district: district.trim() || null,
+        country: country.trim() || null,
         postal_code: postalCode.trim() || null,
+        website: website.trim() || null,
+        business_category: businessCategory || null,
+        business_category_other: businessCategory === "others" ? businessCategoryOther.trim() || null : null,
+        monthly_shipment_estimate: monthlyShipmentEstimate || null,
         contact_person: contactPerson.trim() || null,
         email: email.trim() || null,
         phone: cleanedPhone || null,
-
-        // Data PIC
         pic_name: contactPerson.trim() || null,
         pic_email: picEmail.trim() || null,
         pic_phone: picPhone.trim() || null,
         password: password || undefined,
-
-        status: "active",
+        status: "pending",
       });
-      toast.success("Customer berhasil ditambahkan.");
+      toast.success(t("create.saved"));
       router.push(backPath);
     } catch (e) {
       const msg =
@@ -149,7 +135,7 @@ export default function AdminCustomerCreatePage() {
           ? firstLaravelError(e.body) ?? e.message
           : e instanceof ApiError
             ? e.message
-            : "Gagal menyimpan.";
+            : t("create.saveFailed");
       setError(msg);
       toast.error(msg);
     } finally {
@@ -161,12 +147,12 @@ export default function AdminCustomerCreatePage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Akses ditolak</CardTitle>
-          <CardDescription>Role Anda tidak memiliki izin tambah customer.</CardDescription>
+          <CardTitle>{t("accessDenied")}</CardTitle>
+          <CardDescription>{t("accessDeniedDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={() => router.push(backPath)}>
-            Kembali
+            {t("actions.back")}
           </Button>
         </CardContent>
       </Card>
@@ -176,198 +162,134 @@ export default function AdminCustomerCreatePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tambah customer</CardTitle>
-        <CardDescription>Form input customer oleh tim internal.</CardDescription>
+        <CardTitle>{t("create.title")}</CardTitle>
+        <CardDescription>{t("create.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {error ? (
           <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
         ) : null}
 
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            Informasi Perusahaan
-          </h3>
+        <section className="space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-2">{t("create.sectionCompany")}</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-            <Label>Badan usaha</Label>
-            <Select
-              value={businessEntityType}
-              onValueChange={(v) => v && setBusinessEntityType(v)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih badan usaha">
-                  {BUSINESS_ENTITY_OPTIONS.find((o) => o.value === businessEntityType)?.label ?? "Pilih badan usaha"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {BUSINESS_ENTITY_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Nama perusahaan</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama resmi perusahaan" />
-          </div>
-          <div className="space-y-2">
-              <Label>Kode perusahaan</Label>
-              <Input value={companyCode} readOnly className="bg-zinc-50" placeholder="Tiga huruf (Auto-generate)" />
-            </div>
-          <div className="space-y-2">
-            <Label>NPWP</Label>
-            <Input value={npwp} onChange={(e) => setNpwp(e.target.value)} placeholder="00.000.000.0-000.000" />
-          </div>
-          <div className="space-y-2">
-            <Label>NIB</Label>
-            <Input value={nib} onChange={(e) => setNib(e.target.value)} placeholder="Nomor Induk Berusaha" />
-          </div>
-          <div className="space-y-2">
-            <Label>Tipe pembayaran</Label>
-            <Select
-              value={paymentType}
-              onValueChange={(v) => v && setPaymentType(v as "prepaid" | "postpaid")}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih tipe pembayaran">
-                  {paymentType === "prepaid" ? "Pre-paid" : "Post-paid"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prepaid">Pre-paid</SelectItem>
-                <SelectItem value="postpaid">Post-paid</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {paymentType === "postpaid" && (
-            <div className="space-y-2">
-              <Label>Siklus penagihan</Label>
-              <Select
-                value={billingCycle}
-                onValueChange={(v) => v && setBillingCycle(v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Pilih siklus penagihan">
-                    {billingCycleLabel(billingCycle)}
-                  </SelectValue>
-                </SelectTrigger>
+              <Label>{t("form.businessEntity")}</Label>
+              <Select value={businessEntityType} onValueChange={(v) => v && setBusinessEntityType(v)}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {BILLING_CYCLE_OPTIONS.map((b) => (
-                    <SelectItem key={b.value} value={b.value}>
-                      {b.label}
-                    </SelectItem>
+                  {BUSINESS_ENTITY_OPTIONS.map((e) => (
+                    <SelectItem key={e} value={e}>{e}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
-          {paymentType === "postpaid" && (
             <div className="space-y-2">
-              <Label>Jatuh tempo (hari)</Label>
-              <Input
-                value={postpaidTermDays}
-                onChange={(e) => setPostpaidTermDays(e.target.value.replace(/\D/g, ""))}
-                placeholder="Contoh: 30"
-                inputMode="numeric"
-                pattern="[0-9]*"
-              />
+              <Label>{t("form.companyName")}</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
-          )}
-          <div className="space-y-2 md:col-span-2">
-            <Label>Alamat</Label>
-            <Textarea
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Alamat lengkap jalan & gedung"
-              rows={3}
-            />
-          </div>
-          <ControlledAddressRegionFields
-            className="md:col-span-2"
-            idPrefix="create-co"
-            value={{ province, city, postal_code: postalCode }}
-            onChange={(patch) => {
-              if (patch.province !== undefined) setProvince(patch.province);
-              if (patch.city !== undefined) setCity(patch.city);
-              if (patch.postal_code !== undefined) setPostalCode(patch.postal_code);
-            }}
-            labels={{
-              province: "Provinsi",
-              city: "Kota",
-              postalCode: "Kode pos",
-            }}
-          />
-          <div className="space-y-2">
-            <Label>Email perusahaan</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="perusahaan@domain.com"
-            />
-          </div>
-          <div className="space-y-2">
-              <Label>Telepon perusahaan</Label>
+            <div className="space-y-2">
+              <Label>{t("form.customerCode")}</Label>
               <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                placeholder="081234567890 atau 6281234567890"
-                inputMode="numeric"
-                pattern="[0-9]*"
+                value={companyCode}
+                onChange={(e) => {
+                  setCodeTouched(true);
+                  setCompanyCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3));
+                }}
+                maxLength={3}
+                className="uppercase"
               />
+              <p className="text-xs text-muted-foreground">{t("form.customerCodeHint")}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("form.npwp")}</Label>
+              <Input value={npwp} onChange={(e) => setNpwp(e.target.value)} maxLength={16} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("form.companyEmail")}</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("form.companyPhone")}</Label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} inputMode="numeric" />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>{t("form.website")}</Label>
+              <Input value={website} onChange={(e) => setWebsite(e.target.value)} />
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            Data Akun PIC
-          </h3>
+        <section className="space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-2">{t("create.sectionAddress")}</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 md:col-span-2">
+              <Label>{t("form.address")}</Label>
+              <Textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} />
+            </div>
+            <ControlledAddressRegionFields
+              className="md:col-span-2"
+              idPrefix="create-co"
+              value={{ country, province, city, district, postal_code: postalCode }}
+              onChange={(patch) => {
+                if (patch.country !== undefined) setCountry(patch.country);
+                if (patch.province !== undefined) setProvince(patch.province);
+                if (patch.city !== undefined) setCity(patch.city);
+                if (patch.district !== undefined) setDistrict(patch.district);
+                if (patch.postal_code !== undefined) setPostalCode(patch.postal_code);
+              }}
+              showCountry
+              showDistrict
+              labels={{
+                province: t("form.province"),
+                city: t("form.city"),
+                postalCode: t("form.postalCode"),
+              }}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-2">{t("create.sectionOperational")}</h3>
+          <CustomerOperationalFields
+            businessCategory={businessCategory}
+            businessCategoryOther={businessCategoryOther}
+            monthlyShipmentEstimate={monthlyShipmentEstimate}
+            onBusinessCategoryChange={setBusinessCategory}
+            onBusinessCategoryOtherChange={setBusinessCategoryOther}
+            onMonthlyShipmentEstimateChange={setMonthlyShipmentEstimate}
+          />
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-2">{t("create.sectionAdmin")}</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Nama Lengkap PIC</Label>
-              <Input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} placeholder="Nama PIC" />
+              <Label>{t("create.adminName")}</Label>
+              <Input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Email Kerja PIC</Label>
-              <Input
-                type="email"
-                value={picEmail}
-                onChange={(e) => setPicEmail(e.target.value)}
-                placeholder="email.pic@domain.com"
-              />
+              <Label>{t("create.adminEmail")}</Label>
+              <Input type="email" value={picEmail} onChange={(e) => setPicEmail(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Telepon / HP PIC</Label>
-              <Input
-                value={picPhone}
-                onChange={(e) => setPicPhone(e.target.value.replace(/\D/g, ""))}
-                placeholder="081234567890"
-                inputMode="numeric"
-                pattern="[0-9]*"
-              />
+              <Label>{t("create.mobileNumber")}</Label>
+              <Input value={picPhone} onChange={(e) => setPicPhone(e.target.value.replace(/\D/g, ""))} inputMode="numeric" />
             </div>
             <div className="space-y-2">
-              <Label>Password Akun</Label>
-              <Input
-                type="text"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimal 8 karakter"
-              />
+              <Label>{t("create.tempPassword")}</Label>
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <p className="text-xs text-muted-foreground">{t("create.tempPasswordHint")}</p>
             </div>
           </div>
-        </div>
+        </section>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => router.push(backPath)} disabled={saving}>
-            Batal
+            {tc("actions.cancel")}
           </Button>
           <Button onClick={() => void save()} disabled={saving || !name.trim()}>
-            {saving ? "Menyimpan…" : "Simpan"}
+            {saving ? tc("actions.saving") : tc("actions.save")}
           </Button>
         </div>
       </CardContent>

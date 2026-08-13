@@ -6,9 +6,17 @@
     "searchPlaceholder": "Search shipment number or CN…",
     "filterStatus": "Filter Status",
     "columns": {
+      "shipmentNo": "Shipment No",
+      "bookingNo": "Booking No",
       "cnNumber": "CN Number",
       "origin": "Origin",
-      "destination": "Destination"
+      "destination": "Destination",
+      "coverage": "Coverage"
+    },
+    "filters": {
+      "origin": "Origin",
+      "destination": "Destination",
+      "departureDate": "Departure Date"
     },
     "stats": {
       "planning": "Planning",
@@ -28,6 +36,23 @@
     },
     "toasts": {
       "loadFailed": "Failed to load shipments."
+    },
+    "transport": {
+      "title": "Transport Assignment",
+      "originTitle": "Origin Transport",
+      "destinationTitle": "Destination Transport",
+      "vendor": "Vendor",
+      "selectVendor": "Select vendor",
+      "vehicleType": "Vehicle Type",
+      "plateNumber": "Vehicle Plate Number",
+      "driverName": "Driver Name",
+      "driverMobile": "Driver Mobile",
+      "vendorPic": "Contact PIC Vendor",
+      "pickupDateTime": "Pickup Date & Time",
+      "deliveryDateTime": "Delivery Date & Time",
+      "remark": "Remark",
+      "saved": "Transport assignment saved.",
+      "saveFailed": "Failed to save transport assignment."
     },
     "invalidId": "Invalid shipment ID."
   }

@@ -41,7 +41,9 @@
       "convert": "Convert to Shipment",
       "viewShipment": "View Shipment",
       "delete": "Delete",
-      "editBooking": "Edit booking"
+      "editBooking": "Edit booking",
+      "edit": "Edit booking",
+      "duplicate": "Duplicate booking"
     },
     "toasts": {
       "submitted": "Booking disubmit.",
@@ -49,6 +51,7 @@
       "confirmed": "Booking dikonfirmasi.",
       "converted": "Booking dikonversi ke shipment.",
       "rejected": "Booking ditolak.",
+      "duplicated": "Booking diduplikasi sebagai draft.",
       "updated": "Booking berhasil diperbarui.",
       "detailUpdated": "Detail booking berhasil diperbarui.",
       "submitFailed": "Gagal submit.",

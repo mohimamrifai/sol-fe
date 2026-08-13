@@ -56,6 +56,8 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
   const salesPic = detail?.sales_pic as Record<string, unknown> | undefined;
   const accountManager = detail?.account_manager as Record<string, unknown> | undefined;
   const reviewedBy = detail?.reviewed_by_user as Record<string, unknown> | undefined;
+  const approvedByUser = detail?.approved_by_user as Record<string, unknown> | undefined;
+  const approvedBy = approvedByUser ?? (String(detail?.status ?? "").toLowerCase() === "active" ? reviewedBy : undefined);
 
   const save = async () => {
     if (!canEdit) return;
@@ -143,6 +145,10 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
         <div>
           <span className="text-muted-foreground">{t("review.approvedDate")}:</span>{" "}
           {detail?.approved_at ? String(detail.approved_at).slice(0, 10) : "—"}
+        </div>
+        <div>
+          <span className="text-muted-foreground">{t("review.approvedBy")}:</span>{" "}
+          {approvedBy ? userLabel(approvedBy) : "—"}
         </div>
         <div>
           <span className="text-muted-foreground">{t("review.statusLabel")}:</span>{" "}
