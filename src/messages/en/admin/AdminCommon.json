@@ -116,6 +116,26 @@
         "container_unloading": "Container Unloading",
         "unloading": "Unloading",
         "ready_for_pickup": "Ready for Pickup"
+      },
+      "vendorInvoice": {
+        "received": "Received",
+        "under_verification": "Under Verification",
+        "ready_for_payment": "Ready for Payment",
+        "paid": "Paid",
+        "rejected": "Rejected"
+      },
+      "vendorPayment": {
+        "waiting_approval": "Waiting Approval",
+        "ready_to_pay": "Ready to Pay",
+        "paid": "Paid",
+        "cancelled": "Cancelled"
+      },
+      "vendorJobOrder": {
+        "draft": "Draft",
+        "sent": "Sent",
+        "in_progress": "In Progress",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
       }
     },
     "errors": {

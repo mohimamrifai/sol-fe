@@ -46,6 +46,7 @@ const NAMESPACE_PATHS: Record<string, string> = {
   AdminShipments: "admin",
   AdminInvoices: "admin",
   AdminPayments: "admin",
+  AdminVendorPages: "admin",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {
@@ -57,7 +58,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const messages: Record<string, unknown> = {};
   await Promise.all(
     Object.entries(NAMESPACE_PATHS).map(async ([ns, page]) => {
-      const mod = (await import(`../../src/messages/${locale}/${page}/${ns}.json`)) as {
+      const mod = (await import(`../messages/${locale}/${page}/${ns}.json`)) as {
         default: Record<string, unknown>;
       };
       Object.assign(messages, mod.default);

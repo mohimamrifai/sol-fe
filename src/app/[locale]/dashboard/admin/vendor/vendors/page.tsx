@@ -1,14 +1,23 @@
 "use client";
 
-import { toast } from "sonner";
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -18,287 +27,280 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
+import {
+  actionsCellClass,
+  actionsHeadClass,
+  ADMIN_LIST_PAGE_CLASS,
+} from "@/components/dashboard/admin/shared/admin-list-table-styles";
+import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
-import { deleteAdminVendor, fetchAdminVendor, fetchAdminVendors } from "@/lib/admin-api";
-import type { LaravelPaginated } from "@/lib/types-api";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useAuthStore } from "@/lib/store";
+import { deactivateAdminVendor, fetchAdminVendorStats, fetchAdminVendors } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { VendorFormDialog } from "@/components/dashboard/admin/vendor/vendor-form-dialog";
-import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
+import type { LaravelPaginated } from "@/lib/types-api";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { buttonVariants } from "@/components/ui/button";
+  BUSINESS_ENTITY_OPTIONS,
+  vendorTypesLabel,
+  VENDOR_TYPE_OPTIONS,
+  businessEntityLabel,
+  vendorTypeLabel,
+} from "@/lib/vendor-fsd-options";
 import { cn } from "@/lib/utils";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { Eye } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Building2, Container, Eye, MoreHorizontal, Plus, Store, Train, Truck, UserCheck, UserX } from "lucide-react";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+
+const PER_PAGE = 10;
 
 type VendorRow = Record<string, unknown>;
 
-const VENDOR_PER_PAGE = 10;
-
 export default function AdminVendorListPage() {
+  const params = useParams();
+  const router = useRouter();
+  const locale = String(params?.locale ?? "id");
+  const basePath = `/${locale}/dashboard/admin/vendor/vendors`;
   const authHydrated = useAuthPersistHydrated();
-  const searchParams = useSearchParams();
+  const t = useTranslations("AdminVendorVendors");
+  const tc = useTranslations("AdminCommon");
+  const { user } = useAuthStore();
+  const roles = user?.roles ?? [];
+  const canManageVendor = authHydrated && (roles.includes("super_admin") || roles.includes("sales"));
 
-  const [vendors, setVendors] = useState<VendorRow[]>([]);
-  const [vendorMeta, setVendorMeta] = useState<LaravelPaginated<VendorRow> | null>(null);
-  const [vendorPage, setVendorPage] = useState(1);
+  const [rows, setRows] = useState<VendorRow[]>([]);
+  const [meta, setMeta] = useState<LaravelPaginated<VendorRow> | null>(null);
+  const [stats, setStats] = useState<Record<string, number> | null>(null);
+  const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput, 400);
-
-  const [error, setError] = useState<string | null>(null);
+  const [businessEntityFilter, setBusinessEntityFilter] = useState("all");
+  const [vendorTypeFilter, setVendorTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-
-  const [formOpen, setFormOpen] = useState(false);
-  const [formMode, setFormMode] = useState<"create" | "edit">("create");
-  const [formRow, setFormRow] = useState<VendorRow | null>(null);
-
-  const [viewOpen, setViewOpen] = useState(false);
-  const [viewRow, setViewRow] = useState<VendorRow | null>(null);
-
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteRow, setDeleteRow] = useState<VendorRow | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (searchParams.get("create") === "1") {
-      setFormRow(null);
-      setFormMode("create");
-      setFormOpen(true);
-      const url = new URL(window.location.href);
-      url.searchParams.delete("create");
-      window.history.replaceState({}, "", url.toString());
+    setPage(1);
+  }, [debouncedSearch, businessEntityFilter, vendorTypeFilter, statusFilter]);
+
+  const loadStats = useCallback(async () => {
+    if (!authHydrated) return;
+    try {
+      const res = await fetchAdminVendorStats();
+      setStats((res as { data: Record<string, number> }).data);
+    } catch {
+      setStats(null);
     }
-  }, [searchParams]);
-
-  useEffect(() => {
-    setVendorPage(1);
-  }, [debouncedSearch]);
+  }, [authHydrated]);
 
   const load = useCallback(async () => {
     if (!authHydrated) return;
-    setError(null);
     setLoading(true);
+    setError(null);
     try {
       const res = await fetchAdminVendors({
-        page: vendorPage,
-        perPage: VENDOR_PER_PAGE,
+        page,
+        perPage: PER_PAGE,
         search: debouncedSearch.trim() || undefined,
+        business_entity: businessEntityFilter === "all" ? undefined : businessEntityFilter,
+        vendor_type: vendorTypeFilter === "all" ? undefined : vendorTypeFilter,
+        status: statusFilter === "all" ? undefined : statusFilter,
       });
       const paginated = res as LaravelPaginated<VendorRow>;
-      setVendors(paginated.data ?? []);
-      setVendorMeta(paginated);
+      setRows(paginated.data ?? []);
+      setMeta(paginated);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Gagal memuat vendor.");
-      setVendors([]);
-      setVendorMeta(null);
+      setRows([]);
+      setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, vendorPage, debouncedSearch]);
+  }, [authHydrated, page, debouncedSearch, businessEntityFilter, vendorTypeFilter, statusFilter]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useEffect(() => { void loadStats(); }, [loadStats]);
+  useEffect(() => { void load(); }, [load]);
 
-  const openView = async (v: VendorRow) => {
-    if (v.id == null) return;
+  const deactivate = async (id: number) => {
     try {
-      const d = await fetchAdminVendor(Number(v.id));
-      setViewRow((d as { data: VendorRow }).data);
-      setViewOpen(true);
+      await deactivateAdminVendor(id);
+      toast.success("Vendor dinonaktifkan.");
+      void load();
+      void loadStats();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal memuat detail.");
-    }
-  };
-
-  const handleDelete = async () => {
-    if (deleteRow?.id == null) return;
-    setDeleteLoading(true);
-    try {
-      await deleteAdminVendor(Number(deleteRow.id));
-      toast.success("Vendor berhasil dihapus.");
-      setDeleteOpen(false);
-      setDeleteRow(null);
-      await load();
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menghapus.");
-    } finally {
-      setDeleteLoading(false);
+      toast.error(e instanceof ApiError ? e.message : "Gagal menonaktifkan vendor.");
     }
   };
 
   return (
-    <>
+    <div className={ADMIN_LIST_PAGE_CLASS}>
+      <AdminPageHeader
+        icon={Building2}
+        title={t("pageTitle")}
+        description={t("pageSubtitle")}
+        actions={
+          canManageVendor ? (
+            <Button className="h-9 w-full gap-1.5 px-4 sm:w-auto" type="button" onClick={() => router.push(`${basePath}/create`)}>
+              <Plus className="h-4 w-4 shrink-0" />
+              {t("addVendor")}
+            </Button>
+          ) : null
+        }
+      />
+
       {error ? (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+        <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       ) : null}
 
+      <AdminStatsCards
+        className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+        cards={[
+          { key: "active", label: t("stats.active"), value: stats?.active ?? 0, hint: t("stats.activeHint"), icon: UserCheck, iconClassName: "text-emerald-700 bg-emerald-100" },
+          { key: "inactive", label: t("stats.inactive"), value: stats?.inactive ?? 0, hint: t("stats.inactiveHint"), icon: UserX, iconClassName: "text-zinc-600 bg-zinc-100" },
+          { key: "total", label: t("stats.total"), value: stats?.total ?? 0, hint: t("stats.totalHint"), icon: Store, iconClassName: "text-sky-700 bg-sky-100" },
+          { key: "trucking", label: t("stats.trucking"), value: stats?.trucking ?? 0, icon: Truck, iconClassName: "text-amber-700 bg-amber-100" },
+          { key: "rail", label: t("stats.rail"), value: stats?.rail ?? 0, icon: Train, iconClassName: "text-indigo-700 bg-indigo-100" },
+          { key: "container", label: t("stats.container"), value: stats?.container_provider ?? 0, icon: Container, iconClassName: "text-violet-700 bg-violet-100" },
+        ]}
+      />
+
       <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Daftar Vendor</CardTitle>
+        <CardHeader className="space-y-1">
+          <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableToolbar
-            searchPlaceholder="Cari kode atau nama vendor…"
+            searchPlaceholder={t("searchPlaceholder")}
             searchValue={searchInput}
             onSearchChange={setSearchInput}
           />
+          <div className="flex flex-wrap gap-3">
+            <Select value={businessEntityFilter} onValueChange={(v) => v && setBusinessEntityFilter(v)}>
+              <SelectTrigger className="h-9 w-44">
+                <SelectValue placeholder="Business Entity">
+                  {businessEntityFilter === "all"
+                    ? t("filters.allEntity")
+                    : businessEntityLabel(businessEntityFilter)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filters.allEntity")}</SelectItem>
+                {BUSINESS_ENTITY_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={vendorTypeFilter} onValueChange={(v) => v && setVendorTypeFilter(v)}>
+              <SelectTrigger className="h-9 w-44">
+                <SelectValue placeholder="Vendor Type">
+                  {vendorTypeFilter === "all" ? t("filters.allType") : vendorTypeLabel(vendorTypeFilter)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filters.allType")}</SelectItem>
+                {VENDOR_TYPE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+              <SelectTrigger className="h-9 w-36">
+                <SelectValue placeholder="Status">
+                  {statusFilter === "all"
+                    ? t("filters.allStatus")
+                    : statusFilter === "active"
+                      ? t("filters.active")
+                      : t("filters.inactive")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
+                <SelectItem value="active">{t("filters.active")}</SelectItem>
+                <SelectItem value="inactive">{t("filters.inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {loading ? (
-            <p className="text-sm text-muted-foreground">Memuat…</p>
+            <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
             <>
-              <div className="overflow-x-auto -mx-1 px-1">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">No</TableHead>
-                      <TableHead>Kode</TableHead>
-                      <TableHead>Nama Vendor</TableHead>
-                      <TableHead className="text-right">Jumlah Layanan</TableHead>
-                      <TableHead className="w-24 text-right">Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {vendors.map((v, index) => (
-                      <TableRow key={String(v.id)}>
-                        <TableCell className="tabular-nums text-muted-foreground">
-                          {rowNumber(vendorMeta?.current_page ?? vendorPage, VENDOR_PER_PAGE, index)}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">{String(v.code ?? "—")}</TableCell>
-                        <TableCell>{String(v.name ?? "—")}</TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {String(v.vendor_services_count ?? 0)} Layanan
-                        </TableCell>
-                        <TableCell className="text-right">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-14">{tc("table.no")}</TableHead>
+                    <TableHead>{t("columns.code")}</TableHead>
+                    <TableHead>{t("columns.name")}</TableHead>
+                    <TableHead>{t("columns.type")}</TableHead>
+                    <TableHead>{t("columns.entity")}</TableHead>
+                    <TableHead>{t("columns.status")}</TableHead>
+                    <TableHead className={actionsHeadClass}>
+                      <span className="max-md:sr-only">{tc("table.actions")}</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((v, index) => (
+                    <TableRow key={String(v.id)} className="group">
+                      <TableCell className="tabular-nums text-muted-foreground">
+                        {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{String(v.code ?? "—")}</TableCell>
+                      <TableCell className="font-medium">{String(v.name ?? "—")}</TableCell>
+                      <TableCell className="text-sm">{vendorTypesLabel(v.vendor_types as string[])}</TableCell>
+                      <TableCell>{businessEntityLabel(String(v.business_entity ?? ""))}</TableCell>
+                      <TableCell>
+                        <Badge variant={v.is_active !== false ? "default" : "secondary"}>
+                          {v.is_active !== false ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
+                        <div className="flex justify-end">
                           <DropdownMenu>
-                            <DropdownMenuTrigger
-                              className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
-                            >
+                            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}>
                               <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">{tc("actions.actionsMenu")}</span>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => void openView(v)}
-                              >
-                                <Eye className="h-4 w-4" />
-                                Detail
+                            <DropdownMenuContent align="end" className="min-w-44">
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`${basePath}/${v.id}`)}>
+                                <Eye className="h-4 w-4" /> {tc("actions.viewDetail")}
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setFormRow(v);
-                                  setFormMode("edit");
-                                  setFormOpen(true);
-                                }}
-                              >
-                                <Pencil className="h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="cursor-pointer text-destructive"
-                                onClick={() => {
-                                  setDeleteRow(v);
-                                  setDeleteOpen(true);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                Hapus
-                              </DropdownMenuItem>
+                              {v.is_active !== false ? (
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => void deactivate(Number(v.id))}>
+                                  {t("actions.deactivate")}
+                                </DropdownMenuItem>
+                              ) : null}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                  {vendors.length === 0 ? (
-                    <TableCaption className="text-xs">Belum ada vendor.</TableCaption>
-                  ) : (
-                    <TableCaption className="text-xs">Baris pada halaman ini.</TableCaption>
-                  )}
-                </Table>
-              </div>
-              {vendorMeta ? (
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                {rows.length === 0 ? (
+                  <TableCaption className="text-xs">{t("empty")}</TableCaption>
+                ) : (
+                  <TableCaption className="text-xs">{tc("table.rowsOnPage")}</TableCaption>
+                )}
+              </Table>
+              {meta ? (
                 <PaginationBar
-                  currentPage={vendorMeta.current_page}
-                  lastPage={vendorMeta.last_page}
-                  total={vendorMeta.total}
-                  from={vendorMeta.from}
-                  to={vendorMeta.to}
-                  onPageChange={setVendorPage}
+                  currentPage={meta.current_page}
+                  lastPage={meta.last_page}
+                  total={meta.total}
+                  from={meta.from}
+                  to={meta.to}
+                  onPageChange={setPage}
                 />
               ) : null}
             </>
           )}
         </CardContent>
       </Card>
-
-      <VendorFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        mode={formMode}
-        row={formRow}
-        onSaved={() => void load()}
-      />
-
-      <ConfirmDeleteDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title="Hapus vendor?"
-        description={`Yakin hapus "${String(deleteRow?.name ?? "—")}"?`}
-        loading={deleteLoading}
-        onConfirm={handleDelete}
-      />
-
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" showCloseButton>
-          <DialogHeader>
-            <DialogTitle>Detail vendor</DialogTitle>
-          </DialogHeader>
-          {viewRow ? (
-            <div className="grid grid-cols-3 gap-3 px-1 text-sm max-h-[65vh] overflow-y-auto">
-              <div className="text-muted-foreground">Kode</div>
-              <div className="col-span-2 font-medium">{String(viewRow.code ?? "—")}</div>
-              
-              <div className="text-muted-foreground">Nama Vendor</div>
-              <div className="col-span-2 font-medium">{String(viewRow.name ?? "—")}</div>
-              
-              <div className="text-muted-foreground">PIC</div>
-              <div className="col-span-2 font-medium">{String(viewRow.contact_person ?? "—")}</div>
-              
-              <div className="text-muted-foreground">Email</div>
-              <div className="col-span-2 font-medium">{String(viewRow.email ?? "—")}</div>
-              
-              <div className="text-muted-foreground">Phone</div>
-              <div className="col-span-2 font-medium">{String(viewRow.phone ?? "—")}</div>
-              
-              <div className="text-muted-foreground">Alamat</div>
-              <div className="col-span-2 whitespace-pre-wrap leading-relaxed">{String(viewRow.address ?? "—")}</div>
-            </div>
-          ) : null}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setViewOpen(false)}>
-              Tutup
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ export * from "./api/admin/shipments";
 export * from "./api/admin/users";
 export * from "./api/admin/billing";
 export * from "./api/admin/vendors";
+export * from "./api/admin/vendor-operations";
 export * from "./api/admin/master";
 
 export type { ListQueryParams } from "./list-query";

@@ -1,0 +1,151 @@
+{
+  "AdminVendorVendors": {
+    "pageTitle": "Vendor Management",
+    "pageSubtitle": "Manage vendor records, service types, and activation status.",
+    "addVendor": "Add Vendor",
+    "listTitle": "Vendor List",
+    "searchPlaceholder": "Search code, name, or tax ID…",
+    "stats": {
+      "active": "Active Vendors",
+      "activeHint": "active status",
+      "inactive": "Inactive Vendors",
+      "inactiveHint": "inactive status",
+      "total": "Total Vendors",
+      "totalHint": "all vendors",
+      "trucking": "Trucking Vendors",
+      "rail": "Rail Vendors",
+      "container": "Container Providers"
+    },
+    "columns": {
+      "code": "Vendor Code",
+      "name": "Vendor Name",
+      "type": "Vendor Type",
+      "entity": "Business Entity",
+      "status": "Status"
+    },
+    "filters": {
+      "allEntity": "All Entities",
+      "allType": "All Types",
+      "allStatus": "All Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "deactivate": "Deactivate"
+    },
+    "empty": "No vendor data yet."
+  },
+  "AdminVendorPricing": {
+    "pageTitle": "Vendor Pricing",
+    "pageSubtitle": "Manage vendor rates by route, service, and vehicle/container type.",
+    "addPricing": "Add Pricing",
+    "listTitle": "Vendor Pricing List",
+    "searchPlaceholder": "Search vendor, origin, or destination…",
+    "stats": {
+      "active": "Active Pricing",
+      "inactive": "Inactive Pricing",
+      "vendors": "Vendors",
+      "total": "Total Pricing"
+    },
+    "columns": {
+      "vendor": "Vendor",
+      "service": "Service",
+      "origin": "Origin",
+      "destination": "Destination",
+      "vehicleContainer": "Vehicle / Container",
+      "price": "Price",
+      "status": "Status",
+      "createdDate": "Created Date"
+    },
+    "filters": {
+      "allVendor": "All Vendors",
+      "allService": "All Services",
+      "allStatus": "All Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "deactivate": "Deactivate"
+    },
+    "empty": "No pricing data yet."
+  },
+  "AdminVendorJobOrders": {
+    "pageTitle": "Vendor Job Orders",
+    "pageSubtitle": "Track vendor job orders from shipment assignment through completion.",
+    "listTitle": "Job Order List",
+    "searchPlaceholder": "Search JO, shipment, or vendor…",
+    "stats": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "joNo": "JO No",
+      "shipment": "Shipment",
+      "vendor": "Vendor",
+      "service": "Service",
+      "route": "Route",
+      "status": "Status",
+      "created": "Created"
+    },
+    "filters": {
+      "allVendor": "All Vendors",
+      "allStatus": "All Status"
+    },
+    "empty": "No job orders yet."
+  },
+  "AdminVendorInvoices": {
+    "pageTitle": "Vendor Invoices",
+    "pageSubtitle": "Receive, verify, and track vendor invoices (accounts payable).",
+    "receiveInvoice": "Receive Invoice",
+    "listTitle": "Vendor Invoice List",
+    "searchPlaceholder": "Search invoice, vendor, or JO…",
+    "stats": {
+      "received": "Received",
+      "under_verification": "Under Verification",
+      "ready_for_payment": "Ready for Payment",
+      "paid": "Paid",
+      "rejected": "Rejected"
+    },
+    "columns": {
+      "invoiceNo": "Vendor Invoice No",
+      "vendor": "Vendor",
+      "invoiceDate": "Invoice Date",
+      "receiveDate": "Receive Date",
+      "total": "Total",
+      "status": "Status"
+    },
+    "filters": {
+      "allVendor": "All Vendors",
+      "allStatus": "All Status"
+    },
+    "empty": "No vendor invoices yet."
+  },
+  "AdminVendorPayments": {
+    "pageTitle": "Vendor Payments",
+    "pageSubtitle": "Approve and record payments to vendors (accounts payable).",
+    "listTitle": "Vendor Payment List",
+    "searchPlaceholder": "Search payment no, invoice, or vendor…",
+    "stats": {
+      "waiting_approval": "Waiting Approval",
+      "ready_to_pay": "Ready to Pay",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "paymentNo": "Payment No",
+      "vendor": "Vendor",
+      "invoiceNo": "Invoice No",
+      "invoiceAmount": "Invoice Amt",
+      "paid": "Paid",
+      "date": "Date",
+      "status": "Status"
+    },
+    "filters": {
+      "allStatus": "All Status"
+    },
+    "empty": "No vendor payments yet."
+  }
+}

@@ -1,13 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -17,495 +27,313 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { VendorPricingDialog } from "@/components/dashboard/admin/vendor/vendor-pricing-dialog";
-import { VendorServiceDialog } from "@/components/dashboard/admin/vendor/vendor-service-dialog";
-import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
-import { fetchAdminVendor, fetchAdminVendors, deleteAdminPricing } from "@/lib/admin-api";
-import type { LaravelPaginated } from "@/lib/types-api";
+import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
+import {
+  actionsCellClass,
+  actionsHeadClass,
+  ADMIN_LIST_PAGE_CLASS,
+} from "@/components/dashboard/admin/shared/admin-list-table-styles";
+import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
+import { VendorPricingCreateDialog } from "@/components/dashboard/admin/vendor/vendor-pricing-create-dialog";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useAuthStore } from "@/lib/store";
+import {
+  deactivateAdminPricing,
+  fetchAdminPricingStats,
+  fetchAdminPricings,
+  fetchAdminVendors,
+} from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import type { LaravelPaginated } from "@/lib/types-api";
 import {
-  buildPricingRowsFromVendorDetail,
-  priceTypeLabel,
-  type PricingRow,
-} from "@/components/shared/build-pricing-rows";
+  formatIdr,
+  SERVICE_CATEGORY_OPTIONS,
+  serviceCategoryLabel,
+} from "@/lib/vendor-fsd-options";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, Eye, Layers, MoreHorizontal, Plus, Store, Tags, XCircle } from "lucide-react";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
-type VendorRow = Record<string, unknown>;
+const PER_PAGE = 10;
 
-function vendorServiceLabel(vs: Record<string, unknown>): string {
-  const o = vs.origin_location as { code?: string; name?: string } | undefined;
-  const d = vs.destination_location as { code?: string; name?: string } | undefined;
-  const st = vs.service_type as { name?: string } | undefined;
-  const lane = [o?.code ?? o?.name, d?.code ?? d?.name].filter(Boolean).join(" → ") || "—";
-  return `${lane} · ${st?.name ?? "—"}`;
-}
-
-const PRICING_PER_PAGE = 10;
-const VENDOR_OPTIONS_CAP = 500;
+type PricingRow = Record<string, unknown>;
 
 export default function AdminVendorPricingPage() {
+  const params = useParams();
+  const router = useRouter();
+  const locale = String(params?.locale ?? "id");
+  const basePath = `/${locale}/dashboard/admin/vendor/pricing`;
   const authHydrated = useAuthPersistHydrated();
+  const t = useTranslations("AdminVendorPricing");
+  const tc = useTranslations("AdminCommon");
+  const searchParams = useSearchParams();
+  const { user } = useAuthStore();
+  const roles = user?.roles ?? [];
+  const canManage = authHydrated && (roles.includes("super_admin") || roles.includes("sales"));
 
-  const [vendorOptions, setVendorOptions] = useState<VendorRow[]>([]);
-  const [vendorPickSearch, setVendorPickSearch] = useState("");
-  const [selectedVendorId, setSelectedVendorId] = useState("");
-  const [pricingVendorLabel, setPricingVendorLabel] = useState("");
-
-  const [pricingRows, setPricingRows] = useState<PricingRow[]>([]);
-  const [pricingPage, setPricingPage] = useState(1);
+  const [rows, setRows] = useState<PricingRow[]>([]);
+  const [meta, setMeta] = useState<LaravelPaginated<PricingRow> | null>(null);
+  const [stats, setStats] = useState<Record<string, number> | null>(null);
+  const [vendorOptions, setVendorOptions] = useState<{ id: number; label: string }[]>([]);
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebouncedValue(searchInput, 400);
+  const [vendorFilter, setVendorFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [vendorServicesRaw, setVendorServicesRaw] = useState<Record<string, unknown>[]>([]);
-  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
-  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
-  const [pricingDialogMode, setPricingDialogMode] = useState<"create" | "edit">("create");
-  const [pricingDialogRow, setPricingDialogRow] = useState<Record<string, unknown> | null>(null);
-  
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [viewDialogRow, setViewDialogRow] = useState<PricingRow | null>(null);
-
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteDialogRow, setDeleteDialogRow] = useState<PricingRow | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const loadPricingForVendor = useCallback(async (vendorId: number, label: string) => {
-    setDetailLoading(true);
-    setError(null);
-    try {
-      const detail = await fetchAdminVendor(vendorId);
-      const v = detail.data as Record<string, unknown>;
-      setPricingRows(buildPricingRowsFromVendorDetail(v));
-      const vss = (v.vendor_services as Record<string, unknown>[] | undefined) ?? [];
-      setVendorServicesRaw(vss);
-      setPricingVendorLabel(label);
-      setPricingPage(1);
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Gagal memuat detail vendor.");
-      setPricingRows([]);
-      setVendorServicesRaw([]);
-      setPricingVendorLabel("");
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, vendorFilter, serviceFilter, statusFilter]);
+
+  const loadStats = useCallback(async () => {
     if (!authHydrated) return;
-    let cancelled = false;
-    void (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetchAdminVendors({ page: 1, perPage: VENDOR_OPTIONS_CAP });
-        const list = (res as LaravelPaginated<VendorRow>).data ?? [];
-        if (cancelled) return;
-        setVendorOptions(list);
-        if (list.length > 0) {
-          const first = list[0];
-          const id = Number(first.id);
-          if (Number.isFinite(id)) {
-            setSelectedVendorId(String(id));
-            await loadPricingForVendor(id, String(first.name ?? first.code ?? "—"));
-          }
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof ApiError ? e.message : "Gagal memuat daftar vendor.");
-          setVendorOptions([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [authHydrated, loadPricingForVendor]);
-
-  const displayVendorOptions = useMemo(() => {
-    const q = vendorPickSearch.trim().toLowerCase();
-    let list = !q
-      ? vendorOptions
-      : vendorOptions.filter(
-          (v) =>
-            String(v.name ?? "")
-              .toLowerCase()
-              .includes(q) ||
-            String(v.code ?? "")
-              .toLowerCase()
-              .includes(q)
-        );
-    if (selectedVendorId && !list.some((v) => String(v.id) === selectedVendorId)) {
-      const sel = vendorOptions.find((v) => String(v.id) === selectedVendorId);
-      if (sel) list = [sel, ...list];
-    }
-    return list;
-  }, [vendorOptions, vendorPickSearch, selectedVendorId]);
-
-  const pricingMeta = useMemo(() => {
-    const total = pricingRows.length;
-    const lastPage = Math.max(1, Math.ceil(total / PRICING_PER_PAGE));
-    const currentPage = Math.min(Math.max(1, pricingPage), lastPage);
-    const start = (currentPage - 1) * PRICING_PER_PAGE;
-    const slice = pricingRows.slice(start, start + PRICING_PER_PAGE);
-    const from = total === 0 ? null : start + 1;
-    const to = total === 0 ? null : start + slice.length;
-    return { total, lastPage, currentPage, slice, from, to };
-  }, [pricingRows, pricingPage]);
-
-  const pricingSlice = pricingMeta.slice;
-
-  const selectedVendorNumericId = selectedVendorId ? Number(selectedVendorId) : null;
-  const vendorServiceOptions = useMemo(
-    () =>
-      vendorServicesRaw.map((vs) => {
-        const st = vs.service_type as { name?: string } | undefined;
-        return {
-          id: Number(vs.id),
-          label: vendorServiceLabel(vs),
-          serviceType: st?.name,
-        };
-      }),
-    [vendorServicesRaw]
-  );
-
-  const onVendorChange = (value: string | null) => {
-    if (value == null) return;
-    setSelectedVendorId(value);
-    const row = vendorOptions.find((x) => String(x.id) === value);
-    const id = Number(value);
-    const label = row ? String(row.name ?? row.code ?? "—") : "—";
-    void loadPricingForVendor(id, label);
-  };
-
-  const handleDelete = async () => {
-    if (!deleteDialogRow?.raw?.id) return;
-    setDeleteLoading(true);
     try {
-      await deleteAdminPricing(Number(deleteDialogRow.raw.id));
-      toast.success("Tarif berhasil dihapus.");
-      setDeleteDialogOpen(false);
-      setDeleteDialogRow(null);
-      if (selectedVendorNumericId) {
-        void loadPricingForVendor(selectedVendorNumericId, pricingVendorLabel);
-      }
+      const res = await fetchAdminPricingStats();
+      setStats((res as { data: Record<string, number> }).data);
+    } catch {
+      setStats(null);
+    }
+  }, [authHydrated]);
+
+  const loadVendors = useCallback(async () => {
+    if (!authHydrated) return;
+    try {
+      const res = await fetchAdminVendors({ perPage: 500 });
+      setVendorOptions(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+        id: Number(v.id),
+        label: String(v.name ?? v.code ?? v.id),
+      })));
+    } catch {
+      setVendorOptions([]);
+    }
+  }, [authHydrated]);
+
+  const load = useCallback(async () => {
+    if (!authHydrated) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetchAdminPricings({
+        page,
+        perPage: PER_PAGE,
+        search: debouncedSearch.trim() || undefined,
+        vendor_id: vendorFilter === "all" ? undefined : vendorFilter,
+        service_category: serviceFilter === "all" ? undefined : serviceFilter,
+        status: statusFilter === "all" ? undefined : statusFilter,
+      });
+      const paginated = res as LaravelPaginated<PricingRow>;
+      setRows(paginated.data ?? []);
+      setMeta(paginated);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menghapus tarif.");
+      setError(e instanceof ApiError ? e.message : "Gagal memuat pricing.");
+      setRows([]);
+      setMeta(null);
     } finally {
-      setDeleteLoading(false);
+      setLoading(false);
+    }
+  }, [authHydrated, page, debouncedSearch, vendorFilter, serviceFilter, statusFilter]);
+
+  useEffect(() => { void loadStats(); void loadVendors(); }, [loadStats, loadVendors]);
+  useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    if (searchParams.get("create") === "1") {
+      setCreateOpen(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("create");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams]);
+
+  const deactivate = async (id: number) => {
+    try {
+      await deactivateAdminPricing(id);
+      toast.success("Pricing dinonaktifkan.");
+      void load();
+      void loadStats();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Gagal menonaktifkan pricing.");
     }
   };
 
   return (
-    <>
-      <VendorServiceDialog
-        open={serviceDialogOpen}
-        onOpenChange={setServiceDialogOpen}
-        vendorId={selectedVendorNumericId}
-        onSaved={() => {
-          const id = selectedVendorNumericId;
-          if (id != null) void loadPricingForVendor(id, pricingVendorLabel || "—");
-        }}
+    <div className={ADMIN_LIST_PAGE_CLASS}>
+      <VendorPricingCreateDialog open={createOpen} onOpenChange={setCreateOpen} onSaved={() => { void load(); void loadStats(); }} />
+
+      <AdminPageHeader
+        icon={Tags}
+        title={t("pageTitle")}
+        description={t("pageSubtitle")}
+        actions={
+          canManage ? (
+            <Button className="h-9 w-full gap-1.5 px-4 sm:w-auto" type="button" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 shrink-0" />
+              {t("addPricing")}
+            </Button>
+          ) : null
+        }
       />
-      <VendorPricingDialog
-        open={pricingDialogOpen}
-        onOpenChange={setPricingDialogOpen}
-        mode={pricingDialogMode}
-        row={pricingDialogRow}
-        vendorServiceOptions={vendorServiceOptions}
-        onSaved={() => {
-          const id = selectedVendorNumericId;
-          if (id != null) void loadPricingForVendor(id, pricingVendorLabel || "—");
-        }}
-      />
+
       {error ? (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+        <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       ) : null}
+
+      <AdminStatsCards
+        className="sm:grid-cols-2 xl:grid-cols-4"
+        cards={[
+          { key: "active", label: t("stats.active"), value: stats?.active ?? 0, icon: CheckCircle2, iconClassName: "text-emerald-700 bg-emerald-100" },
+          { key: "inactive", label: t("stats.inactive"), value: stats?.inactive ?? 0, icon: XCircle, iconClassName: "text-zinc-600 bg-zinc-100" },
+          { key: "vendors", label: t("stats.vendors"), value: stats?.vendors ?? 0, icon: Store, iconClassName: "text-sky-700 bg-sky-100" },
+          { key: "total", label: t("stats.total"), value: stats?.total ?? 0, icon: Layers, iconClassName: "text-violet-700 bg-violet-100" },
+        ]}
+      />
 
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <CardTitle>Pricing</CardTitle>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={!selectedVendorNumericId || detailLoading}
-                onClick={() => setServiceDialogOpen(true)}
-              >
-                Tambah layanan vendor
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                disabled={
-                  !selectedVendorNumericId || detailLoading || vendorServiceOptions.length === 0
-                }
-                onClick={() => {
-                  setPricingDialogMode("create");
-                  setPricingDialogRow(null);
-                  setPricingDialogOpen(true);
-                }}
-              >
-                Tambah tarif
-              </Button>
-            </div>
-          </div>
-          <CardDescription className="space-y-2 text-pretty">
-            <span className="block">
-              Harga di sistem ini disimpan per vendor: satu respons API berisi detail vendor, layanan, dan tarif.
-              Dropdown memilih vendor mana yang ingin ditinjau; tabel di bawah memuat data harga untuk vendor tersebut.
-            </span>
-            {pricingVendorLabel ? (
-              <span className="block text-foreground">
-                Menampilkan ringkasan untuk: {pricingVendorLabel}
-              </span>
-            ) : null}
-          </CardDescription>
+          <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg border border-border bg-muted/30 px-3 py-3 sm:max-w-lg">
-            <p className="text-xs font-medium text-foreground">Pilih vendor</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Cari lalu pilih vendor. Tarif diambil dari endpoint detail vendor (vendor services + pricing).
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:max-w-md">
-            <Label htmlFor="vendor-pick-search" className="text-xs text-muted-foreground">
-              Cari vendor (nama / kode)
-            </Label>
-            <Input
-              id="vendor-pick-search"
-              value={vendorPickSearch}
-              onChange={(e) => setVendorPickSearch(e.target.value)}
-              placeholder="Filter daftar di bawah…"
-              className="h-9"
-              disabled={loading || vendorOptions.length === 0}
-            />
-            <Label className="text-xs text-muted-foreground">Vendor</Label>
-            <Select
-              value={selectedVendorId}
-              onValueChange={onVendorChange}
-              disabled={loading || vendorOptions.length === 0}
-            >
-              <SelectTrigger className="h-9 w-full sm:max-w-md">
-                <SelectValue placeholder={loading ? "Memuat…" : "Pilih vendor"}>
-                  {selectedVendorId
-                    ? (() => {
-                        const sel = vendorOptions.find((v) => String(v.id) === selectedVendorId);
-                        return sel ? String(sel.name ?? sel.code ?? "—") : undefined;
-                      })()
-                    : undefined}
+          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={searchInput} onSearchChange={setSearchInput} />
+          <div className="flex flex-wrap gap-3">
+            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
+              <SelectTrigger className="h-9 w-48">
+                <SelectValue placeholder="Vendor">
+                  {vendorFilter === "all"
+                    ? t("filters.allVendor")
+                    : vendorOptions.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {displayVendorOptions.map((v) => {
-                  const id = String(v.id ?? "");
-                  return (
-                    <SelectItem key={id} value={id}>
-                      {String(v.name ?? v.code ?? "—")}
-                    </SelectItem>
-                  );
-                })}
+                <SelectItem value="all">{t("filters.allVendor")}</SelectItem>
+                {vendorOptions.map((v) => (
+                  <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            {!loading && vendorOptions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Belum ada vendor di sistem.</p>
-            ) : null}
+            <Select value={serviceFilter} onValueChange={(v) => v && setServiceFilter(v)}>
+              <SelectTrigger className="h-9 w-48">
+                <SelectValue placeholder="Service Category">
+                  {serviceFilter === "all" ? t("filters.allService") : serviceCategoryLabel(serviceFilter)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filters.allService")}</SelectItem>
+                {SERVICE_CATEGORY_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+              <SelectTrigger className="h-9 w-36">
+                <SelectValue placeholder="Status">
+                  {statusFilter === "all"
+                    ? t("filters.allStatus")
+                    : statusFilter === "active"
+                      ? t("filters.active")
+                      : t("filters.inactive")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
+                <SelectItem value="active">{t("filters.active")}</SelectItem>
+                <SelectItem value="inactive">{t("filters.inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted-foreground">Memuat…</p>
+            <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
             <>
-              {detailLoading ? (
-                <p className="text-sm text-muted-foreground">Memuat pricing…</p>
-              ) : null}
-              <div
-                className={`-mx-1 overflow-x-auto px-1 transition-opacity ${detailLoading ? "pointer-events-none opacity-50" : ""}`}
-              >
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">No</TableHead>
-                      <TableHead>Lane</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead
-                        className="text-xs"
-                        title="Tipe harga beli/jual dari sistem"
-                      >
-                        Tipe harga
-                      </TableHead>
-                      <TableHead className="min-w-48">Komponen tarif</TableHead>
-                      <TableHead className="w-16 text-right">Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pricingSlice.map((row, index) => (
-                      <TableRow key={`${row.lane}-${row.priceType}-${index}-${pricingMeta.currentPage}`}>
-                        <TableCell className="tabular-nums text-muted-foreground">
-                          {rowNumber(pricingMeta.currentPage, PRICING_PER_PAGE, index)}
-                        </TableCell>
-                        <TableCell>{row.lane}</TableCell>
-                        <TableCell>{row.service}</TableCell>
-                        <TableCell className="text-xs">{priceTypeLabel(row.priceType)}</TableCell>
-                        <TableCell className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-                          {row.detail}
-                        </TableCell>
-                        <TableCell className="text-right">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-14">{tc("table.no")}</TableHead>
+                    <TableHead>{t("columns.vendor")}</TableHead>
+                    <TableHead>{t("columns.service")}</TableHead>
+                    <TableHead>{t("columns.origin")}</TableHead>
+                    <TableHead>{t("columns.destination")}</TableHead>
+                    <TableHead>{t("columns.vehicleContainer")}</TableHead>
+                    <TableHead className="text-right">{t("columns.price")}</TableHead>
+                    <TableHead>{t("columns.status")}</TableHead>
+                    <TableHead>{t("columns.createdDate")}</TableHead>
+                    <TableHead className={actionsHeadClass}>
+                      <span className="max-md:sr-only">{tc("table.actions")}</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row, index) => (
+                    <TableRow key={String(row.id)} className="group">
+                      <TableCell className="tabular-nums text-muted-foreground">
+                        {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
+                      </TableCell>
+                      <TableCell className="font-medium">{String(row.vendor ?? "—")}</TableCell>
+                      <TableCell>{serviceCategoryLabel(String(row.service_category ?? ""))}</TableCell>
+                      <TableCell>{String(row.origin ?? "—")}</TableCell>
+                      <TableCell>{String(row.destination ?? "—")}</TableCell>
+                      <TableCell>{String(row.vehicle_container_type ?? "—")}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatIdr(row.unit_price as string)}</TableCell>
+                      <TableCell>
+                        <Badge variant={row.is_active !== false ? "default" : "secondary"}>
+                          {row.is_active !== false ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {row.created_at ? new Date(String(row.created_at)).toLocaleDateString("id-ID") : "—"}
+                      </TableCell>
+                      <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
+                        <div className="flex justify-end">
                           <DropdownMenu>
-                            <DropdownMenuTrigger
-                              className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
-                            >
+                            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}>
                               <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">{tc("actions.actionsMenu")}</span>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setViewDialogRow(row);
-                                  setViewDialogOpen(true);
-                                }}
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                Detail
+                            <DropdownMenuContent align="end" className="min-w-44">
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`${basePath}/${row.id}`)}>
+                                <Eye className="h-4 w-4" /> {tc("actions.viewDetail")}
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setPricingDialogMode("edit");
-                                  setPricingDialogRow({ ...row.raw, vendor_service_id: row.vsId });
-                                  setPricingDialogOpen(true);
-                                }}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="cursor-pointer text-destructive"
-                                onClick={() => {
-                                  setDeleteDialogRow(row);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Hapus
-                              </DropdownMenuItem>
+                              {row.is_active !== false ? (
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => void deactivate(Number(row.id))}>
+                                  {t("actions.deactivate")}
+                                </DropdownMenuItem>
+                              ) : null}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                  {pricingRows.length === 0 ? (
-                    <TableCaption className="text-xs">Tidak ada pricing untuk vendor ini.</TableCaption>
-                  ) : (
-                    <TableCaption className="text-xs">Sumber: GET /api/admin/vendors/{`{id}`}.</TableCaption>
-                  )}
-                </Table>
-              </div>
-              {pricingRows.length > PRICING_PER_PAGE ? (
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                {rows.length === 0 ? (
+                  <TableCaption className="text-xs">{t("empty")}</TableCaption>
+                ) : (
+                  <TableCaption className="text-xs">{tc("table.rowsOnPage")}</TableCaption>
+                )}
+              </Table>
+              {meta ? (
                 <PaginationBar
-                  currentPage={pricingMeta.currentPage}
-                  lastPage={pricingMeta.lastPage}
-                  total={pricingMeta.total}
-                  from={pricingMeta.from}
-                  to={pricingMeta.to}
-                  onPageChange={setPricingPage}
+                  currentPage={meta.current_page}
+                  lastPage={meta.last_page}
+                  total={meta.total}
+                  from={meta.from}
+                  to={meta.to}
+                  onPageChange={setPage}
                 />
               ) : null}
             </>
           )}
         </CardContent>
       </Card>
-
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto" showCloseButton>
-          <DialogHeader>
-            <DialogTitle>Detail Tarif Vendor</DialogTitle>
-          </DialogHeader>
-          {viewDialogRow ? (
-            <div className="grid grid-cols-3 gap-3 px-1 text-sm max-h-[65vh] overflow-y-auto">
-              <div className="text-muted-foreground">Lane</div>
-              <div className="col-span-2 font-medium">{viewDialogRow.lane}</div>
-
-              <div className="text-muted-foreground">Service</div>
-              <div className="col-span-2 font-medium">{viewDialogRow.service}</div>
-
-              <div className="text-muted-foreground">Tipe Harga</div>
-              <div className="col-span-2 font-medium">{priceTypeLabel(viewDialogRow.priceType)}</div>
-
-              <div className="text-muted-foreground">Komponen Tarif</div>
-              <div className="col-span-2 whitespace-pre-line font-medium leading-relaxed">
-                {viewDialogRow.detail}
-              </div>
-
-              <div className="text-muted-foreground">Berlaku Dari</div>
-              <div className="col-span-2 font-medium">
-                {viewDialogRow.raw?.effective_from ? String(viewDialogRow.raw.effective_from).slice(0, 10) : "—"}
-              </div>
-
-              <div className="text-muted-foreground">Berlaku S/d</div>
-              <div className="col-span-2 font-medium">
-                {viewDialogRow.raw?.effective_to ? String(viewDialogRow.raw.effective_to).slice(0, 10) : "—"}
-              </div>
-
-              <div className="text-muted-foreground">Status Aktif</div>
-              <div className="col-span-2 font-medium">
-                {viewDialogRow.raw?.is_active === false ? (
-                  <span className="text-red-600">Tidak Aktif</span>
-                ) : (
-                  <span className="text-green-600">Aktif</span>
-                )}
-              </div>
-            </div>
-          ) : null}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setViewDialogOpen(false)}>
-              Tutup
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <ConfirmDeleteDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Hapus Tarif?"
-        description={`Yakin ingin menghapus tarif untuk layanan ${deleteDialogRow?.service} (${priceTypeLabel(deleteDialogRow?.priceType ?? "")})?`}
-        loading={deleteLoading}
-        onConfirm={handleDelete}
-      />
-    </>
+    </div>
   );
 }

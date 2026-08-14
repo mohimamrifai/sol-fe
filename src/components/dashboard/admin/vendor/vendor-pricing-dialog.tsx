@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SELECT_EMPTY_VALUE, fromSelectFieldValue, toSelectFieldValue } from "@/lib/select-field";
 import { createAdminVendorPricing, updateAdminPricing, fetchAdminContainerTypes } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
@@ -213,7 +214,7 @@ export function VendorPricingDialog({
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue>{priceType === "sell" ? "Jual" : "Beli"}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="buy">Beli</SelectItem>
@@ -224,10 +225,10 @@ export function VendorPricingDialog({
           <div className="space-y-2">
             <Label>Jenis kontainer (opsional)</Label>
             <Select
-              value={containerTypeId || "__none__"}
+              value={toSelectFieldValue(containerTypeId)}
               onValueChange={(v) => {
                 if (v == null) return;
-                setContainerTypeId(v === "__none__" ? "" : v);
+                setContainerTypeId(fromSelectFieldValue(v));
               }}
             >
               <SelectTrigger className="w-full">
@@ -238,7 +239,7 @@ export function VendorPricingDialog({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">Semua / umum</SelectItem>
+                <SelectItem value={SELECT_EMPTY_VALUE}>Semua / umum</SelectItem>
                 {containerTypes.map((o) => (
                   <SelectItem key={o.id} value={String(o.id)}>
                     {o.label}

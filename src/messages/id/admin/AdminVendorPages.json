@@ -1,0 +1,151 @@
+{
+  "AdminVendorVendors": {
+    "pageTitle": "Manajemen Vendor",
+    "pageSubtitle": "Kelola data vendor, tipe layanan, dan status aktivasi.",
+    "addVendor": "Tambah Vendor",
+    "listTitle": "Daftar Vendor",
+    "searchPlaceholder": "Cari kode, nama, NPWP…",
+    "stats": {
+      "active": "Vendor Aktif",
+      "activeHint": "status active",
+      "inactive": "Vendor Nonaktif",
+      "inactiveHint": "status inactive",
+      "total": "Total Vendor",
+      "totalHint": "semua vendor",
+      "trucking": "Trucking Vendor",
+      "rail": "Rail Vendor",
+      "container": "Container Provider"
+    },
+    "columns": {
+      "code": "Vendor Code",
+      "name": "Vendor Name",
+      "type": "Vendor Type",
+      "entity": "Business Entity",
+      "status": "Status"
+    },
+    "filters": {
+      "allEntity": "Semua Entity",
+      "allType": "Semua Type",
+      "allStatus": "Semua Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "deactivate": "Nonaktifkan"
+    },
+    "empty": "Tidak ada data vendor."
+  },
+  "AdminVendorPricing": {
+    "pageTitle": "Vendor Pricing",
+    "pageSubtitle": "Kelola harga vendor per rute, layanan, dan tipe kendaraan/kontainer.",
+    "addPricing": "Add Pricing",
+    "listTitle": "Daftar Vendor Pricing",
+    "searchPlaceholder": "Cari vendor, origin, destination…",
+    "stats": {
+      "active": "Active Pricing",
+      "inactive": "Inactive Pricing",
+      "vendors": "Vendors",
+      "total": "Total Pricing"
+    },
+    "columns": {
+      "vendor": "Vendor",
+      "service": "Service",
+      "origin": "Origin",
+      "destination": "Destination",
+      "vehicleContainer": "Vehicle / Container",
+      "price": "Price",
+      "status": "Status",
+      "createdDate": "Created Date"
+    },
+    "filters": {
+      "allVendor": "Semua Vendor",
+      "allService": "Semua Service",
+      "allStatus": "Semua Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "deactivate": "Nonaktifkan"
+    },
+    "empty": "Tidak ada data pricing."
+  },
+  "AdminVendorJobOrders": {
+    "pageTitle": "Vendor Job Orders",
+    "pageSubtitle": "Pantau job order vendor dari assignment shipment hingga completion.",
+    "listTitle": "Daftar Job Order",
+    "searchPlaceholder": "Cari JO, shipment, vendor…",
+    "stats": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "joNo": "JO No",
+      "shipment": "Shipment",
+      "vendor": "Vendor",
+      "service": "Service",
+      "route": "Route",
+      "status": "Status",
+      "created": "Created"
+    },
+    "filters": {
+      "allVendor": "Semua Vendor",
+      "allStatus": "Semua Status"
+    },
+    "empty": "Tidak ada job order."
+  },
+  "AdminVendorInvoices": {
+    "pageTitle": "Vendor Invoices",
+    "pageSubtitle": "Terima, verifikasi, dan pantau invoice vendor (accounts payable).",
+    "receiveInvoice": "Receive Invoice",
+    "listTitle": "Daftar Vendor Invoice",
+    "searchPlaceholder": "Cari invoice, vendor, JO…",
+    "stats": {
+      "received": "Received",
+      "under_verification": "Under Verification",
+      "ready_for_payment": "Ready for Payment",
+      "paid": "Paid",
+      "rejected": "Rejected"
+    },
+    "columns": {
+      "invoiceNo": "Vendor Invoice No",
+      "vendor": "Vendor",
+      "invoiceDate": "Invoice Date",
+      "receiveDate": "Receive Date",
+      "total": "Total",
+      "status": "Status"
+    },
+    "filters": {
+      "allVendor": "Semua Vendor",
+      "allStatus": "Semua Status"
+    },
+    "empty": "Tidak ada invoice vendor."
+  },
+  "AdminVendorPayments": {
+    "pageTitle": "Vendor Payments",
+    "pageSubtitle": "Approval dan pencatatan pembayaran ke vendor (accounts payable).",
+    "listTitle": "Daftar Vendor Payment",
+    "searchPlaceholder": "Cari payment no, invoice, vendor…",
+    "stats": {
+      "waiting_approval": "Waiting Approval",
+      "ready_to_pay": "Ready to Pay",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "paymentNo": "Payment No",
+      "vendor": "Vendor",
+      "invoiceNo": "Invoice No",
+      "invoiceAmount": "Invoice Amt",
+      "paid": "Paid",
+      "date": "Date",
+      "status": "Status"
+    },
+    "filters": {
+      "allStatus": "Semua Status"
+    },
+    "empty": "Tidak ada payment vendor."
+  }
+}
