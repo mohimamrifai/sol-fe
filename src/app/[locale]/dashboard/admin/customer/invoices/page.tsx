@@ -64,7 +64,7 @@ import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRouter } from "@/i18n/routing";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
   AdminListFilters,
   dateParamFromFilter,
@@ -237,6 +237,7 @@ function AdminInvoiceActionsMenu({
 export default function AdminInvoicesPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = String(params?.locale ?? "id");
   const t = useTranslations("AdminInvoices");
   const tc = useTranslations("AdminCommon");
@@ -262,6 +263,15 @@ export default function AdminInvoicesPage() {
   const [invoiceDateTo, setInvoiceDateTo] = useState("");
   const [dueDateFrom, setDueDateFrom] = useState("");
   const [dueDateTo, setDueDateTo] = useState("");
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const issuedFrom = searchParams.get("issued_from");
+    const issuedTo = searchParams.get("issued_to");
+    if (status) setStatusFilter(status);
+    if (issuedFrom) setInvoiceDateFrom(issuedFrom);
+    if (issuedTo) setInvoiceDateTo(issuedTo);
+  }, [searchParams]);
 
   const invoiceStatusFilters = useMemo(
     () => [

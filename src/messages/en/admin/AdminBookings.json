@@ -19,8 +19,8 @@
     },
     "filters": {
       "submitted": "Submitted",
+      "underReview": "Under Review",
       "confirmed": "Confirmed",
-      "approved": "Approved",
       "rejected": "Rejected",
       "cancelled": "Cancelled"
     },

@@ -44,6 +44,10 @@ export async function fetchAdminRoles() {
   return apiFetch<{ data: Record<string, unknown>[] }>(`/admin/roles`, { method: "GET" });
 }
 
+export async function fetchAdminRole(id: number) {
+  return apiFetch<{ data: Record<string, unknown> }>(`/admin/roles/${id}`, { method: "GET" });
+}
+
 export async function fetchAdminPermissions() {
   return apiFetch<{ data: Record<string, unknown>[] }>(`/admin/permissions`, { method: "GET" });
 }
@@ -53,4 +57,8 @@ export async function updateAdminRolePermissions(roleId: number, permissions: st
     method: "PUT",
     body: JSON.stringify({ permissions }),
   });
+}
+
+export async function storeAdminRole(body: Record<string, unknown>) {
+  return apiFetch(`/admin/roles`, { method: "POST", body: JSON.stringify(body) });
 }

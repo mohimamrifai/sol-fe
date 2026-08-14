@@ -19,8 +19,8 @@
     },
     "filters": {
       "submitted": "Diajukan",
+      "underReview": "Under Review",
       "confirmed": "Terkonfirmasi",
-      "approved": "Disetujui",
       "rejected": "Ditolak",
       "cancelled": "Dibatalkan"
     },

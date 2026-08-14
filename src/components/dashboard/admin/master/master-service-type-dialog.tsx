@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createAdminServiceType, updateAdminServiceType } from "@/lib/admin-api";
+import { MASTER_PRICING_BASIS_OPTIONS, MASTER_SERVICE_CATEGORY_OPTIONS } from "@/lib/admin-fsd-options";
 import { ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
 import { firstLaravelError } from "@/lib/laravel-errors";
@@ -50,6 +51,8 @@ export function MasterServiceTypeDialog({
   const [transportModeId, setTransportModeId] = useState("");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [serviceCategory, setServiceCategory] = useState("rail_freight");
+  const [pricingBasis, setPricingBasis] = useState("per_trip");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,6 +66,8 @@ export function MasterServiceTypeDialog({
       setTransportModeId(String(tm?.id ?? row.transport_mode_id ?? ""));
       setName(String(row.name ?? ""));
       setCode(String(row.code ?? ""));
+      setServiceCategory(String(row.service_category ?? "rail_freight"));
+      setPricingBasis(String(row.pricing_basis ?? "per_trip"));
       setDescription(String(row.description ?? ""));
       setIsActive(row.is_active !== false);
     } else {
@@ -70,6 +75,8 @@ export function MasterServiceTypeDialog({
       setTransportModeId(first?.id != null ? String(first.id) : "");
       setName("");
       setCode("");
+      setServiceCategory("rail_freight");
+      setPricingBasis("per_trip");
       setDescription("");
       setIsActive(true);
     }
@@ -83,6 +90,8 @@ export function MasterServiceTypeDialog({
         transport_mode_id: Number(transportModeId),
         name,
         code: code.trim() || null,
+        service_category: serviceCategory,
+        pricing_basis: pricingBasis,
         description: description.trim() || null,
         is_active: isActive,
       };
@@ -123,6 +132,12 @@ export function MasterServiceTypeDialog({
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
         ) : null}
         <div className="grid gap-4 py-2">
+          {code ? (
+            <div className="space-y-2">
+              <Label>Kode</Label>
+              <Input value={code} disabled />
+            </div>
+          ) : null}
           <div className="space-y-2">
             <Label>Moda transport</Label>
             <Select
@@ -133,14 +148,7 @@ export function MasterServiceTypeDialog({
               disabled={readOnly}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih moda">
-                  {transportModeId 
-                    ? (() => {
-                        const found = transportModes.find((tm) => String(tm.id) === transportModeId);
-                        return found ? String(found.name ?? found.code ?? found.id) : transportModeId;
-                      })()
-                    : undefined}
-                </SelectValue>
+                <SelectValue placeholder="Pilih moda" />
               </SelectTrigger>
               <SelectContent>
                 {transportModes.map((tm) => (
@@ -153,42 +161,44 @@ export function MasterServiceTypeDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="st-name">Nama</Label>
-            <Input
-              id="st-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={readOnly}
-              placeholder={mode === "create" ? "Mis. FCL Export" : undefined}
-            />
+            <Input id="st-name" value={name} onChange={(e) => setName(e.target.value)} disabled={readOnly} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="st-code">Kode</Label>
-            <Input
-              id="st-code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              disabled={readOnly}
-              placeholder={mode === "create" ? "Kode (opsional)" : undefined}
-            />
+            <Label>Service Category</Label>
+            <Select value={serviceCategory} onValueChange={(v) => v && setServiceCategory(v)} disabled={readOnly}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MASTER_SERVICE_CATEGORY_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Pricing Basis</Label>
+            <Select value={pricingBasis} onValueChange={(v) => v && setPricingBasis(v)} disabled={readOnly}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MASTER_PRICING_BASIS_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="st-desc">Deskripsi</Label>
-            <Textarea
-              id="st-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={readOnly}
-              rows={3}
-              placeholder={mode === "create" ? "Penjelasan singkat layanan (opsional)" : undefined}
-            />
+            <Textarea id="st-desc" value={description} onChange={(e) => setDescription(e.target.value)} disabled={readOnly} rows={3} />
           </div>
           <div className="flex items-center gap-2">
-            <Checkbox
-              id="st-active"
-              checked={isActive}
-              onCheckedChange={(v) => setIsActive(v === true)}
-              disabled={readOnly}
-            />
+            <Checkbox id="st-active" checked={isActive} onCheckedChange={(v) => setIsActive(v === true)} disabled={readOnly} />
             <Label htmlFor="st-active" className="font-normal">
               Aktif
             </Label>
@@ -199,11 +209,7 @@ export function MasterServiceTypeDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
               Batal
             </Button>
-            <Button
-              type="button"
-              onClick={() => void save()}
-              disabled={saving || !name.trim() || !transportModeId}
-            >
+            <Button type="button" onClick={() => void save()} disabled={saving || !name.trim() || !transportModeId}>
               {saving ? "Menyimpan…" : "Simpan"}
             </Button>
           </DialogFooter>

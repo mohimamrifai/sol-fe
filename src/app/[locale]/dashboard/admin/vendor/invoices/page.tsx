@@ -144,6 +144,11 @@ export default function AdminVendorInvoicesPage() {
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
+    const status = searchParams.get("status");
+    if (status) setStatusFilter(status);
+  }, [searchParams]);
+
+  useEffect(() => {
     if (searchParams.get("receive") === "1") {
       setReceiveOpen(true);
       const url = new URL(window.location.href);

@@ -128,7 +128,7 @@ export function BookingActionsMenu({
           </>
         ) : null}
 
-        {canProcessOperations && st === "submitted" ? (
+        {canProcessOperations && (st === "submitted" || st === "under_review") ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem

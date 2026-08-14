@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -24,14 +24,19 @@ import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { MasterRowActions } from "@/components/shared/master-row-actions";
 import { MasterTableShell } from "@/components/shared/master-table-shell";
+import { useMasterPageActions } from "@/components/shared/master-page-actions";
 import { MasterActiveBadge } from "@/components/shared/master-active-badge";
 import { actionsCellClass, actionsHeadClass } from "@/components/shared/master-table-classes";
 import { STATUS_FILTER_OPTIONS } from "@/components/shared/master-filters";
+import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
 import { MasterContainerTypeDialog } from "@/components/dashboard/admin/master/master-container-type-dialog";
 import { useMasterOpenCreateFromQuery } from "@/hooks/use-master-open-create-from-query";
 import type { SimpleDialogMode } from "@/components/dashboard/admin/master/master-transport-mode-dialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
-import { Plus } from "lucide-react";
+import { CONTAINER_CATEGORY_OPTIONS } from "@/lib/admin-fsd-options";
+import { humanizeSnakeCase } from "@/lib/format-label";
+import { Box, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const PER_PAGE = 10;
 
@@ -42,9 +47,12 @@ export default function MasterContainerTypesPage() {
   const { user } = useAuthStore();
   const roles = user?.roles ?? [];
   const canManageMaster = authHydrated && (roles.includes("super_admin") || roles.includes("operations"));
+  const t = useTranslations("AdminFsdMaster.containerType");
+  const tc = useTranslations("AdminCommon");
 
   const [rows, setRows] = useState<Row[]>([]);
   const [meta, setMeta] = useState<LaravelPaginated<Row> | null>(null);
+  const [stats, setStats] = useState<Record<string, number>>({ total: 0, active: 0, inactive: 0 });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +60,7 @@ export default function MasterContainerTypesPage() {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const [containerDialogOpen, setContainerDialogOpen] = useState(false);
   const [containerDialogMode, setContainerDialogMode] = useState<SimpleDialogMode>("create");
@@ -61,23 +70,43 @@ export default function MasterContainerTypesPage() {
   const [deleteRow, setDeleteRow] = useState<Row | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const categoryFilterOptions = useMemo(
+    () => [{ value: "all", label: t("filters.allCategory") }, ...CONTAINER_CATEGORY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))],
+    [t]
+  );
+
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [debouncedSearch, statusFilter, categoryFilter]);
 
   const load = useCallback(async () => {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetchAdminContainerTypes({
-        page,
-        perPage: PER_PAGE,
-        search: debouncedSearch.trim() || undefined,
-        status: statusFilter === "all" ? undefined : statusFilter,
-      });
-      const paginated = res as LaravelPaginated<Row>;
-      setRows(paginated.data ?? []);
+      const [listRes, totalRes, activeRes, inactiveRes] = await Promise.all([
+        fetchAdminContainerTypes({
+          page,
+          perPage: PER_PAGE,
+          search: debouncedSearch.trim() || undefined,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          category: categoryFilter === "all" ? undefined : categoryFilter,
+        }),
+        fetchAdminContainerTypes({ perPage: 1 }),
+        fetchAdminContainerTypes({ perPage: 1, status: "active" }),
+        fetchAdminContainerTypes({ perPage: 1, status: "inactive" }),
+      ]);
+      const paginated = listRes as LaravelPaginated<Row>;
+      let data = paginated.data ?? [];
+      if (categoryFilter !== "all") {
+        data = data.filter((r) => String(r.category ?? "") === categoryFilter);
+      }
+      setRows(data);
       setMeta(paginated);
+      setStats({
+        total: (totalRes as LaravelPaginated<Row>).total ?? 0,
+        active: (activeRes as LaravelPaginated<Row>).total ?? 0,
+        inactive: (inactiveRes as LaravelPaginated<Row>).total ?? 0,
+      });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Gagal memuat jenis kontainer.");
       setRows([]);
@@ -85,7 +114,7 @@ export default function MasterContainerTypesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, statusFilter]);
+  }, [page, debouncedSearch, statusFilter, categoryFilter]);
 
   useEffect(() => {
     void load();
@@ -103,26 +132,33 @@ export default function MasterContainerTypesPage() {
     onOpenCreate: openCreate,
   });
 
+  useMasterPageActions(
+    useMemo(
+      () =>
+        canManageMaster ? (
+          <Button type="button" className="gap-1.5" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
+            {t("add")}
+          </Button>
+        ) : null,
+      [canManageMaster, openCreate, t]
+    )
+  );
+
   const toolbar = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-      <div className="min-w-0 flex-1">
-        <TableToolbar
-          searchPlaceholder="Cari nama atau ukuran…"
-          searchValue={searchInput}
-          onSearchChange={setSearchInput}
-          filterLabel="Status"
-          filterValue={statusFilter}
-          onFilterChange={setStatusFilter}
-          filterOptions={STATUS_FILTER_OPTIONS}
-        />
-      </div>
-      {canManageMaster ? (
-        <Button type="button" className="shrink-0 gap-1.5" onClick={openCreate}>
-          <Plus className="h-4 w-4" />
-          Tambah jenis kontainer
-        </Button>
-      ) : null}
-    </div>
+    <TableToolbar
+      searchPlaceholder={t("search")}
+      searchValue={searchInput}
+      onSearchChange={setSearchInput}
+      filterLabel={t("filters.category")}
+      filterValue={categoryFilter}
+      onFilterChange={setCategoryFilter}
+      filterOptions={categoryFilterOptions}
+      filter2Label={tc("filters.status")}
+      filter2Value={statusFilter}
+      onFilter2Change={setStatusFilter}
+      filter2Options={STATUS_FILTER_OPTIONS}
+    />
   );
 
   const handleDelete = async () => {
@@ -130,7 +166,7 @@ export default function MasterContainerTypesPage() {
     setDeleteLoading(true);
     try {
       await deleteAdminContainerType(Number(deleteRow.id));
-      toast.success("Jenis kontainer berhasil dihapus.");
+      toast.success(t("deleted"));
       setDeleteOpen(false);
       setDeleteRow(null);
       await load();
@@ -147,22 +183,30 @@ export default function MasterContainerTypesPage() {
         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
       ) : null}
 
-      <MasterTableShell
-        title="Daftar Jenis Kontainer"
-        description="Tipe kontainer untuk booking (ukuran & status)."
-        loading={loading}
-        toolbar={toolbar}
-      >
+      <AdminStatsCards
+        className="sm:grid-cols-3"
+        cards={[
+          { key: "total", label: t("stats.total"), value: stats.total, icon: Box, iconClassName: "text-zinc-700 bg-zinc-100" },
+          { key: "active", label: t("stats.active"), value: stats.active, icon: Box, iconClassName: "text-emerald-700 bg-emerald-100" },
+          { key: "inactive", label: t("stats.inactive"), value: stats.inactive, icon: Box, iconClassName: "text-red-700 bg-red-100" },
+        ]}
+      />
+
+      <MasterTableShell title={t("listTitle")} description={t("search")} loading={loading} toolbar={toolbar}>
         <div className="overflow-x-auto -mx-1 px-1">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-14">No</TableHead>
-                <TableHead className="min-w-[120px]">Nama</TableHead>
-                <TableHead>Ukuran</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-14">{tc("table.no")}</TableHead>
+                <TableHead>{t("columns.code")}</TableHead>
+                <TableHead>{t("columns.name")}</TableHead>
+                <TableHead>{t("columns.size")}</TableHead>
+                <TableHead>{t("columns.category")}</TableHead>
+                <TableHead>{t("columns.maxPayload")}</TableHead>
+                <TableHead>{t("columns.capacity")}</TableHead>
+                <TableHead>{tc("table.status")}</TableHead>
                 <TableHead className={actionsHeadClass}>
-                  <span className="max-md:sr-only">Aksi</span>
+                  <span className="max-md:sr-only">{tc("table.actions")}</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -175,8 +219,12 @@ export default function MasterContainerTypesPage() {
                     <TableCell className="tabular-nums text-muted-foreground">
                       {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
                     </TableCell>
+                    <TableCell className="font-mono text-xs">{String(c.code ?? "—")}</TableCell>
                     <TableCell className="font-medium">{String(c.name ?? "")}</TableCell>
                     <TableCell className="font-mono text-xs">{String(c.size ?? "—")}</TableCell>
+                    <TableCell>{CONTAINER_CATEGORY_OPTIONS.find((o) => o.value === String(c.category ?? ""))?.label ?? humanizeSnakeCase(String(c.category ?? ""))}</TableCell>
+                    <TableCell className="tabular-nums">{String(c.capacity_weight ?? "—")}</TableCell>
+                    <TableCell className="tabular-nums">{String(c.capacity_cbm ?? "—")}</TableCell>
                     <TableCell>
                       <MasterActiveBadge active={active} />
                     </TableCell>
@@ -190,15 +238,23 @@ export default function MasterContainerTypesPage() {
                             setContainerDialogMode("view");
                             setContainerDialogOpen(true);
                           }}
-                          onEdit={canManageMaster ? () => {
-                            setContainerDialogRow(c);
-                            setContainerDialogMode("edit");
-                            setContainerDialogOpen(true);
-                          } : undefined}
-                          onDelete={canManageMaster ? () => {
-                            setDeleteRow(c);
-                            setDeleteOpen(true);
-                          } : undefined}
+                          onEdit={
+                            canManageMaster
+                              ? () => {
+                                  setContainerDialogRow(c);
+                                  setContainerDialogMode("edit");
+                                  setContainerDialogOpen(true);
+                                }
+                              : undefined
+                          }
+                          onDelete={
+                            canManageMaster
+                              ? () => {
+                                  setDeleteRow(c);
+                                  setDeleteOpen(true);
+                                }
+                              : undefined
+                          }
                         />
                       </div>
                     </TableCell>
@@ -207,9 +263,9 @@ export default function MasterContainerTypesPage() {
               })}
             </TableBody>
             {rows.length === 0 ? (
-              <TableCaption className="text-xs">Tidak ada data jenis kontainer.</TableCaption>
+              <TableCaption className="text-xs">{tc("table.empty")}</TableCaption>
             ) : (
-              <TableCaption className="text-xs">Baris pada halaman ini.</TableCaption>
+              <TableCaption className="text-xs">{tc("table.empty")}</TableCaption>
             )}
           </Table>
         </div>
@@ -236,8 +292,8 @@ export default function MasterContainerTypesPage() {
       <ConfirmDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Hapus jenis kontainer?"
-        description={`Yakin hapus "${String(deleteRow?.name ?? "")}"?`}
+        title={t("deleteTitle")}
+        description={t("deleteDesc")}
         loading={deleteLoading}
         onConfirm={handleDelete}
       />

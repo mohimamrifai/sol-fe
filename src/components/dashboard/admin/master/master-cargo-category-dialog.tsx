@@ -42,6 +42,7 @@ export function MasterCargoCategoryDialog({
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
+  const [pricingMultiplier, setPricingMultiplier] = useState("1");
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +55,13 @@ export function MasterCargoCategoryDialog({
       setCode(String(row.code ?? ""));
       setDescription(String(row.description ?? ""));
       setIsActive(row.is_active !== false);
+      setPricingMultiplier(String(row.pricing_multiplier ?? "1"));
     } else {
       setName("");
       setCode("");
       setDescription("");
       setIsActive(true);
+      setPricingMultiplier("1");
     }
   }, [open, mode, row]);
 
@@ -70,6 +73,7 @@ export function MasterCargoCategoryDialog({
         name,
         code: code.trim() || null,
         description: description.trim() || null,
+        pricing_multiplier: pricingMultiplier ? Number(pricingMultiplier) : 1,
         is_active: isActive,
       };
       if (mode === "create") {
@@ -139,6 +143,18 @@ export function MasterCargoCategoryDialog({
               disabled={readOnly}
               placeholder={mode === "create" ? "Keterangan kategori kargo…" : undefined}
               className="min-h-[100px]"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cat-multiplier">Pricing Multiplier</Label>
+            <Input
+              id="cat-multiplier"
+              type="number"
+              min="0"
+              step="0.01"
+              value={pricingMultiplier}
+              onChange={(e) => setPricingMultiplier(e.target.value)}
+              disabled={readOnly}
             />
           </div>
           <div className="flex items-center gap-2">

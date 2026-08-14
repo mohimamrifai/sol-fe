@@ -15,7 +15,7 @@ import {
   BarChart3,
   ClipboardList,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
@@ -36,10 +36,11 @@ import {
 import {
   adminDashboardBookingLink,
   adminDashboardShipmentLink,
+  adminDashboardSummaryLink,
 } from "@/lib/admin-dashboard-links";
 import { cn } from "@/lib/utils";
 
-const BOOKING_STATUS_KEYS = ["draft", "submitted", "under_review", "approved", "rejected"] as const;
+const BOOKING_STATUS_KEYS = ["draft", "submitted", "under_review", "confirmed", "rejected"] as const;
 const SHIPMENT_STATUS_KEYS = [
   "planning",
   "ready_operation",
@@ -172,19 +173,10 @@ export function DashboardSuperAdmin({
     ].map((card) => ({
       ...card,
       onClick: () => {
-        const links: Record<string, string> = {
-          totalCustomers: "/dashboard/admin/customer/customers",
-          activeShipments: "/dashboard/admin/customer/shipments",
-          bookingsToday: "/dashboard/admin/customer/bookings",
-          revenueThisMonth: "/dashboard/admin/customer/invoices",
-          outstandingReceivable: "/dashboard/admin/customer/invoices",
-          outstandingPayable: "/dashboard/admin/vendor/invoices",
-        };
-        const href = links[card.key];
-        if (href) router.push(href);
+        router.push(adminDashboardSummaryLink(card.key, filters.businessDate));
       },
     }));
-  }, [summary, t, router]);
+  }, [summary, t, router, filters.businessDate]);
 
   const bookingItems = BOOKING_STATUS_KEYS.map((key) => ({
     key,
@@ -317,7 +309,6 @@ export function DashboardSuperAdmin({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("sections.containerSummary")}</CardTitle>
-            <CardDescription>Container asset registry akan aktif di Fase 4.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {containers ? (

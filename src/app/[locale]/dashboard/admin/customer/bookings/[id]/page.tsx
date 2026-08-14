@@ -91,7 +91,7 @@ export default function AdminBookingDetailPage() {
         },
       });
     }
-    if (st === "submitted") {
+    if (st === "submitted" || st === "under_review") {
       actions.push({
         label: t("actions.confirm"),
         onClick: () =>

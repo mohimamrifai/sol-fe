@@ -66,6 +66,8 @@ export type ListQueryParams = {
   city?: string;
   /** Users list — location access filter (id) */
   locationId?: number;
+  /** Shipments list — only non-completed/cancelled (`1`) */
+  active?: string;
 };
 
 export function buildListQuery(params?: ListQueryParams): string {
@@ -133,6 +135,8 @@ export function buildListQuery(params?: ListQueryParams): string {
   const ct = params?.city?.trim();
   if (ct) q.set("city", ct);
   if (params?.locationId != null) q.set("location_id", String(params.locationId));
+  const active = params?.active?.trim();
+  if (active) q.set("active", active);
   const str = q.toString();
   return str ? `?${str}` : "";
 }

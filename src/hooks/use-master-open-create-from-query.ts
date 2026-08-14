@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "@/i18n/routing";
 
 /**
  * Opens the local "create" dialog when the URL contains `?create=1`, then strips the query.
- * Used with the "Tambah Master Data" dropdown in MasterLayoutShell.
  */
 export function useMasterOpenCreateFromQuery(opts: {
   canManage: boolean;

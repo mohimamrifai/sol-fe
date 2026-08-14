@@ -1,0 +1,500 @@
+{
+  "AdminFsdContainers": {
+    "pageTitle": "Container Perusahaan",
+    "pageSubtitle": "Kelola container milik perusahaan dan pantau utilisasi.",
+    "addContainer": "Tambah Container",
+    "createSuccess": "Container berhasil dibuat.",
+    "updateSuccess": "Container diperbarui.",
+    "listTitle": "Daftar Container",
+    "searchPlaceholder": "Cari nomor container…",
+    "empty": "Tidak ada data container.",
+    "detailSubtitle": "Detail container dan assignment aktif.",
+    "movementTitle": "Container Movement",
+    "movementSubtitle": "Log pergerakan container (read-only).",
+    "movementListTitle": "Movement Log",
+    "stats": {
+      "company": "Container Perusahaan",
+      "vendor": "Container Vendor",
+      "available": "Available",
+      "reserved": "Reserved",
+      "inTransit": "In Transit",
+      "maintenance": "Maintenance",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "ownership": "Ownership",
+      "allOwnership": "Semua Ownership",
+      "company": "Company",
+      "vendor": "Vendor",
+      "allType": "Semua Tipe",
+      "allYard": "Semua Yard",
+      "allVendor": "Semua Vendor",
+      "allContainer": "Semua Container"
+    },
+    "columns": {
+      "containerNo": "Container No",
+      "type": "Tipe",
+      "ownership": "Ownership",
+      "yard": "Yard",
+      "utilization": "Utilisasi",
+      "shipment": "Shipment",
+      "customer": "Customer"
+    },
+    "fields": {
+      "manufactureYear": "Tahun Manufacture",
+      "currentYard": "Yard Saat Ini",
+      "maxPayload": "Max Payload (kg)",
+      "maxCapacity": "Max Capacity (CBM)",
+      "remark": "Remark"
+    },
+    "detail": {
+      "general": "Informasi Umum",
+      "assignment": "Assignment Aktif",
+      "noAssignment": "Tidak ada shipment aktif.",
+      "utilization": "Utilisasi",
+      "fclDedicated": "Dedicated untuk satu shipment FCL.",
+      "maintenance": "Riwayat Maintenance",
+      "movements": "Riwayat Movement"
+    },
+    "movement": {
+      "occurredAt": "Waktu",
+      "activity": "Aktivitas",
+      "route": "Lokasi",
+      "createdBy": "Oleh"
+    }
+  },
+  "AdminFsdOperations": {
+    "listTitle": "Daftar Task Operasi",
+    "searchPlaceholder": "Cari shipment, booking, customer…",
+    "empty": "Tidak ada task operasi.",
+    "stats": {
+      "waiting": "Waiting",
+      "inProgress": "In Progress",
+      "completedToday": "Completed Today",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "filters": {
+      "allVendor": "Semua Vendor",
+      "allOrigin": "Semua Origin"
+    },
+    "columns": {
+      "shipment": "Shipment",
+      "booking": "Booking",
+      "customer": "Customer",
+      "plannedDate": "Planned Date",
+      "vendor": "Vendor"
+    },
+    "actions": {
+      "start": "Start",
+      "complete": "Complete",
+      "started": "Operasi dimulai.",
+      "completed": "Operasi selesai.",
+      "remarkSaved": "Remark disimpan.",
+      "uploadDocument": "Upload Dokumen",
+      "documentUploaded": "Dokumen diunggah."
+    },
+    "detail": {
+      "taskInfo": "Informasi Task",
+      "shipmentInfo": "Informasi Shipment",
+      "pickupInfo": "Informasi Pickup/Delivery",
+      "cargoInfo": "Informasi Cargo",
+      "checklist": "Checklist",
+      "vendorJobOrder": "Vendor Job Order",
+      "remark": "Remark",
+      "documents": "Dokumen",
+      "noDocuments": "Belum ada dokumen.",
+      "actualAt": "Actual At"
+    },
+    "pages": {
+      "pickup": "Pick Up",
+      "pickupDesc": "Task pick up barang dari customer.",
+      "gateInOrigin": "Gate In Origin",
+      "gateInOriginDesc": "Task gate in di origin yard/station.",
+      "loading": "Loading",
+      "loadingDesc": "Task loading container ke kereta.",
+      "trainDeparture": "Train Departure",
+      "trainDepartureDesc": "Task keberangkatan kereta.",
+      "trainArrival": "Train Arrival",
+      "trainArrivalDesc": "Task kedatangan kereta.",
+      "gateOutDestination": "Gate Out Destination",
+      "gateOutDestinationDesc": "Task gate out di destination.",
+      "delivery": "Delivery",
+      "deliveryDesc": "Task delivery ke customer.",
+      "proofOfDelivery": "Proof of Delivery",
+      "proofOfDeliveryDesc": "Task konfirmasi POD."
+    },
+    "pod": {
+      "title": "Proof of Delivery",
+      "description": "Kelola POD shipment door-to-door.",
+      "search": "Cari Shipment No, Customer, POD No…",
+      "signedPodRequired": "Signed POD wajib diunggah.",
+      "submitted": "POD berhasil disubmit.",
+      "verified": "POD berhasil diverifikasi.",
+      "rejected": "POD ditolak.",
+      "stats": {
+        "waiting": "Waiting POD",
+        "received": "POD Received",
+        "verified": "POD Verified",
+        "rejected": "Rejected"
+      },
+      "filters": {
+        "podDateFrom": "POD Date From",
+        "podDateTo": "POD Date To"
+      },
+      "columns": {
+        "shipmentNo": "Shipment No",
+        "customer": "Customer",
+        "deliveryDate": "Delivery Date",
+        "podDate": "POD Date"
+      },
+      "status": {
+        "waiting_pod": "Waiting POD",
+        "received": "Received",
+        "verified": "Verified",
+        "rejected": "Rejected"
+      },
+      "sections": {
+        "shipment": "Shipment Information",
+        "podInfo": "Proof of Delivery Information",
+        "verification": "Verification",
+        "activityLog": "Activity Log"
+      },
+      "fields": {
+        "podNumber": "POD Number",
+        "serviceType": "Service Type",
+        "coverage": "Shipment Coverage",
+        "origin": "Origin",
+        "destination": "Destination",
+        "receiverName": "Receiver Name",
+        "receiverPosition": "Receiver Position",
+        "receivedAt": "Receive Date & Time",
+        "remark": "Remark",
+        "signedPod": "Signed POD",
+        "deliveryPhoto": "Delivery Photo",
+        "viewSignedPod": "Lihat Signed POD",
+        "verificationStatus": "Verification Status",
+        "verifiedBy": "Verified By",
+        "verifiedAt": "Verified Date",
+        "verificationNotes": "Verification Notes"
+      },
+      "actions": {
+        "submit": "Submit POD",
+        "verify": "Verify POD",
+        "reject": "Reject"
+      }
+    }
+  },
+  "AdminFsdMaster": {
+    "route": {
+      "listTitle": "Daftar Route",
+      "search": "Cari route…",
+      "add": "Tambah Route",
+      "edit": "Edit Route",
+      "saved": "Route disimpan.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive", "door": "Door Services" },
+      "columns": { "code": "Kode", "origin": "Origin", "destination": "Destination", "distance": "Jarak", "transitDays": "Transit Days" }
+    },
+    "station": {
+      "listTitle": "Daftar Station",
+      "search": "Cari station…",
+      "add": "Tambah Station",
+      "edit": "Edit Station",
+      "saved": "Station disimpan.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Kode", "name": "Nama", "city": "Kota" }
+    },
+    "yard": {
+      "listTitle": "Daftar Yard",
+      "search": "Cari yard…",
+      "add": "Tambah Yard",
+      "edit": "Edit Yard",
+      "saved": "Yard disimpan.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Kode", "name": "Nama", "type": "Tipe Yard" }
+    },
+    "additionalCharge": {
+      "listTitle": "Additional Charges",
+      "search": "Cari charge…",
+      "add": "Tambah Charge",
+      "edit": "Edit Charge",
+      "saved": "Additional charge disimpan.",
+      "deactivated": "Additional charge dinonaktifkan.",
+      "deactivate": "Inactive",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Charge Code", "name": "Charge Name", "category": "Charge Category", "pricingBasis": "Pricing Basis" },
+      "filters": { "category": "Charge Category" },
+      "fields": { "description": "Description" },
+      "detail": { "general": "General Information", "activityLog": "Activity Log" },
+      "categories": {
+        "handling": "Handling",
+        "storage": "Storage",
+        "documentation": "Documentation",
+        "container": "Container",
+        "trucking": "Trucking",
+        "rail": "Rail",
+        "other": "Other"
+      },
+      "pricingBasis": {
+        "per_shipment": "Per Shipment",
+        "per_container": "Per Container",
+        "per_trip": "Per Trip",
+        "per_ton": "Per Ton",
+        "per_kg": "Per Kg",
+        "per_cbm": "Per CBM",
+        "per_day": "Per Day",
+        "per_hour": "Per Hour",
+        "per_seal": "Per Seal",
+        "per_document": "Per Document"
+      }
+    },
+    "customerPricing": {
+      "listTitle": "Customer Pricing",
+      "search": "Cari customer atau rute…",
+      "add": "Tambah Pricing",
+      "edit": "Edit Pricing",
+      "saved": "Customer pricing disimpan.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive", "customers": "Customers" },
+      "columns": { "customer": "Customer", "route": "Route", "service": "Service", "rate": "Rate" },
+      "additionalCharges": "Additional Charges",
+      "addCharge": "Tambah Charge",
+      "noCharges": "Belum ada additional charge.",
+      "chargeName": "Charge",
+      "chargeFixed": "Fixed",
+      "chargePercentage": "Percentage",
+      "chargeAmount": "Amount"
+    },
+    "trainSchedule": {
+      "listTitle": "Daftar Train Schedule",
+      "search": "Cari nomor kereta…",
+      "add": "Tambah Train Schedule",
+      "edit": "Edit Train Schedule",
+      "saved": "Train schedule disimpan.",
+      "cancelled": "Train schedule dibatalkan.",
+      "cancelSchedule": "Batalkan Schedule",
+      "stats": {
+        "total": "Total Schedule",
+        "upcoming": "Upcoming",
+        "departed": "Departed",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "filters": {
+        "businessEntity": "Business Entity",
+        "route": "Route",
+        "allRoutes": "Semua Route",
+        "departureFrom": "Departure From",
+        "departureTo": "Departure To"
+      },
+      "columns": {
+        "trainNo": "Train No",
+        "route": "Route",
+        "departure": "Departure",
+        "eta": "ETA",
+        "assignedShipments": "Assigned Shipment"
+      },
+      "fields": {
+        "businessEntity": "Business Entity",
+        "trainNumber": "Train Number",
+        "route": "Route",
+        "departure": "Departure Date & Time",
+        "eta": "Estimated Arrival",
+        "maxContainers": "Maximum Container",
+        "remark": "Remark"
+      },
+      "detail": {
+        "general": "General Information",
+        "shipments": "Assigned Shipment",
+        "containers": "Assigned Container",
+        "shipmentNo": "Shipment No",
+        "customer": "Customer",
+        "service": "Service",
+        "container": "Container",
+        "containerNo": "Container No",
+        "type": "Type"
+      }
+    },
+    "containerType": {
+      "listTitle": "Daftar Container Type",
+      "search": "Cari kode atau nama…",
+      "add": "Tambah Container Type",
+      "deleted": "Container type dihapus.",
+      "deleteTitle": "Hapus container type?",
+      "deleteDesc": "Tindakan ini tidak dapat dibatalkan.",
+      "stats": { "total": "Total Container Type", "active": "Active Type", "inactive": "Inactive Type" },
+      "filters": { "allCategory": "Semua Kategori", "category": "Kategori" },
+      "columns": {
+        "code": "Type Code",
+        "name": "Container Type",
+        "size": "Size",
+        "category": "Category",
+        "maxPayload": "Max Payload",
+        "capacity": "Capacity (CBM)"
+      }
+    },
+    "serviceType": {
+      "listTitle": "Daftar Service Type",
+      "search": "Cari kode atau nama…",
+      "add": "Tambah Service Type",
+      "deleted": "Service type dihapus.",
+      "deleteTitle": "Hapus service type?",
+      "deleteDesc": "Tindakan ini tidak dapat dibatalkan.",
+      "stats": { "total": "Total Service Type", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Service Code", "name": "Service Name", "category": "Service Category" }
+    }
+  },
+  "AdminFsdReports": {
+    "exportCsv": "Export CSV",
+    "exportExcel": "Export Excel",
+    "exportPdf": "Export PDF",
+    "reportData": "Report Data",
+    "allCustomer": "Semua Customer",
+    "allService": "Semua Service",
+    "allOwnership": "Semua Ownership",
+    "allVendor": "Semua Vendor",
+    "shipment": {
+      "title": "Shipment Report",
+      "subtitle": "Laporan shipment dengan filter dan export CSV.",
+      "columns": { "shipmentNo": "Shipment No", "route": "Route", "service": "Service" }
+    },
+    "booking": {
+      "title": "Booking Report",
+      "subtitle": "Laporan booking dengan filter dan export CSV.",
+      "columns": { "bookingNo": "Booking No", "route": "Route", "service": "Service" }
+    },
+    "customerInvoice": {
+      "title": "Customer Invoice Report",
+      "subtitle": "Laporan invoice customer dengan filter dan export CSV.",
+      "columns": { "invoiceNo": "Invoice No", "shipment": "Shipment", "issuedDate": "Issued Date", "amount": "Amount" }
+    },
+    "customerPayment": {
+      "title": "Customer Payment Report",
+      "subtitle": "Laporan payment customer dengan filter dan export CSV.",
+      "columns": { "paymentNo": "Payment No", "invoice": "Invoice", "amount": "Amount", "method": "Method" }
+    },
+    "container": {
+      "title": "Container Report",
+      "subtitle": "Laporan container dengan filter dan export CSV.",
+      "columns": { "containerNo": "Container No", "type": "Type", "ownership": "Ownership", "yard": "Yard" }
+    }
+  },
+  "AdminFsdSettings": {
+    "profile": {
+      "title": "Company Profile",
+      "subtitle": "Profil admin internal dan ubah password.",
+      "section": "Profil",
+      "name": "Nama",
+      "phone": "Telepon",
+      "changePassword": "Ubah Password",
+      "currentPassword": "Password Saat Ini",
+      "newPassword": "Password Baru",
+      "confirmPassword": "Konfirmasi Password",
+      "saved": "Profil diperbarui.",
+      "passwordSaved": "Password berhasil diubah.",
+      "accountSection": "Informasi Akun",
+      "accessSection": "Informasi Akses",
+      "role": "Role",
+      "lastLogin": "Login Terakhir",
+      "createdDate": "Tanggal Dibuat",
+      "noAccess": "Belum ada feature access."
+    },
+    "system": {
+      "title": "System Configuration",
+      "subtitle": "Pengaturan sistem yang dikelompokkan per kategori.",
+      "restricted": "Hanya super admin yang dapat mengelola system configuration.",
+      "saved": "System settings diperbarui.",
+      "testEmail": "Test Email Configuration",
+      "testEmailRecipient": "Email Penerima Test",
+      "testingEmail": "Mengirim…",
+      "testEmailSuccess": "Email test berhasil dikirim.",
+      "testEmailError": "Gagal mengirim email test."
+    },
+    "activityLog": {
+      "title": "Activity Log",
+      "empty": "Belum ada aktivitas."
+    },
+    "numbering": {
+      "title": "Numbering Format",
+      "subtitle": "Konfigurasi format penomoran dokumen.",
+      "listTitle": "Daftar Format",
+      "editTitle": "Edit Format",
+      "selectHint": "Pilih format dari daftar untuk mengedit.",
+      "preview": "Preview",
+      "lastRunningNumber": "Last Running Number",
+      "saved": "Numbering format diperbarui.",
+      "columns": {
+        "type": "Document Type",
+        "preview": "Preview",
+        "prefix": "Prefix",
+        "runningDigits": "Running Digit",
+        "reset": "Reset",
+        "lastNumber": "Last Number"
+      }
+    },
+    "users": {
+      "title": "Pengguna Internal",
+      "listTitle": "Daftar Pengguna",
+      "add": "Tambah Pengguna",
+      "edit": "Edit Pengguna",
+      "search": "Cari nama atau email…",
+      "restricted": "Hanya super admin yang dapat mengelola pengguna internal.",
+      "loadError": "Gagal memuat pengguna.",
+      "saveError": "Gagal menyimpan pengguna.",
+      "created": "Pengguna berhasil ditambahkan.",
+      "updated": "Pengguna berhasil diperbarui.",
+      "statusUpdated": "Status akun {name} berhasil diubah.",
+      "statusError": "Gagal mengubah status akun.",
+      "selfStatusError": "Anda tidak dapat mengubah status akun Anda sendiri.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "columns": {
+        "name": "Nama Lengkap",
+        "email": "Email",
+        "role": "Department / Role",
+        "lastLogin": "Last Login"
+      },
+      "fields": {
+        "name": "Nama Lengkap",
+        "email": "Email",
+        "phone": "Nomor HP",
+        "role": "Role",
+        "status": "Status Pengguna",
+        "password": "Temporary Password",
+        "passwordOptional": "Temporary Password (kosongkan jika tidak diubah)",
+        "featureAccess": "Feature Access"
+      }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "subtitle": "Kelola role dan permission menu untuk pengguna internal.",
+      "listTitle": "Daftar Role",
+      "add": "Tambah Role",
+      "search": "Cari nama role…",
+      "loadError": "Gagal memuat role.",
+      "saveError": "Gagal menyimpan role.",
+      "created": "Role berhasil dibuat.",
+      "permissionsSaved": "Permission role diperbarui.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "stats": { "total": "Total Roles", "active": "Active Roles", "inactive": "Inactive Roles" },
+      "columns": {
+        "name": "Role Name",
+        "description": "Description",
+        "totalUsers": "Total Users"
+      },
+      "fields": {
+        "name": "Role Name",
+        "description": "Description"
+      },
+      "activityLog": "Activity Log",
+      "matrix": {
+        "menu": "Menu",
+        "view": "View",
+        "create": "Create",
+        "edit": "Edit",
+        "approve": "Approve",
+        "export": "Export"
+      }
+    }
+  }
+}

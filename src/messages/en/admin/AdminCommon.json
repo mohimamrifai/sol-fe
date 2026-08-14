@@ -64,6 +64,7 @@
       "booking": {
         "draft": "Draft",
         "submitted": "Submitted",
+        "under_review": "Under Review",
         "approved": "Confirmed",
         "confirmed": "Confirmed",
         "rejected": "Rejected",

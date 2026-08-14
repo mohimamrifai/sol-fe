@@ -64,6 +64,7 @@
       "booking": {
         "draft": "Draft",
         "submitted": "Diajukan",
+        "under_review": "Under Review",
         "approved": "Terkonfirmasi",
         "confirmed": "Terkonfirmasi",
         "rejected": "Ditolak",

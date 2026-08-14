@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
@@ -106,9 +106,14 @@ function NavGroup({
 }) {
   const groupActive = group.items.some((item) => item.url === bestMatchUrl);
   const groupLabel = t(`groups.${group.groupKey}` as Parameters<typeof t>[0]);
+  const [open, setOpen] = useState(groupActive);
+
+  useEffect(() => {
+    if (groupActive) setOpen(true);
+  }, [groupActive]);
 
   return (
-    <Collapsible defaultOpen={groupActive} className="group/collapsible">
+    <Collapsible open={open} onOpenChange={setOpen} className="group/collapsible">
       <SidebarMenuItem>
         <CollapsibleTrigger
           className={cn(

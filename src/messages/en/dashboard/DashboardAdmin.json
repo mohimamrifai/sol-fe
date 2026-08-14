@@ -33,7 +33,7 @@
       "draft": "Draft",
       "submitted": "Submitted",
       "under_review": "Under Review",
-      "approved": "Approved",
+      "confirmed": "Confirmed",
       "rejected": "Rejected"
     },
     "shipmentStatus": {

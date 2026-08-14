@@ -6,7 +6,7 @@ import {
   updateAdminShipment,
   updateAdminShipmentTracking,
   addAdminShipmentContainer,
-  updateAdminContainer,
+  updateAdminShipmentContainer,
   addAdminContainerRack,
   updateAdminRack,
   addAdminShipmentItem,
@@ -227,7 +227,7 @@ export function useShipmentDetail(shipmentId: number) {
         await addAdminShipmentContainer(shipmentId, payload);
         toast.success("Kontainer berhasil ditambahkan.");
       } else if (contRow?.id != null) {
-        await updateAdminContainer(Number(contRow.id), payload);
+        await updateAdminShipmentContainer(Number(contRow.id), payload);
         toast.success("Kontainer berhasil diperbarui.");
       }
       setContOpen(false);

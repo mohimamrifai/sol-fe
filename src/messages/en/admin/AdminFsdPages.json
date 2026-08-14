@@ -1,0 +1,500 @@
+{
+  "AdminFsdContainers": {
+    "pageTitle": "Company Containers",
+    "pageSubtitle": "Manage company-owned containers and monitor utilization.",
+    "addContainer": "Add Container",
+    "createSuccess": "Container created successfully.",
+    "updateSuccess": "Container updated.",
+    "listTitle": "Container List",
+    "searchPlaceholder": "Search container number…",
+    "empty": "No container data.",
+    "detailSubtitle": "Container detail and active assignment.",
+    "movementTitle": "Container Movement",
+    "movementSubtitle": "Container movement log (read-only).",
+    "movementListTitle": "Movement Log",
+    "stats": {
+      "company": "Company Containers",
+      "vendor": "Vendor Containers",
+      "available": "Available",
+      "reserved": "Reserved",
+      "inTransit": "In Transit",
+      "maintenance": "Maintenance",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "ownership": "Ownership",
+      "allOwnership": "All Ownership",
+      "company": "Company",
+      "vendor": "Vendor",
+      "allType": "All Types",
+      "allYard": "All Yards",
+      "allVendor": "All Vendors",
+      "allContainer": "All Containers"
+    },
+    "columns": {
+      "containerNo": "Container No",
+      "type": "Type",
+      "ownership": "Ownership",
+      "yard": "Yard",
+      "utilization": "Utilization",
+      "shipment": "Shipment",
+      "customer": "Customer"
+    },
+    "fields": {
+      "manufactureYear": "Manufacture Year",
+      "currentYard": "Current Yard",
+      "maxPayload": "Max Payload (kg)",
+      "maxCapacity": "Max Capacity (CBM)",
+      "remark": "Remark"
+    },
+    "detail": {
+      "general": "General Information",
+      "assignment": "Active Assignment",
+      "noAssignment": "No active shipment.",
+      "utilization": "Utilization",
+      "fclDedicated": "Dedicated to a single FCL shipment.",
+      "maintenance": "Maintenance History",
+      "movements": "Movement History"
+    },
+    "movement": {
+      "occurredAt": "Occurred At",
+      "activity": "Activity",
+      "route": "Location",
+      "createdBy": "By"
+    }
+  },
+  "AdminFsdOperations": {
+    "listTitle": "Operation Task List",
+    "searchPlaceholder": "Search shipment, booking, customer…",
+    "empty": "No operation tasks.",
+    "stats": {
+      "waiting": "Waiting",
+      "inProgress": "In Progress",
+      "completedToday": "Completed Today",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "filters": {
+      "allVendor": "All Vendors",
+      "allOrigin": "All Origins"
+    },
+    "columns": {
+      "shipment": "Shipment",
+      "booking": "Booking",
+      "customer": "Customer",
+      "plannedDate": "Planned Date",
+      "vendor": "Vendor"
+    },
+    "actions": {
+      "start": "Start",
+      "complete": "Complete",
+      "started": "Operation started.",
+      "completed": "Operation completed.",
+      "remarkSaved": "Remark saved.",
+      "uploadDocument": "Upload Document",
+      "documentUploaded": "Document uploaded."
+    },
+    "detail": {
+      "taskInfo": "Task Information",
+      "shipmentInfo": "Shipment Information",
+      "pickupInfo": "Pickup/Delivery Information",
+      "cargoInfo": "Cargo Information",
+      "checklist": "Checklist",
+      "vendorJobOrder": "Vendor Job Order",
+      "remark": "Remark",
+      "documents": "Documents",
+      "noDocuments": "No documents yet.",
+      "actualAt": "Actual At"
+    },
+    "pages": {
+      "pickup": "Pick Up",
+      "pickupDesc": "Pick up tasks from customers.",
+      "gateInOrigin": "Gate In Origin",
+      "gateInOriginDesc": "Gate in tasks at origin yard/station.",
+      "loading": "Loading",
+      "loadingDesc": "Loading containers onto train.",
+      "trainDeparture": "Train Departure",
+      "trainDepartureDesc": "Train departure tasks.",
+      "trainArrival": "Train Arrival",
+      "trainArrivalDesc": "Train arrival tasks.",
+      "gateOutDestination": "Gate Out Destination",
+      "gateOutDestinationDesc": "Gate out tasks at destination.",
+      "delivery": "Delivery",
+      "deliveryDesc": "Delivery tasks to customers.",
+      "proofOfDelivery": "Proof of Delivery",
+      "proofOfDeliveryDesc": "Proof of delivery confirmation tasks."
+    },
+    "pod": {
+      "title": "Proof of Delivery",
+      "description": "Manage door-to-door shipment POD workflow.",
+      "search": "Search Shipment No, Customer, POD No…",
+      "signedPodRequired": "Signed POD is required.",
+      "submitted": "POD submitted successfully.",
+      "verified": "POD verified successfully.",
+      "rejected": "POD rejected.",
+      "stats": {
+        "waiting": "Waiting POD",
+        "received": "POD Received",
+        "verified": "POD Verified",
+        "rejected": "Rejected"
+      },
+      "filters": {
+        "podDateFrom": "POD Date From",
+        "podDateTo": "POD Date To"
+      },
+      "columns": {
+        "shipmentNo": "Shipment No",
+        "customer": "Customer",
+        "deliveryDate": "Delivery Date",
+        "podDate": "POD Date"
+      },
+      "status": {
+        "waiting_pod": "Waiting POD",
+        "received": "Received",
+        "verified": "Verified",
+        "rejected": "Rejected"
+      },
+      "sections": {
+        "shipment": "Shipment Information",
+        "podInfo": "Proof of Delivery Information",
+        "verification": "Verification",
+        "activityLog": "Activity Log"
+      },
+      "fields": {
+        "podNumber": "POD Number",
+        "serviceType": "Service Type",
+        "coverage": "Shipment Coverage",
+        "origin": "Origin",
+        "destination": "Destination",
+        "receiverName": "Receiver Name",
+        "receiverPosition": "Receiver Position",
+        "receivedAt": "Receive Date & Time",
+        "remark": "Remark",
+        "signedPod": "Signed POD",
+        "deliveryPhoto": "Delivery Photo",
+        "viewSignedPod": "View Signed POD",
+        "verificationStatus": "Verification Status",
+        "verifiedBy": "Verified By",
+        "verifiedAt": "Verified Date",
+        "verificationNotes": "Verification Notes"
+      },
+      "actions": {
+        "submit": "Submit POD",
+        "verify": "Verify POD",
+        "reject": "Reject"
+      }
+    }
+  },
+  "AdminFsdMaster": {
+    "route": {
+      "listTitle": "Route List",
+      "search": "Search routes…",
+      "add": "Add Route",
+      "edit": "Edit Route",
+      "saved": "Route saved.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive", "door": "Door Services" },
+      "columns": { "code": "Code", "origin": "Origin", "destination": "Destination", "distance": "Distance", "transitDays": "Transit Days" }
+    },
+    "station": {
+      "listTitle": "Station List",
+      "search": "Search stations…",
+      "add": "Add Station",
+      "edit": "Edit Station",
+      "saved": "Station saved.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Code", "name": "Name", "city": "City" }
+    },
+    "yard": {
+      "listTitle": "Yard List",
+      "search": "Search yards…",
+      "add": "Add Yard",
+      "edit": "Edit Yard",
+      "saved": "Yard saved.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Code", "name": "Name", "type": "Yard Type" }
+    },
+    "additionalCharge": {
+      "listTitle": "Additional Charges",
+      "search": "Search charges…",
+      "add": "Add Charge",
+      "edit": "Edit Charge",
+      "saved": "Additional charge saved.",
+      "deactivated": "Additional charge deactivated.",
+      "deactivate": "Inactive",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Charge Code", "name": "Charge Name", "category": "Charge Category", "pricingBasis": "Pricing Basis" },
+      "filters": { "category": "Charge Category" },
+      "fields": { "description": "Description" },
+      "detail": { "general": "General Information", "activityLog": "Activity Log" },
+      "categories": {
+        "handling": "Handling",
+        "storage": "Storage",
+        "documentation": "Documentation",
+        "container": "Container",
+        "trucking": "Trucking",
+        "rail": "Rail",
+        "other": "Other"
+      },
+      "pricingBasis": {
+        "per_shipment": "Per Shipment",
+        "per_container": "Per Container",
+        "per_trip": "Per Trip",
+        "per_ton": "Per Ton",
+        "per_kg": "Per Kg",
+        "per_cbm": "Per CBM",
+        "per_day": "Per Day",
+        "per_hour": "Per Hour",
+        "per_seal": "Per Seal",
+        "per_document": "Per Document"
+      }
+    },
+    "customerPricing": {
+      "listTitle": "Customer Pricing",
+      "search": "Search customer or route…",
+      "add": "Add Pricing",
+      "edit": "Edit Pricing",
+      "saved": "Customer pricing saved.",
+      "stats": { "total": "Total", "active": "Active", "inactive": "Inactive", "customers": "Customers" },
+      "columns": { "customer": "Customer", "route": "Route", "service": "Service", "rate": "Rate" },
+      "additionalCharges": "Additional Charges",
+      "addCharge": "Add Charge",
+      "noCharges": "No additional charges configured.",
+      "chargeName": "Charge",
+      "chargeFixed": "Fixed",
+      "chargePercentage": "Percentage",
+      "chargeAmount": "Amount"
+    },
+    "trainSchedule": {
+      "listTitle": "Train Schedule List",
+      "search": "Search train number…",
+      "add": "Add Train Schedule",
+      "edit": "Edit Train Schedule",
+      "saved": "Train schedule saved.",
+      "cancelled": "Train schedule cancelled.",
+      "cancelSchedule": "Cancel Schedule",
+      "stats": {
+        "total": "Total Schedule",
+        "upcoming": "Upcoming",
+        "departed": "Departed",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "filters": {
+        "businessEntity": "Business Entity",
+        "route": "Route",
+        "allRoutes": "All Routes",
+        "departureFrom": "Departure From",
+        "departureTo": "Departure To"
+      },
+      "columns": {
+        "trainNo": "Train No",
+        "route": "Route",
+        "departure": "Departure",
+        "eta": "ETA",
+        "assignedShipments": "Assigned Shipment"
+      },
+      "fields": {
+        "businessEntity": "Business Entity",
+        "trainNumber": "Train Number",
+        "route": "Route",
+        "departure": "Departure Date & Time",
+        "eta": "Estimated Arrival",
+        "maxContainers": "Maximum Container",
+        "remark": "Remark"
+      },
+      "detail": {
+        "general": "General Information",
+        "shipments": "Assigned Shipment",
+        "containers": "Assigned Container",
+        "shipmentNo": "Shipment No",
+        "customer": "Customer",
+        "service": "Service",
+        "container": "Container",
+        "containerNo": "Container No",
+        "type": "Type"
+      }
+    },
+    "containerType": {
+      "listTitle": "Container Type List",
+      "search": "Search code or name…",
+      "add": "Add Container Type",
+      "deleted": "Container type deleted.",
+      "deleteTitle": "Delete container type?",
+      "deleteDesc": "This action cannot be undone.",
+      "stats": { "total": "Total Container Type", "active": "Active Type", "inactive": "Inactive Type" },
+      "filters": { "allCategory": "All Categories", "category": "Category" },
+      "columns": {
+        "code": "Type Code",
+        "name": "Container Type",
+        "size": "Size",
+        "category": "Category",
+        "maxPayload": "Max Payload",
+        "capacity": "Capacity (CBM)"
+      }
+    },
+    "serviceType": {
+      "listTitle": "Service Type List",
+      "search": "Search code or name…",
+      "add": "Add Service Type",
+      "deleted": "Service type deleted.",
+      "deleteTitle": "Delete service type?",
+      "deleteDesc": "This action cannot be undone.",
+      "stats": { "total": "Total Service Type", "active": "Active", "inactive": "Inactive" },
+      "columns": { "code": "Service Code", "name": "Service Name", "category": "Service Category" }
+    }
+  },
+  "AdminFsdReports": {
+    "exportCsv": "Export CSV",
+    "exportExcel": "Export Excel",
+    "exportPdf": "Export PDF",
+    "reportData": "Report Data",
+    "allCustomer": "All Customers",
+    "allService": "All Services",
+    "allOwnership": "All Ownership",
+    "allVendor": "All Vendors",
+    "shipment": {
+      "title": "Shipment Report",
+      "subtitle": "Shipment report with filters and CSV export.",
+      "columns": { "shipmentNo": "Shipment No", "route": "Route", "service": "Service" }
+    },
+    "booking": {
+      "title": "Booking Report",
+      "subtitle": "Booking report with filters and CSV export.",
+      "columns": { "bookingNo": "Booking No", "route": "Route", "service": "Service" }
+    },
+    "customerInvoice": {
+      "title": "Customer Invoice Report",
+      "subtitle": "Customer invoice report with filters and CSV export.",
+      "columns": { "invoiceNo": "Invoice No", "shipment": "Shipment", "issuedDate": "Issued Date", "amount": "Amount" }
+    },
+    "customerPayment": {
+      "title": "Customer Payment Report",
+      "subtitle": "Customer payment report with filters and CSV export.",
+      "columns": { "paymentNo": "Payment No", "invoice": "Invoice", "amount": "Amount", "method": "Method" }
+    },
+    "container": {
+      "title": "Container Report",
+      "subtitle": "Container report with filters and CSV export.",
+      "columns": { "containerNo": "Container No", "type": "Type", "ownership": "Ownership", "yard": "Yard" }
+    }
+  },
+  "AdminFsdSettings": {
+    "profile": {
+      "title": "Company Profile",
+      "subtitle": "Internal admin profile and password change.",
+      "section": "Profile",
+      "name": "Name",
+      "phone": "Phone",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "saved": "Profile updated.",
+      "passwordSaved": "Password changed successfully.",
+      "accountSection": "Account Information",
+      "accessSection": "Access Information",
+      "role": "Role",
+      "lastLogin": "Last Login",
+      "createdDate": "Created Date",
+      "noAccess": "No feature access assigned."
+    },
+    "system": {
+      "title": "System Configuration",
+      "subtitle": "Grouped system settings by category.",
+      "restricted": "Only super admin can manage system configuration.",
+      "saved": "System settings updated.",
+      "testEmail": "Test Email Configuration",
+      "testEmailRecipient": "Test Recipient Email",
+      "testingEmail": "Sending…",
+      "testEmailSuccess": "Test email sent successfully.",
+      "testEmailError": "Failed to send test email."
+    },
+    "activityLog": {
+      "title": "Activity Log",
+      "empty": "No activity yet."
+    },
+    "numbering": {
+      "title": "Numbering Format",
+      "subtitle": "Configure document numbering formats.",
+      "listTitle": "Format List",
+      "editTitle": "Edit Format",
+      "selectHint": "Select a format from the list to edit.",
+      "preview": "Preview",
+      "lastRunningNumber": "Last Running Number",
+      "saved": "Numbering format updated.",
+      "columns": {
+        "type": "Document Type",
+        "preview": "Preview",
+        "prefix": "Prefix",
+        "runningDigits": "Running Digit",
+        "reset": "Reset",
+        "lastNumber": "Last Number"
+      }
+    },
+    "users": {
+      "title": "Internal Users",
+      "listTitle": "User List",
+      "add": "Add User",
+      "edit": "Edit User",
+      "search": "Search name or email…",
+      "restricted": "Only super admin can manage internal users.",
+      "loadError": "Failed to load users.",
+      "saveError": "Failed to save user.",
+      "created": "User created successfully.",
+      "updated": "User updated successfully.",
+      "statusUpdated": "Account status for {name} updated.",
+      "statusError": "Failed to update account status.",
+      "selfStatusError": "You cannot change your own account status.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "columns": {
+        "name": "Full Name",
+        "email": "Email",
+        "role": "Department / Role",
+        "lastLogin": "Last Login"
+      },
+      "fields": {
+        "name": "Full Name",
+        "email": "Email",
+        "phone": "Mobile Number",
+        "role": "Role",
+        "status": "User Status",
+        "password": "Temporary Password",
+        "passwordOptional": "Temporary Password (leave blank to keep current)",
+        "featureAccess": "Feature Access"
+      }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "subtitle": "Manage roles and menu permissions for internal users.",
+      "listTitle": "Role List",
+      "add": "Add Role",
+      "search": "Search role name…",
+      "loadError": "Failed to load roles.",
+      "saveError": "Failed to save role.",
+      "created": "Role created successfully.",
+      "permissionsSaved": "Role permissions updated.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "stats": { "total": "Total Roles", "active": "Active Roles", "inactive": "Inactive Roles" },
+      "columns": {
+        "name": "Role Name",
+        "description": "Description",
+        "totalUsers": "Total Users"
+      },
+      "fields": {
+        "name": "Role Name",
+        "description": "Description"
+      },
+      "activityLog": "Activity Log",
+      "matrix": {
+        "menu": "Menu",
+        "view": "View",
+        "create": "Create",
+        "edit": "Edit",
+        "approve": "Approve",
+        "export": "Export"
+      }
+    }
+  }
+}

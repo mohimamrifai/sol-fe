@@ -29,7 +29,7 @@ export async function addAdminShipmentContainer(shipmentId: number, body: Record
   });
 }
 
-export async function updateAdminContainer(containerId: number, body: Record<string, unknown>) {
+export async function updateAdminShipmentContainer(containerId: number, body: Record<string, unknown>) {
   return apiFetch(`/admin/containers/${containerId}`, {
     method: "PUT",
     body: JSON.stringify(body),

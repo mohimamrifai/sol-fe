@@ -77,6 +77,8 @@ function bookingStatusBadgeClass(status: string): string {
       return "border-zinc-200 bg-zinc-100 text-zinc-800";
     case "submitted":
       return "border-sky-200 bg-sky-50 text-sky-800";
+    case "under_review":
+      return "border-orange-200 bg-orange-50 text-orange-900";
     case "confirmed":
       return "border-indigo-200 bg-indigo-50 text-indigo-800";
     case "approved":

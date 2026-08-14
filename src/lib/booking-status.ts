@@ -2,6 +2,7 @@
 const BOOKING_LABELS: Record<string, string> = {
   draft: "Draft",
   submitted: "Submitted",
+  under_review: "Under Review",
   approved: "Confirmed",
   confirmed: "Confirmed",
   rejected: "Rejected",
@@ -21,6 +22,8 @@ export function bookingStatusBadgeClass(status: string): string {
       return "border-slate-200/90 bg-slate-100 text-slate-800 dark:border-slate-600 dark:bg-slate-800/55 dark:text-slate-200";
     case "submitted":
       return "border-amber-200/90 bg-amber-50 text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/45 dark:text-amber-200";
+    case "under_review":
+      return "border-orange-200/90 bg-orange-50 text-orange-900 dark:border-orange-800/60 dark:bg-orange-950/45 dark:text-orange-200";
     case "approved":
       return "border-emerald-200/90 bg-emerald-50 text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-950/45 dark:text-emerald-300";
     case "rejected":

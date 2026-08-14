@@ -1,262 +1,386 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useCallback, useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/lib/store";
+import { MasterTableShell } from "@/components/shared/master-table-shell";
+import { useMasterPageActions } from "@/components/shared/master-page-actions";
+import { MasterRowActions } from "@/components/shared/master-row-actions";
+import { actionsCellClass, actionsHeadClass } from "@/components/shared/master-table-classes";
+import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
-import { deleteAdminTrain, fetchAdminTrains } from "@/lib/admin-api";
-import type { LaravelPaginated } from "@/lib/types-api";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import {
+  createAdminTrainSchedule,
+  fetchAdminRoutes,
+  fetchAdminTrainScheduleStats,
+  fetchAdminTrainSchedules,
+} from "@/lib/admin-api";
+import { BUSINESS_ENTITY_OPTIONS, TRAIN_SCHEDULE_STATUS_OPTIONS } from "@/lib/admin-fsd-options";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Link } from "@/i18n/routing";
-import { MasterRowActions } from "@/components/shared/master-row-actions";
-import { MasterTableShell } from "@/components/shared/master-table-shell";
-import { MasterActiveBadge } from "@/components/shared/master-active-badge";
-import { actionsCellClass, actionsHeadClass } from "@/components/shared/master-table-classes";
-import { STATUS_FILTER_OPTIONS } from "@/components/shared/master-filters";
-import { MasterTrainDialog } from "@/components/dashboard/admin/master/master-train-dialog";
-import { useMasterOpenCreateFromQuery } from "@/hooks/use-master-open-create-from-query";
-import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
-import { Box, Plus } from "lucide-react";
-import type { SimpleDialogMode } from "@/components/dashboard/admin/master/master-transport-mode-dialog";
+import type { LaravelPaginated } from "@/lib/types-api";
+import { cn } from "@/lib/utils";
+import { Ban, CalendarClock, CheckCircle2, Clock, Plus, Train } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const PER_PAGE = 10;
 
-type Row = Record<string, unknown>;
+function statusBadgeClass(status: string): string {
+  switch (status) {
+    case "upcoming":
+      return "bg-sky-100 text-sky-800 border-sky-200";
+    case "departed":
+      return "bg-amber-100 text-amber-800 border-amber-200";
+    case "completed":
+      return "bg-emerald-100 text-emerald-800 border-emerald-200";
+    case "cancelled":
+      return "bg-red-100 text-red-800 border-red-200";
+    default:
+      return "";
+  }
+}
 
-export default function MasterTrainsPage() {
+export default function MasterTrainSchedulePage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = String(params?.locale ?? "id");
   const authHydrated = useAuthPersistHydrated();
-  const { user } = useAuthStore();
-  const roles = user?.roles ?? [];
-  const canManageMaster = authHydrated && (roles.includes("super_admin") || roles.includes("operations"));
+  const t = useTranslations("AdminFsdMaster.trainSchedule");
+  const tc = useTranslations("AdminCommon");
 
-  const [rows, setRows] = useState<Row[]>([]);
-  const [meta, setMeta] = useState<LaravelPaginated<Row> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [meta, setMeta] = useState<LaravelPaginated<Record<string, unknown>> | null>(null);
+  const [stats, setStats] = useState<Record<string, number> | null>(null);
+  const [routes, setRoutes] = useState<{ id: number; label: string }[]>([]);
   const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebouncedValue(searchInput, 400);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 400);
+  const [businessEntityFilter, setBusinessEntityFilter] = useState("all");
+  const [routeFilter, setRouteFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<SimpleDialogMode>("create");
-  const [dialogRow, setDialogRow] = useState<Row | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    business_entity: "company",
+    train_number: "",
+    route_id: "",
+    departure_at: "",
+    estimated_arrival_at: "",
+    max_containers: "",
+    status: "upcoming",
+    remark: "",
+  });
 
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteRow, setDeleteRow] = useState<Row | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const routeFilterOptions = useMemo(
+    () => [{ value: "all", label: t("filters.allRoutes") }, ...routes.map((r) => ({ value: String(r.id), label: r.label }))],
+    [routes, t]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [{ value: "all", label: tc("filters.allStatus") }, ...TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))],
+    [tc]
+  );
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [debouncedSearch, businessEntityFilter, routeFilter, statusFilter, dateFrom, dateTo]);
 
   const load = useCallback(async () => {
-    setError(null);
+    if (!authHydrated) return;
     setLoading(true);
     try {
-      const res = await fetchAdminTrains({
-        page,
-        perPage: PER_PAGE,
-        search: debouncedSearch.trim() || undefined,
-        status: statusFilter === "all" ? undefined : statusFilter,
-      });
-      const paginated = res as LaravelPaginated<Row>;
-      setRows(paginated.data ?? []);
-      setMeta(paginated);
+      const [listRes, statsRes] = await Promise.all([
+        fetchAdminTrainSchedules({
+          page,
+          perPage: PER_PAGE,
+          search: debouncedSearch || undefined,
+          business_entity: businessEntityFilter === "all" ? undefined : businessEntityFilter,
+          route_id: routeFilter === "all" ? undefined : routeFilter,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          departure_date_from: dateFrom || undefined,
+          departure_date_to: dateTo || undefined,
+        }),
+        fetchAdminTrainScheduleStats(),
+      ]);
+      setRows((listRes as LaravelPaginated<Record<string, unknown>>).data ?? []);
+      setMeta(listRes as LaravelPaginated<Record<string, unknown>>);
+      setStats((statsRes as { data: Record<string, number> }).data);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Gagal memuat kereta.");
+      toast.error(e instanceof ApiError ? e.message : tc("actions.loading"));
       setRows([]);
       setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, statusFilter]);
+  }, [authHydrated, page, debouncedSearch, businessEntityFilter, routeFilter, statusFilter, dateFrom, dateTo, tc]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const openCreate = useCallback(() => {
-    setDialogRow(null);
-    setDialogMode("create");
+  useEffect(() => {
+    if (!authHydrated) return;
+    void fetchAdminRoutes({ perPage: 500, status: "active" }).then((res) => {
+      setRoutes(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+        id: Number(r.id),
+        label: String(r.code ?? r.route ?? r.id),
+      })));
+    });
+  }, [authHydrated]);
+
+  const openCreate = () => {
+    setForm({
+      business_entity: "company",
+      train_number: "",
+      route_id: "",
+      departure_at: "",
+      estimated_arrival_at: "",
+      max_containers: "",
+      status: "upcoming",
+      remark: "",
+    });
     setDialogOpen(true);
-  }, []);
+  };
 
-  useMasterOpenCreateFromQuery({
-    authHydrated,
-    canManage: canManageMaster,
-    onOpenCreate: openCreate,
-  });
-
-  const toolbar = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-      <div className="min-w-0 flex-1">
-        <TableToolbar
-          searchPlaceholder="Cari kode atau nama kereta…"
-          searchValue={searchInput}
-          onSearchChange={setSearchInput}
-          filterLabel="Status"
-          filterValue={statusFilter}
-          onFilterChange={setStatusFilter}
-          filterOptions={STATUS_FILTER_OPTIONS}
-        />
-      </div>
-      {canManageMaster ? (
-        <Button type="button" className="shrink-0 gap-1.5" onClick={openCreate}>
+  useMasterPageActions(
+    useMemo(
+      () => (
+        <Button type="button" className="gap-1.5" onClick={openCreate}>
           <Plus className="h-4 w-4" />
-          Tambah kereta
+          {t("add")}
         </Button>
-      ) : null}
-    </div>
+      ),
+      [t]
+    )
   );
 
-  const handleDelete = async () => {
-    if (deleteRow?.id == null) return;
-    setDeleteLoading(true);
+  const save = async () => {
+    setSaving(true);
     try {
-      await deleteAdminTrain(Number(deleteRow.id));
-      toast.success("Kereta berhasil dihapus.");
-      setDeleteOpen(false);
-      setDeleteRow(null);
+      await createAdminTrainSchedule({
+        ...form,
+        route_id: Number(form.route_id),
+        max_containers: form.max_containers ? Number(form.max_containers) : undefined,
+      });
+      toast.success(t("saved"));
+      setDialogOpen(false);
       await load();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menghapus.");
+      toast.error(e instanceof ApiError ? e.message : tc("actions.loading"));
     } finally {
-      setDeleteLoading(false);
+      setSaving(false);
     }
+  };
+
+  const goDetail = (id: number) => {
+    router.push(`/${locale}/dashboard/admin/master/train-schedule/${id}`);
   };
 
   return (
     <>
-      {error ? (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
-      ) : null}
+      <AdminStatsCards
+        className="sm:grid-cols-2 lg:grid-cols-5"
+        cards={[
+          { key: "total", label: t("stats.total"), value: stats?.total ?? 0, icon: Train, iconClassName: "text-zinc-700 bg-zinc-100" },
+          { key: "upcoming", label: t("stats.upcoming"), value: stats?.upcoming ?? 0, icon: Clock, iconClassName: "text-sky-700 bg-sky-100" },
+          { key: "departed", label: t("stats.departed"), value: stats?.departed ?? 0, icon: CalendarClock, iconClassName: "text-amber-700 bg-amber-100" },
+          { key: "completed", label: t("stats.completed"), value: stats?.completed ?? 0, icon: CheckCircle2, iconClassName: "text-emerald-700 bg-emerald-100" },
+          { key: "cancelled", label: t("stats.cancelled"), value: stats?.cancelled ?? 0, icon: Ban, iconClassName: "text-red-700 bg-red-100" },
+        ]}
+      />
 
-      <MasterTableShell title="Daftar Kereta" description="Master kereta (Rail)." loading={loading} toolbar={toolbar}>
-        <div className="overflow-x-auto -mx-1 px-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-14">No</TableHead>
-                <TableHead className="w-[120px]">Kode</TableHead>
-                <TableHead>Nama</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className={actionsHeadClass}>
-                  <span className="max-md:sr-only">Aksi</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((t, index) => {
-                const code = String(t.code ?? t.id ?? "");
-                const active = t.is_active !== false;
-                return (
-                  <TableRow key={String(t.id ?? code)} className="group">
-                    <TableCell className="tabular-nums text-muted-foreground">
-                      {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{code}</TableCell>
-                    <TableCell className="font-medium">{String(t.name ?? "")}</TableCell>
-                    <TableCell>
-                      <MasterActiveBadge active={active} />
-                    </TableCell>
-                    <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
-                      <div className="flex justify-end">
-                        <MasterRowActions
-                          entityLabel="kereta"
-                          canManage={canManageMaster}
-                          onView={() => {
-                            setDialogRow(t);
-                            setDialogMode("view");
-                            setDialogOpen(true);
-                          }}
-                          onEdit={
-                            canManageMaster
-                              ? () => {
-                                setDialogRow(t);
-                                setDialogMode("edit");
-                                setDialogOpen(true);
-                              }
-                              : undefined
-                          }
-                          onDelete={
-                            canManageMaster
-                              ? () => {
-                                setDeleteRow(t);
-                                setDeleteOpen(true);
-                              }
-                              : undefined
-                          }
-                          extraActions={
-                            <DropdownMenuItem>
-                              <Link
-                                href={`/dashboard/admin/master/train-cars?train_id=${String(t.id)}`}
-                                className="cursor-pointer gap-2"
-                              >
-                                <Box className="h-4 w-4" />
-                                Lihat daftar gerbong
-                              </Link>
-                            </DropdownMenuItem>
-                          }
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-            {rows.length === 0 ? (
-              <TableCaption className="text-xs">Tidak ada data kereta.</TableCaption>
-            ) : (
-              <TableCaption className="text-xs">Baris pada halaman ini.</TableCaption>
-            )}
-          </Table>
-        </div>
+      <MasterTableShell
+        title={t("listTitle")}
+        description={t("search")}
+        loading={loading}
+        toolbar={
+          <div className="flex flex-col gap-3">
+            <TableToolbar
+              searchPlaceholder={t("search")}
+              searchValue={search}
+              onSearchChange={setSearch}
+              filterLabel={t("filters.businessEntity")}
+              filterValue={businessEntityFilter}
+              onFilterChange={setBusinessEntityFilter}
+              filterOptions={[{ value: "all", label: tc("filters.allStatus") }, ...BUSINESS_ENTITY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))]}
+              filter2Label={t("filters.route")}
+              filter2Value={routeFilter}
+              onFilter2Change={setRouteFilter}
+              filter2Options={routeFilterOptions}
+            />
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">{tc("filters.status")}</Label>
+                <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+                  <SelectTrigger className="h-9 w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusFilterOptions.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">{t("filters.departureFrom")}</Label>
+                <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px]" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">{t("filters.departureTo")}</Label>
+                <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px]" />
+              </div>
+            </div>
+          </div>
+        }
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-14">{tc("table.no")}</TableHead>
+              <TableHead>{t("columns.trainNo")}</TableHead>
+              <TableHead>{t("columns.route")}</TableHead>
+              <TableHead>{t("columns.departure")}</TableHead>
+              <TableHead>{t("columns.eta")}</TableHead>
+              <TableHead>{tc("table.status")}</TableHead>
+              <TableHead>{t("columns.assignedShipments")}</TableHead>
+              <TableHead className={actionsHeadClass}>
+                <span className="max-md:sr-only">{tc("table.actions")}</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r, i) => {
+              const status = String(r.status ?? "upcoming");
+              return (
+                <TableRow key={String(r.id)}>
+                  <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
+                  <TableCell className="font-mono text-xs">{String(r.train_number ?? "—")}</TableCell>
+                  <TableCell>{String(r.route ?? "—")}</TableCell>
+                  <TableCell>{String(r.departure_at ?? r.departure ?? "—")}</TableCell>
+                  <TableCell>{String(r.estimated_arrival_at ?? r.eta ?? "—")}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={statusBadgeClass(status)}>
+                      {TRAIN_SCHEDULE_STATUS_OPTIONS.find((s) => s.value === status)?.label ?? status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="tabular-nums">{String(r.assigned_shipments_count ?? r.assigned_shipments ?? 0)}</TableCell>
+                  <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
+                    <MasterRowActions entityLabel="train schedule" canManage onView={() => goDetail(Number(r.id))} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+          {rows.length === 0 ? <TableCaption className="text-xs">{tc("table.empty")}</TableCaption> : null}
+        </Table>
         {meta ? (
-          <PaginationBar
-            currentPage={meta.current_page}
-            lastPage={meta.last_page}
-            total={meta.total}
-            from={meta.from}
-            to={meta.to}
-            onPageChange={setPage}
-          />
+          <PaginationBar currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} from={meta.from} to={meta.to} onPageChange={setPage} />
         ) : null}
       </MasterTableShell>
 
-      <MasterTrainDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        mode={dialogMode}
-        row={dialogRow}
-        onSaved={() => void load()}
-      />
-
-      <ConfirmDeleteDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title="Hapus kereta?"
-        description={`Yakin hapus kereta "${String(deleteRow?.name ?? "")}"? Tindakan ini tidak dapat dibatalkan.`}
-        loading={deleteLoading}
-        onConfirm={handleDelete}
-      />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("add")}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <div className="space-y-2">
+              <Label>{t("fields.businessEntity")}</Label>
+              <Select value={form.business_entity} onValueChange={(v) => v && setForm((f) => ({ ...f, business_entity: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUSINESS_ENTITY_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("fields.trainNumber")}</Label>
+              <Input value={form.train_number} onChange={(e) => setForm((f) => ({ ...f, train_number: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("fields.route")}</Label>
+              <Select value={form.route_id} onValueChange={(v) => v && setForm((f) => ({ ...f, route_id: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("fields.route")}>
+                    {form.route_id ? routes.find((r) => String(r.id) === form.route_id)?.label ?? "—" : t("fields.route")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {routes.map((r) => (
+                    <SelectItem key={r.id} value={String(r.id)}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>{t("fields.departure")}</Label>
+                <Input type="datetime-local" value={form.departure_at} onChange={(e) => setForm((f) => ({ ...f, departure_at: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("fields.eta")}</Label>
+                <Input type="datetime-local" value={form.estimated_arrival_at} onChange={(e) => setForm((f) => ({ ...f, estimated_arrival_at: e.target.value }))} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("fields.maxContainers")}</Label>
+              <Input type="number" value={form.max_containers} onChange={(e) => setForm((f) => ({ ...f, max_containers: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>{tc("table.status")}</Label>
+              <Select value={form.status} onValueChange={(v) => v && setForm((f) => ({ ...f, status: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("fields.remark")}</Label>
+              <Textarea value={form.remark} onChange={(e) => setForm((f) => ({ ...f, remark: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              {tc("actions.cancel")}
+            </Button>
+            <Button disabled={saving || !form.train_number.trim() || !form.route_id} onClick={() => void save()}>
+              {saving ? tc("actions.saving") : tc("actions.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

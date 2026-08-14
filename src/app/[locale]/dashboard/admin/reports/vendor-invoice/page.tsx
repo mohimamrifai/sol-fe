@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +12,7 @@ import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useVendorInvoiceStatusLabel } from "@/hooks/use-admin-status-labels";
+import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
 import {
   adminVendorInvoiceReportExportUrl,
   fetchAdminVendorInvoiceReport,
@@ -21,7 +21,7 @@ import {
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { formatIdr } from "@/lib/vendor-fsd-options";
-import { BarChart3, Download } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const PER_PAGE = 20;
@@ -79,20 +79,13 @@ export default function AdminVendorInvoiceReportPage() {
     });
   }, [authHydrated]);
 
-  const exportUrl = adminVendorInvoiceReportExportUrl(filterParams);
-
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
       <AdminPageHeader
         icon={BarChart3}
         title="Vendor Invoice Report"
-        description="Laporan invoice vendor dengan filter dan export CSV."
-        actions={
-          <Button type="button" className="h-9 gap-1.5" onClick={() => window.open(exportUrl, "_blank", "noopener,noreferrer")}>
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        }
+        description="Laporan invoice vendor dengan filter dan export."
+        actions={<AdminReportExportButtons buildUrl={adminVendorInvoiceReportExportUrl} params={filterParams} />}
       />
 
       <Card className="min-w-0 overflow-hidden">

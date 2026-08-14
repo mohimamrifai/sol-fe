@@ -48,7 +48,7 @@ function stepIndex(data: BookingDetail): number {
 
   if (converted) return 3;
   if (st === "approved" || st === "confirmed") return 2;
-  if (st === "submitted") return 1;
+  if (st === "under_review" || st === "submitted") return 1;
   if (st === "draft") return 0;
   return -1;
 }

@@ -130,8 +130,8 @@ export default function AdminBookingsPage() {
       { value: "all", label: tc("filters.allStatus") },
       { value: "draft", label: t("stats.draft") },
       { value: "submitted", label: t("filters.submitted") },
+      { value: "under_review", label: t("filters.underReview") },
       { value: "confirmed", label: t("filters.confirmed") },
-      { value: "approved", label: t("filters.approved") },
       { value: "rejected", label: t("filters.rejected") },
       { value: "cancelled", label: t("filters.cancelled") },
     ],
@@ -297,6 +297,15 @@ export default function AdminBookingsPage() {
     dateFrom,
     dateTo,
   ]);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const from = searchParams.get("date_from");
+    const to = searchParams.get("date_to");
+    if (status) setStatusFilter(status);
+    if (from) setDateFrom(from);
+    if (to) setDateTo(to);
+  }, [searchParams]);
 
   useEffect(() => {
     const editId = searchParams.get("edit");

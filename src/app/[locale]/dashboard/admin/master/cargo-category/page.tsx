@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -24,6 +24,7 @@ import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { MasterRowActions } from "@/components/shared/master-row-actions";
 import { MasterTableShell } from "@/components/shared/master-table-shell";
+import { useMasterPageActions } from "@/components/shared/master-page-actions";
 import { MasterActiveBadge } from "@/components/shared/master-active-badge";
 import { actionsCellClass, actionsHeadClass } from "@/components/shared/master-table-classes";
 import { STATUS_FILTER_OPTIONS } from "@/components/shared/master-filters";
@@ -103,26 +104,29 @@ export default function MasterCargoCategoriesPage() {
     onOpenCreate: openCreate,
   });
 
+  useMasterPageActions(
+    useMemo(
+      () =>
+        canManageMaster ? (
+          <Button type="button" className="gap-1.5" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
+            Tambah kategori
+          </Button>
+        ) : null,
+      [canManageMaster, openCreate]
+    )
+  );
+
   const toolbar = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-      <div className="min-w-0 flex-1">
-        <TableToolbar
-          searchPlaceholder="Cari kode atau nama kategori…"
-          searchValue={searchInput}
-          onSearchChange={setSearchInput}
-          filterLabel="Status"
-          filterValue={statusFilter}
-          onFilterChange={setStatusFilter}
-          filterOptions={STATUS_FILTER_OPTIONS}
-        />
-      </div>
-      {canManageMaster ? (
-        <Button type="button" className="shrink-0 gap-1.5" onClick={openCreate}>
-          <Plus className="h-4 w-4" />
-          Tambah kategori
-        </Button>
-      ) : null}
-    </div>
+    <TableToolbar
+      searchPlaceholder="Cari kode atau nama kategori…"
+      searchValue={searchInput}
+      onSearchChange={setSearchInput}
+      filterLabel="Status"
+      filterValue={statusFilter}
+      onFilterChange={setStatusFilter}
+      filterOptions={STATUS_FILTER_OPTIONS}
+    />
   );
 
   const handleDelete = async () => {
