@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-customer-users-form";
-import { fetchCustomerMasterLocations } from "@/lib/customer-api";
+import { fetchCustomerLocations } from "@/lib/customer-api";
 import type { UserRow } from "./user-table";
 
 export interface UserFormDialogProps {
@@ -61,15 +61,10 @@ const ROLE_DEFAULT_FEATURES: Record<string, string[]> = {
   ],
   ops_pic: [
     "view_company", "view_locations",
-    "view_users",
-    "view_bookings", "create_bookings", "manage_bookings",
-    "view_shipments", "view_invoices", "view_payments",
-    "view_documents",
+    "view_bookings", "create_bookings", "view_shipments",
   ],
   finance_pic: [
-    "view_company", "view_locations", "view_users",
-    "view_bookings", "view_shipments", "view_invoices", "view_payments",
-    "view_documents",
+    "view_company", "view_invoices", "view_payments", "view_documents",
   ],
   viewer: [
     "view_company", "view_locations", "view_users",
@@ -91,8 +86,8 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
     password: "",
     role: row?.role ?? row?.roles?.[0]?.name ?? "ops_pic",
     status: row?.status ?? "active",
-    location_ids: row?.location_ids ?? row?.locations?.map((l) => l.id) ?? [],
-    use_default_features: !row,
+    location_ids: row?.location_ids ?? row?.locations?.map((l) => l.id) ?? row?.location_access?.map((l) => l.id) ?? [],
+    use_default_features: !row ? true : JSON.stringify(row.feature_access ?? []) === JSON.stringify(ROLE_DEFAULT_FEATURES[row?.role ?? row?.roles?.[0]?.name ?? "ops_pic"] ?? []),
     feature_access: row?.feature_access ?? ROLE_DEFAULT_FEATURES["ops_pic"],
   }), [row]);
 
@@ -120,12 +115,12 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
     if (!open) return;
     let cancelled = false;
     setLoadingLocations(true);
-    fetchCustomerMasterLocations({ perPage: 500 })
-      .then((res: unknown) => {
+    fetchCustomerLocations({ status: "active", perPage: 500 })
+      .then((res) => {
         if (cancelled) return;
-        const rows = ((res as { data?: { data?: Array<{ id: number; name?: string }> } })?.data?.data) ?? [];
+        const rows = res?.data ?? [];
         setLocationOptions(
-          rows.map((l) => ({ value: String(l.id), label: l.name ?? `Location #${l.id}` }))
+          rows.map((l) => ({ value: String(l.id), label: (l.name as string) ?? `Location #${l.id}` }))
         );
       })
       .finally(() => !cancelled && setLoadingLocations(false));
@@ -133,6 +128,10 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
   }, [open]);
 
   const onSubmit = handleSubmit(async (values) => {
+    if ((values.location_ids?.length ?? 0) < 1) {
+      toast.error(t("form.locationAccessRequired"));
+      return;
+    }
     try {
       const payload: Record<string, unknown> = {
         name: values.name.trim(),
@@ -172,8 +171,8 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
             {isEdit ? <Edit className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
             {isEdit ? t("form.title.edit") : t("form.title.create")}
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            {isEdit ? "Update user details and access." : "Create a new user account."}
+          <DialogDescription className="sr-only">
+            {isEdit ? t("form.title.edit") : t("form.title.create")}
           </DialogDescription>
         </DialogHeader>
 
@@ -257,7 +256,11 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
                   name="role"
                   rules={{ required: true }}
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isEdit && row?.is_last_company_admin}
+                    >
                       <SelectTrigger className="h-10">
                         <SelectValue />
                       </SelectTrigger>
@@ -279,13 +282,17 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
                   control={control}
                   name="status"
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isEdit && (row?.is_last_company_admin || row?.is_current_user)}
+                    >
                       <SelectTrigger className="h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent side="bottom">
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="active">{t("userStatus.active")}</SelectItem>
+                        <SelectItem value="inactive">{t("userStatus.inactive")}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

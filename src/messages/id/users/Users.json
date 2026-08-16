@@ -3,29 +3,33 @@
     "title": "Users",
     "subtitle": "Kelola anggota tim perusahaan Anda beserta hak aksesnya.",
     "stats": {
-      "total": "Total User",
-      "active": "Aktif",
-      "inactive": "Tidak Aktif",
+      "total": "Total Users",
+      "active": "Active",
+      "inactive": "Inactive",
       "companyAdmin": "Company Admin"
     },
     "filters": {
-      "search": "Cari berdasarkan nama atau email",
+      "search": "Cari full name atau email",
       "role": "Role",
       "status": "Status",
-      "location": "Location",
-      "locationAccess": "Akses Lokasi",
+      "locationAccess": "Location Access",
+      "allRoles": "Semua Role",
+      "allStatus": "Semua Status",
       "loading": "Memuat…",
-      "searchLocation": "Cari lokasi"
+      "searchLocation": "Cari location"
     },
-    "add": "Tambah User",
+    "add": "Add User",
     "table": {
-      "name": "Nama Lengkap",
+      "name": "Full Name",
       "email": "Email",
       "role": "Role",
       "locations": "Location Access",
-      "lastLogin": "Login Terakhir",
+      "lastLogin": "Last Login",
       "status": "Status",
-      "actions": "Aksi"
+      "actions": "Action",
+      "detail": "Detail",
+      "edit": "Edit",
+      "empty": "Tidak ada user ditemukan."
     },
     "role": {
       "company_admin": "Company Admin",
@@ -34,12 +38,12 @@
       "viewer": "Viewer"
     },
     "userStatus": {
-      "active": "Aktif",
-      "inactive": "Tidak Aktif"
+      "active": "Active",
+      "inactive": "Inactive"
     },
     "form": {
       "title": {
-        "create": "Tambah User",
+        "create": "Add User",
         "edit": "Edit User"
       },
       "sections": {
@@ -56,85 +60,67 @@
       "role": "Role",
       "status": "User Status",
       "locationAccess": "Location Access",
-      "locationAccessHint": "Hanya location dengan status aktif yang ditampilkan.",
+      "locationAccessHint": "Hanya Customer Location berstatus Active. Minimal 1.",
+      "locationAccessRequired": "Pilih minimal 1 Location Access.",
       "featureAccess": "Feature Access",
-      "featureAccessHint": "Default mengikuti role. Company Admin dapat override.",
-      "useDefaultFeatures": "Gunakan default features untuk role",
-      "save": "Simpan",
+      "featureAccessHint": "Default mengikuti Role. Company Admin dapat override.",
+      "useDefaultFeatures": "Gunakan default fitur untuk role",
+      "save": "Save",
       "saving": "Menyimpan…",
-      "cancel": "Batal",
+      "cancel": "Cancel",
       "errors": {
         "lastAdmin": "Tidak dapat menonaktifkan atau mengubah role Company Admin terakhir."
       }
     },
     "featureAccess": {
-      "view_company": "Lihat Profil Perusahaan",
-      "manage_company": "Kelola Profil Perusahaan",
-      "view_locations": "Lihat Locations",
-      "manage_locations": "Kelola Locations",
-      "view_users": "Lihat Users",
-      "create_users": "Buat User",
-      "edit_users": "Edit User",
-      "view_bookings": "Lihat Bookings",
-      "create_bookings": "Buat Booking",
-      "manage_bookings": "Kelola Bookings",
-      "view_shipments": "Lihat Shipments",
-      "view_invoices": "Lihat Invoices",
-      "view_payments": "Lihat Payments",
-      "view_documents": "Lihat Dokumen",
-      "manage_documents": "Kelola Dokumen"
+      "view_company": "View Company Profile",
+      "manage_company": "Manage Company Profile",
+      "view_locations": "View Locations",
+      "manage_locations": "Manage Locations",
+      "view_users": "View Users",
+      "create_users": "Create Users",
+      "edit_users": "Edit Users",
+      "view_bookings": "View Bookings",
+      "create_bookings": "Create Bookings",
+      "manage_bookings": "Manage Bookings",
+      "view_shipments": "View Shipments",
+      "view_invoices": "View Invoices",
+      "view_payments": "View Payments",
+      "view_documents": "View Documents",
+      "manage_documents": "Manage Documents"
     },
     "detail": {
       "headerTitle": "Detail User",
       "sections": {
-        "info": "Informasi User",
-        "configuration": "Konfigurasi",
-        "security": "Keamanan",
-        "activities": "Log Aktivitas"
+        "info": "User Information",
+        "configuration": "Configuration",
+        "security": "Security",
+        "activities": "Activity Log"
       },
       "fields": {
-        "name": "Nama",
+        "name": "Full Name",
         "email": "Email",
-        "phone": "Telepon",
-        "status": "Status",
-        "created": "Dibuat Pada",
+        "phone": "Mobile Number",
+        "status": "User Status",
         "role": "Role",
-        "locations": "Locations",
+        "locations": "Location Access",
         "featureAccess": "Feature Access",
-        "noLocations": "Belum ada lokasi yang ditetapkan.",
+        "noLocations": "Belum ada location.",
         "noFeatureAccess": "Belum ada feature access."
       },
       "actions": {
         "edit": "Edit",
-        "changeStatus": "Ubah Status",
-        "changeRole": "Ubah Role",
-        "resetPassword": "Reset Password",
         "back": "Kembali ke Users"
       },
       "security": {
-        "lastLogin": "Login Terakhir",
-        "createdAt": "Dibuat Pada"
+        "lastLogin": "Last Login"
       }
     },
     "activities": {
-      "title": "Log Aktivitas",
+      "title": "Activity Log",
+      "description": "Perubahan terbaru pada user ini.",
       "empty": "Belum ada aktivitas tercatat.",
       "actor": "oleh {name}"
-    },
-    "dialogs": {
-      "changeStatus": {
-        "title": "Ubah Status",
-        "active": "Aktifkan user",
-        "inactive": "Nonaktifkan user"
-      },
-      "changeRole": {
-        "title": "Ubah Role"
-      },
-      "resetPassword": {
-        "title": "Reset Password",
-        "newPassword": "Password Baru",
-        "submit": "Reset Password"
-      }
     },
     "notFound": {
       "title": "User tidak ditemukan",
@@ -142,7 +128,7 @@
       "back": "Kembali ke users"
     },
     "common": {
-      "cancel": "Batal",
+      "cancel": "Cancel",
       "loading": "Memuat…",
       "error": "Gagal memuat data."
     }

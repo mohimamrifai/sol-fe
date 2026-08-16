@@ -1,7 +1,7 @@
 {
   "Profile": {
     "title": "My Profile",
-    "subtitle": "Manage your personal information, account info, and security.",
+    "subtitle": "Manage your personal information, account details, and security.",
     "sections": {
       "userInfo": "User Information",
       "accountInfo": "Account Information",
@@ -11,26 +11,26 @@
     "form": {
       "name": "Full Name",
       "email": "Email",
-      "emailReadonly": "Email cannot be changed.",
-      "phone": "Phone",
+      "emailReadonly": "Readonly (Login ID). Email cannot be changed.",
+      "phone": "Mobile Number",
       "save": "Save Changes",
       "saving": "Saving…",
-      "saved": "Profile updated successfully."
+      "saved": "Profile updated successfully.",
+      "savedWithPassword": "Profile and password updated successfully."
     },
     "photo": {
       "title": "Profile Photo",
       "upload": "Upload Photo",
       "remove": "Remove",
-      "hint": "JPG, JPEG, or PNG. Max 2 MB.",
-      "uploading": "Uploading…"
+      "hint": "JPG, JPEG, or PNG. Optional.",
+      "tooLarge": "File too large (max 2 MB)."
     },
     "account": {
       "company": "Company",
       "role": "Role",
-      "status": "Status",
+      "status": "User Status",
       "lastLogin": "Last Login",
-      "createdAt": "Member Since",
-      "featureAccess": "Default Feature Access"
+      "createdAt": "Created"
     },
     "accountStatus": {
       "active": "Active",
@@ -39,26 +39,25 @@
     "access": {
       "locations": "Location Access",
       "features": "Feature Access",
-      "noLocations": "No locations assigned yet.",
+      "noLocations": "No locations assigned.",
       "noFeatures": "No feature access assigned."
     },
     "password": {
+      "hint": "Leave all password fields blank to keep your current password.",
       "current": "Current Password",
       "new": "New Password",
       "confirm": "Confirm New Password",
-      "submit": "Change Password",
-      "submitting": "Changing…",
-      "changed": "Password changed successfully.",
       "errors": {
+        "allRequired": "Fill in all password fields to change your password.",
         "currentWrong": "Current password is incorrect.",
-        "mismatch": "Passwords do not match.",
-        "minLength": "Password must be at least 8 characters."
+        "mismatch": "Confirm New Password must match New Password.",
+        "minLength": "New Password must be at least 8 characters."
       }
     },
     "common": {
       "cancel": "Cancel",
       "loading": "Loading…",
-      "error": "Failed to load data."
+      "error": "Failed to load profile."
     }
   }
 }

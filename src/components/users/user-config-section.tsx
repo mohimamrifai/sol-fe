@@ -35,7 +35,7 @@ export function UserConfigSection({ user }: Props) {
 
   const roleName = user.role ?? user.roles?.[0]?.name ?? "";
   const features: string[] = user.feature_access ?? [];
-  const locations = user.locations ?? [];
+  const locations = user.locations ?? user.location_access ?? [];
 
   const statusLabel = (s?: string): string => {
     if (!s) return "—";

@@ -1,64 +1,63 @@
 {
   "Profile": {
-    "title": "Profil Saya",
-    "subtitle": "Kelola informasi pribadi, info akun, dan keamanan Anda.",
+    "title": "My Profile",
+    "subtitle": "Kelola informasi pribadi, detail akun, dan keamanan Anda.",
     "sections": {
-      "userInfo": "Informasi User",
-      "accountInfo": "Informasi Akun",
-      "accessInfo": "Informasi Akses",
-      "changePassword": "Ubah Password"
+      "userInfo": "User Information",
+      "accountInfo": "Account Information",
+      "accessInfo": "Access Information",
+      "changePassword": "Change Password"
     },
     "form": {
-      "name": "Nama Lengkap",
+      "name": "Full Name",
       "email": "Email",
-      "emailReadonly": "Email tidak dapat diubah.",
-      "phone": "Telepon",
-      "save": "Simpan Perubahan",
+      "emailReadonly": "Readonly (Login ID). Email tidak dapat diubah.",
+      "phone": "Mobile Number",
+      "save": "Save Changes",
       "saving": "Menyimpan…",
-      "saved": "Profil berhasil diperbarui."
+      "saved": "Profile berhasil diperbarui.",
+      "savedWithPassword": "Profile dan password berhasil diperbarui."
     },
     "photo": {
-      "title": "Foto Profile",
-      "upload": "Unggah Foto",
+      "title": "Profile Photo",
+      "upload": "Upload Photo",
       "remove": "Hapus",
-      "hint": "JPG, JPEG, atau PNG. Maks 2 MB.",
-      "uploading": "Mengunggah…"
+      "hint": "JPG, JPEG, atau PNG. Opsional.",
+      "tooLarge": "File terlalu besar (maks 2 MB)."
     },
     "account": {
-      "company": "Perusahaan",
+      "company": "Company",
       "role": "Role",
-      "status": "Status",
-      "lastLogin": "Login Terakhir",
-      "createdAt": "Anggota Sejak",
-      "featureAccess": "Default Feature Access"
+      "status": "User Status",
+      "lastLogin": "Last Login",
+      "createdAt": "Created"
     },
     "accountStatus": {
-      "active": "Aktif",
-      "inactive": "Tidak Aktif"
+      "active": "Active",
+      "inactive": "Inactive"
     },
     "access": {
-      "locations": "Akses Location",
+      "locations": "Location Access",
       "features": "Feature Access",
-      "noLocations": "Belum ada location yang ditetapkan.",
+      "noLocations": "Belum ada location.",
       "noFeatures": "Belum ada feature access."
     },
     "password": {
-      "current": "Password Saat Ini",
-      "new": "Password Baru",
-      "confirm": "Konfirmasi Password Baru",
-      "submit": "Ubah Password",
-      "submitting": "Mengubah…",
-      "changed": "Password berhasil diubah.",
+      "hint": "Kosongkan seluruh field password jika tidak ingin mengubah password.",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
       "errors": {
-        "currentWrong": "Password saat ini salah.",
-        "mismatch": "Password tidak cocok.",
-        "minLength": "Password minimal 8 karakter."
+        "allRequired": "Isi seluruh field password untuk mengubah password.",
+        "currentWrong": "Current Password salah.",
+        "mismatch": "Confirm New Password harus sama dengan New Password.",
+        "minLength": "New Password minimal 8 karakter."
       }
     },
     "common": {
-      "cancel": "Batal",
+      "cancel": "Cancel",
       "loading": "Memuat…",
-      "error": "Gagal memuat data."
+      "error": "Gagal memuat profile."
     }
   }
 }

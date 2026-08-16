@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { fetchCustomerMasterLocations } from "@/lib/customer-api";
+import { fetchCustomerLocations } from "@/lib/customer-api";
 
 export interface UserFiltersValue {
   search: string;
@@ -48,12 +48,12 @@ export function UserFilters({ value, onChange }: Props) {
   React.useEffect(() => {
     let cancelled = false;
     setLoadingLocations(true);
-    fetchCustomerMasterLocations({ perPage: 500 })
-      .then((res: unknown) => {
+    fetchCustomerLocations({ status: "active", perPage: 500 })
+      .then((res) => {
         if (cancelled) return;
-        const rows = ((res as { data?: { data?: Array<{ id: number; name?: string }> } })?.data?.data) ?? [];
+        const rows = res?.data ?? [];
         setLocationOptions(
-          rows.map((l) => ({ value: String(l.id), label: l.name ?? `Location #${l.id}` }))
+          rows.map((l) => ({ value: String(l.id), label: (l.name as string) ?? `Location #${l.id}` }))
         );
       })
       .finally(() => !cancelled && setLoadingLocations(false));
@@ -83,7 +83,7 @@ export function UserFilters({ value, onChange }: Props) {
           <SelectValue placeholder={t("filters.role")} />
         </SelectTrigger>
         <SelectContent side="bottom">
-          <SelectItem value="all">All Roles</SelectItem>
+          <SelectItem value="all">{t("filters.allRoles")}</SelectItem>
           <SelectItem value="company_admin">{t("role.company_admin")}</SelectItem>
           <SelectItem value="ops_pic">{t("role.ops_pic")}</SelectItem>
           <SelectItem value="finance_pic">{t("role.finance_pic")}</SelectItem>
@@ -98,9 +98,9 @@ export function UserFilters({ value, onChange }: Props) {
           <SelectValue placeholder={t("filters.status")} />
         </SelectTrigger>
         <SelectContent side="bottom">
-          <SelectItem value="all">All Status</SelectItem>
-          <SelectItem value="active">Active</SelectItem>
-          <SelectItem value="inactive">Inactive</SelectItem>
+          <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
+          <SelectItem value="active">{t("userStatus.active")}</SelectItem>
+          <SelectItem value="inactive">{t("userStatus.inactive")}</SelectItem>
         </SelectContent>
       </Select>
       <div className="w-full sm:w-44">

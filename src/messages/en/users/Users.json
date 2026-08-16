@@ -6,14 +6,15 @@
       "total": "Total Users",
       "active": "Active",
       "inactive": "Inactive",
-      "companyAdmin": "Company Admins"
+      "companyAdmin": "Company Admin"
     },
     "filters": {
-      "search": "Search by name or email",
+      "search": "Search by full name or email",
       "role": "Role",
       "status": "Status",
-      "location": "Location",
       "locationAccess": "Location Access",
+      "allRoles": "All Roles",
+      "allStatus": "All Status",
       "loading": "Loading…",
       "searchLocation": "Search location"
     },
@@ -25,7 +26,10 @@
       "locations": "Location Access",
       "lastLogin": "Last Login",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Action",
+      "detail": "Detail",
+      "edit": "Edit",
+      "empty": "No users found."
     },
     "role": {
       "company_admin": "Company Admin",
@@ -56,7 +60,8 @@
       "role": "Role",
       "status": "User Status",
       "locationAccess": "Location Access",
-      "locationAccessHint": "Only locations with active status are shown.",
+      "locationAccessHint": "Only active Customer Locations are shown. Minimum 1 required.",
+      "locationAccessRequired": "Select at least 1 Location Access.",
       "featureAccess": "Feature Access",
       "featureAccessHint": "Defaults to role. Company Admin can override.",
       "useDefaultFeatures": "Use default features for role",
@@ -93,48 +98,29 @@
         "activities": "Activity Log"
       },
       "fields": {
-        "name": "Name",
+        "name": "Full Name",
         "email": "Email",
-        "phone": "Phone",
-        "status": "Status",
-        "created": "Created",
+        "phone": "Mobile Number",
+        "status": "User Status",
         "role": "Role",
-        "locations": "Locations",
+        "locations": "Location Access",
         "featureAccess": "Feature Access",
         "noLocations": "No locations assigned.",
         "noFeatureAccess": "No feature access."
       },
       "actions": {
         "edit": "Edit",
-        "changeStatus": "Change Status",
-        "changeRole": "Change Role",
-        "resetPassword": "Reset Password",
         "back": "Back to Users"
       },
       "security": {
-        "lastLogin": "Last Login",
-        "createdAt": "Created At"
+        "lastLogin": "Last Login"
       }
     },
     "activities": {
       "title": "Activity Log",
+      "description": "Recent changes to this user.",
       "empty": "No activities recorded yet.",
       "actor": "by {name}"
-    },
-    "dialogs": {
-      "changeStatus": {
-        "title": "Change Status",
-        "active": "Activate user",
-        "inactive": "Deactivate user"
-      },
-      "changeRole": {
-        "title": "Change Role"
-      },
-      "resetPassword": {
-        "title": "Reset Password",
-        "newPassword": "New Password",
-        "submit": "Reset Password"
-      }
     },
     "notFound": {
       "title": "User not found",

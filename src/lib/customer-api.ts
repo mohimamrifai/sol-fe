@@ -493,10 +493,15 @@ export async function resetCustomerUserPassword(id: number, password: string) {
   });
 }
 
-export async function fetchCustomerUserActivities(id: number) {
-  return apiFetch<LaravelPaginated<Record<string, unknown>>>(`/customer/users/${id}/activities`, {
-    method: "GET",
-  });
+export async function fetchCustomerUserActivities(
+  id: number,
+  input?: ListQueryParams
+) {
+  const params = input ? `?${new URLSearchParams(Object.entries(input).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])).toString()}` : "";
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/customer/users/${id}/activities${params}`,
+    { method: "GET" }
+  );
 }
 
 // ── My Profile ─────────────────────────────────────────────────

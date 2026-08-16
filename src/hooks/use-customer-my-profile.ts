@@ -43,11 +43,13 @@ export function useDeleteProfilePhoto() {
 }
 
 export function useChangeMyPassword() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: {
       current_password: string;
       password: string;
       password_confirmation: string;
     }) => changeCustomerMyPassword(payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [...MY_PROFILE_KEY] }),
   });
 }

@@ -2,11 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { UserCircle } from "lucide-react";
-import { ProfileInfoSection } from "@/components/settings/profile-info-section";
-import { ProfilePhotoSection } from "@/components/settings/profile-photo-section";
-import { ProfileAccountSection } from "@/components/settings/profile-account-section";
-import { ProfileAccessSection } from "@/components/settings/profile-access-section";
-import { ProfilePasswordSection } from "@/components/settings/profile-password-section";
+import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 
 export default function ProfilePage() {
   const t = useTranslations("Profile");
@@ -23,13 +19,7 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ProfileInfoSection />
-        <ProfilePhotoSection />
-      </div>
-      <ProfileAccountSection />
-      <ProfileAccessSection />
-      <ProfilePasswordSection />
+      <ProfileSettingsForm />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
 } from "@/lib/customer-api";
 import { USERS_LIST_KEY } from "./use-customer-users-list";
 import { USER_DETAIL_KEY } from "./use-customer-user-detail";
+import { USER_ACTIVITIES_KEY } from "./use-customer-user-activities";
 
 export function useCreateUser() {
   const qc = useQueryClient();
@@ -27,6 +28,7 @@ export function useUpdateUser() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: [...USERS_LIST_KEY] });
       qc.invalidateQueries({ queryKey: [...USER_DETAIL_KEY, vars.id] });
+      qc.invalidateQueries({ queryKey: [...USER_ACTIVITIES_KEY, vars.id] });
     },
   });
 }
@@ -39,6 +41,7 @@ export function useChangeUserStatus() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: [...USERS_LIST_KEY] });
       qc.invalidateQueries({ queryKey: [...USER_DETAIL_KEY, vars.id] });
+      qc.invalidateQueries({ queryKey: [...USER_ACTIVITIES_KEY, vars.id] });
     },
   });
 }
@@ -50,13 +53,18 @@ export function useChangeUserRole() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: [...USERS_LIST_KEY] });
       qc.invalidateQueries({ queryKey: [...USER_DETAIL_KEY, vars.id] });
+      qc.invalidateQueries({ queryKey: [...USER_ACTIVITIES_KEY, vars.id] });
     },
   });
 }
 
 export function useResetUserPassword() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, password }: { id: number; password: string }) =>
       resetCustomerUserPassword(id, password),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: [...USER_ACTIVITIES_KEY, vars.id] });
+    },
   });
 }
