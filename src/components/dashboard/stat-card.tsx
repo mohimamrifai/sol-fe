@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { type LucideIcon } from "lucide-react";
+import { ClickableStatCardShell } from "@/components/shared/clickable-stat-card-shell";
 import { formatIdr } from "./format";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,8 @@ interface StatCardProps {
   iconClassName?: string;
   /** When true, value is rendered as IDR currency. */
   asCurrency?: boolean;
+  /** When set, the card navigates to the filtered list page. */
+  href?: string;
 }
 
 /**
@@ -31,6 +34,7 @@ export function StatCard({
   icon: Icon,
   iconClassName = "bg-zinc-100 text-zinc-700",
   asCurrency = false,
+  href,
 }: StatCardProps) {
   const t = useTranslations("Dashboard.cards");
   const formatted = asCurrency
@@ -38,11 +42,7 @@ export function StatCard({
     : new Intl.NumberFormat("id-ID").format(value);
 
   return (
-    <div
-      className={cn(
-        "relative flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)] sm:p-5",
-      )}
-    >
+    <ClickableStatCardShell href={href}>
       <div className="flex items-start justify-between gap-2">
         <span className="font-semibold uppercase tracking-wider text-[10px] text-zinc-500">
           {t(labelKey)}
@@ -68,6 +68,6 @@ export function StatCard({
       </div>
 
       <p className="text-xs leading-snug text-zinc-500">{t(descriptionKey)}</p>
-    </div>
+    </ClickableStatCardShell>
   );
 }

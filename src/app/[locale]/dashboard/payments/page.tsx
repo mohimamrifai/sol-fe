@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { AlertCircle, RefreshCcw, Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Wallet } from "lucide-react";
 import { PaymentStatsCards } from "@/components/payments/payment-stats-cards";
 import {
   PaymentFilters,
@@ -11,10 +10,11 @@ import {
   type PaymentFiltersValue,
 } from "@/components/payments/payment-filters";
 import { PaymentTable } from "@/components/payments/payment-table";
+import { ListErrorBanner } from "@/components/shared/list-error-banner";
 import { useCustomerPaymentStats } from "@/hooks/use-customer-payment-stats";
 import { useCustomerPaymentsList } from "@/hooks/use-customer-payments-list";
 import type { ListQueryParams } from "@/lib/list-query";
-import type { PaymentListItem } from "@/lib/payment-types";
+import type { PaymentListItem, PaymentStats } from "@/lib/payment-types";
 
 const PER_PAGE = 15;
 
@@ -65,6 +65,13 @@ export default function CustomerPaymentsListPage() {
   const rows = (list.data?.data ?? []) as unknown as PaymentListItem[];
   const total = list.data?.total ?? 0;
 
+  const handleCardClick = React.useCallback(
+    (key: keyof PaymentStats) => {
+      setFilters({ ...state.filters, status: key });
+    },
+    [setFilters, state.filters]
+  );
+
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -81,12 +88,15 @@ export default function CustomerPaymentsListPage() {
         </div>
       </header>
 
-      <PaymentStatsCards counts={stats.data?.data ?? { unpaid: 0, partially_paid: 0, paid: 0, overdue: 0 }} />
+      <PaymentStatsCards
+        counts={stats.data?.data ?? { unpaid: 0, partially_paid: 0, paid: 0, overdue: 0 }}
+        onCardClick={handleCardClick}
+      />
 
       <PaymentFilters value={state.filters} onChange={setFilters} />
 
       {list.error ? (
-        <ErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
+        <ListErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
       ) : (
         <PaymentTable
           rows={rows}
@@ -97,21 +107,6 @@ export default function CustomerPaymentsListPage() {
           loading={list.isLoading}
         />
       )}
-    </div>
-  );
-}
-
-function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-      <div className="flex items-center gap-2">
-        <AlertCircle className="h-4 w-4" />
-        <span>{message}</span>
-      </div>
-      <Button variant="outline" size="sm" onClick={onRetry} className="h-8 gap-1 px-2 text-xs">
-        <RefreshCcw className="h-3 w-3" />
-        Retry
-      </Button>
     </div>
   );
 }

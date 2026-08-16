@@ -203,7 +203,10 @@ export default function CustomerBookingsListPage() {
       </div>
 
       {/* Stat cards */}
-      <BookingStatsCards counts={stats} />
+      <BookingStatsCards
+        counts={stats}
+        onCardClick={(key) => updateUrl({ status: key, page: "1" })}
+      />
 
       {/* Filter bar — Search takes its own row so dropdowns can share a single grid below */}
       <Card className="border-zinc-200 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)]">

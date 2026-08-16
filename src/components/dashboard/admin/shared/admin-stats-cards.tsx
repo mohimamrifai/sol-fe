@@ -73,8 +73,15 @@ export function AdminStatsCards({
 
         if (onClick) {
           return (
-            <button key={key} type="button" onClick={onClick} className="text-left">
-              <Card className="h-full transition-colors hover:bg-muted/40">{content}</Card>
+            <button
+              key={key}
+              type="button"
+              onClick={onClick}
+              className="cursor-pointer text-left"
+            >
+              <Card className="h-full transition-colors hover:border-zinc-300 hover:bg-muted/40 hover:shadow-sm">
+                {content}
+              </Card>
             </button>
           );
         }

@@ -5,6 +5,7 @@
     "pageSubtitle": "Customer bookings and conversion to shipments.",
     "addBooking": "Add Booking",
     "listTitle": "Booking List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search booking number or cargo…",
     "columns": {
       "bookingNo": "Booking No",
@@ -16,6 +17,12 @@
       "coverage": "Coverage",
       "bookingDate": "Booking Date",
       "status": "Status"
+    },
+    "coverageOptions": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
     },
     "filters": {
       "submitted": "Submitted",

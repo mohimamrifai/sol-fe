@@ -2,16 +2,19 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Plus, MapPin, RefreshCcw, AlertCircle } from "lucide-react";
+import { Plus, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationStatsCards } from "@/components/locations/location-stats-cards";
 import { LocationFilters, LOCATION_FILTER_DEFAULTS, type LocationFiltersValue } from "@/components/locations/location-filters";
 import { LocationTable, type LocationRow } from "@/components/locations/location-table";
 import { LocationFormDialog } from "@/components/locations/location-form-dialog";
+import { ListErrorBanner } from "@/components/shared/list-error-banner";
 import { useCustomerLocationStats } from "@/hooks/use-customer-locations-stats";
 import { useCustomerLocationsList } from "@/hooks/use-customer-locations-list";
 
 const PER_PAGE = 15;
+
+type LocationStatKey = "total" | "head_office" | "branch_office" | "warehouse" | "active";
 
 export default function LocationsPage() {
   const t = useTranslations("Locations");
@@ -51,6 +54,21 @@ export default function LocationsPage() {
     setDialogOpen(true);
   };
 
+  const handleCardClick = React.useCallback(
+    (key: LocationStatKey) => {
+      if (key === "total") {
+        setFilters(LOCATION_FILTER_DEFAULTS);
+        return;
+      }
+      if (key === "active") {
+        setFilters({ ...filters, status: "active", type: "" });
+        return;
+      }
+      setFilters({ ...filters, type: key, status: "" });
+    },
+    [filters]
+  );
+
   return (
     <div className="space-y-5">
       <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
@@ -69,19 +87,12 @@ export default function LocationsPage() {
         </Button>
       </header>
 
-      <LocationStatsCards counts={stats.data?.data ?? {}} />
+      <LocationStatsCards counts={stats.data?.data ?? {}} onCardClick={handleCardClick} />
 
       <LocationFilters value={filters} onChange={setFilters} />
 
       {list.isError ? (
-        <div className="flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <p>Failed to load locations.</p>
-          <Button variant="outline" size="sm" onClick={() => list.refetch()} className="ml-auto h-8">
-            <RefreshCcw className="h-3.5 w-3.5" />
-            Retry
-          </Button>
-        </div>
+        <ListErrorBanner message={t("common.error")} onRetry={() => list.refetch()} />
       ) : (
         <LocationTable
           rows={rows}

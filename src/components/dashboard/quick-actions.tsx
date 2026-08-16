@@ -39,7 +39,7 @@ export function QuickActions({ visibleActions }: Props) {
           {t("title")}
         </CardTitle>
         <CardDescription className="text-xs text-zinc-500">
-          Pintasan menuju fitur yang sering dipakai.
+          {t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,7 +51,7 @@ export function QuickActions({ visibleActions }: Props) {
               <Link
                 key={key}
                 href={meta.href as never}
-                className="group flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm font-medium text-zinc-700 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 hover:shadow-sm"
+                className="group flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm font-medium text-zinc-700 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 hover:shadow-sm"
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-700 transition-colors group-hover:bg-black group-hover:text-white">
                   <Icon className="h-4 w-4" />

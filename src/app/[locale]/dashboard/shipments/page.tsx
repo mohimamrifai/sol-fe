@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, RefreshCcw } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { ShipmentStatsCards } from "@/components/shipments/shipment-stats-cards";
 import {
   ShipmentFilters,
@@ -11,10 +10,12 @@ import {
   type ShipmentFiltersValue,
 } from "@/components/shipments/shipment-filters";
 import { ShipmentTable } from "@/components/shipments/shipment-table";
+import { ListErrorBanner } from "@/components/shared/list-error-banner";
 import { useCustomerShipmentStats } from "@/hooks/use-customer-shipment-stats";
 import { useCustomerShipmentsList } from "@/hooks/use-customer-shipments-list";
 import { apiFetch } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
+import { SHIPMENT_STATUS_KEYS } from "@/lib/shipment-status";
+import { useQuery } from "@tanstack/react-query";
 
 interface LocationOption { id: number; name: string; code: string }
 
@@ -22,8 +23,27 @@ const PER_PAGE = 15;
 
 export default function CustomerShipmentsPage() {
   const t = useTranslations("Shipments");
+  const searchParams = useSearchParams();
+  const didInitFromQuery = React.useRef(false);
   const [filters, setFilters] = React.useState<ShipmentFiltersValue>(SHIPMENT_FILTER_DEFAULTS);
   const [page, setPage] = React.useState(1);
+
+  React.useEffect(() => {
+    if (didInitFromQuery.current) return;
+    const statusRaw = searchParams.get("status");
+    const nextStatus =
+      statusRaw && (SHIPMENT_STATUS_KEYS as readonly string[]).includes(statusRaw)
+        ? statusRaw
+        : "";
+
+    if (nextStatus) {
+      didInitFromQuery.current = true;
+      setFilters((prev) => ({ ...prev, status: nextStatus }));
+      setPage(1);
+    } else {
+      didInitFromQuery.current = true;
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     setPage(1);
@@ -42,6 +62,10 @@ export default function CustomerShipmentsPage() {
   const rows = (list.data?.data ?? []) as unknown as Parameters<typeof ShipmentTable>[0]["rows"];
   const total = list.data?.total ?? 0;
 
+  const handleCardClick = React.useCallback((key: "planning" | "in_progress" | "completed" | "cancelled") => {
+    setFilters((prev) => ({ ...prev, status: key }));
+  }, []);
+
   return (
     <div className="space-y-5">
       <header className="space-y-1">
@@ -51,6 +75,7 @@ export default function CustomerShipmentsPage() {
 
       <ShipmentStatsCards
         counts={stats.data ?? { planning: 0, in_progress: 0, completed: 0, cancelled: 0 }}
+        onCardClick={handleCardClick}
       />
 
       <ShipmentFilters
@@ -61,7 +86,7 @@ export default function CustomerShipmentsPage() {
       />
 
       {list.error ? (
-        <ErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
+        <ListErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
       ) : (
         <ShipmentTable
           rows={rows}
@@ -72,21 +97,6 @@ export default function CustomerShipmentsPage() {
           loading={list.isLoading}
         />
       )}
-    </div>
-  );
-}
-
-function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-      <div className="flex items-center gap-2">
-        <AlertCircle className="h-4 w-4" />
-        <span>{message}</span>
-      </div>
-      <Button variant="outline" size="sm" onClick={onRetry} className="h-8 gap-1 px-2 text-xs">
-        <RefreshCcw className="h-3 w-3" />
-        Retry
-      </Button>
     </div>
   );
 }

@@ -53,6 +53,11 @@
       "paymentReceived": "Payment for Invoice {number} was received."
     },
     "loading": "Loading dashboard…",
+    "common": {
+      "retry": "Retry",
+      "unavailableTitle": "Dashboard unavailable",
+      "unavailableDescription": "Your role is not recognized."
+    },
     "cards": {
       "bookingDraft": "Booking (Draft)",
       "bookingDraftHint": "Bookings that have not been submitted yet",
@@ -115,6 +120,7 @@
     },
     "quickAction": {
       "title": "Quick Actions",
+      "description": "Shortcuts to frequently used features.",
       "createBooking": "Create Booking",
       "trackShipment": "Track Shipment",
       "viewInvoice": "View Invoices",

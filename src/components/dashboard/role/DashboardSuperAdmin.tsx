@@ -88,7 +88,7 @@ function StatusCountGrid({
               href={linkForKey(key)}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-auto min-h-10 justify-between px-3 py-2 text-left font-normal"
+                "h-auto min-h-10 cursor-pointer justify-between px-3 py-2 text-left font-normal"
               )}
             >
               <span>{t(`${labelPrefix}.${key}` as Parameters<typeof t>[0])}</span>
@@ -378,7 +378,7 @@ export function DashboardSuperAdmin({
                 <Link
                   key={item.key}
                   href={item.link ?? "/dashboard"}
-                  className="block rounded-md border border-border px-3 py-2 transition-colors hover:bg-muted/50"
+                  className="block cursor-pointer rounded-md border border-border px-3 py-2 transition-colors hover:bg-muted/50"
                 >
                   {t(`notifications.${item.key}` as Parameters<typeof t>[0], { count: item.count })}
                 </Link>
@@ -393,7 +393,7 @@ export function DashboardSuperAdmin({
           <CardTitle className="text-base">{t("sections.quickActions")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          <Link href="/dashboard/admin/customer/customers/create" className={buttonVariants()}>
+          <Link href="/dashboard/admin/customer/customers/create" className={cn(buttonVariants(), "cursor-pointer")}>
             <Plus className="mr-2 h-4 w-4" />
             {t("quickActions.createCustomer")}
           </Link>

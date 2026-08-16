@@ -82,6 +82,17 @@ export default function AdminShipmentsPage() {
     [tc, shipmentStatusLabel]
   );
 
+  const coverageFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.all") },
+      ...COVERAGE_FILTER_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
+        value: o.value,
+        label: t(`coverageOptions.${o.value}` as Parameters<typeof t>[0]),
+      })),
+    ],
+    [t, tc]
+  );
+
   useEffect(() => {
     setPage(1);
   }, [
@@ -188,102 +199,93 @@ export default function AdminShipmentsPage() {
         cancelled={shipmentStats?.cancelled ?? 0}
       />
 
-      <Card className="min-w-0 overflow-hidden border-zinc-200/60 shadow-sm">
-        <CardHeader className="space-y-1 bg-zinc-50/50 border-b border-zinc-100">
-          <CardTitle className="text-lg font-bold">{t("listTitle")}</CardTitle>
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="p-4 border-b border-zinc-50">
-            <TableToolbar
-              searchPlaceholder={t("searchPlaceholder")}
-              searchValue={searchInput}
-              onSearchChange={setSearchInput}
-              filterLabel={t("filterStatus")}
-              filterValue={statusFilter}
-              onFilterChange={setStatusFilter}
-              filterOptions={shipmentStatusFilters}
-            />
-            <AdminListFilters
-              className="mt-3"
-              selects={[
-                {
-                  id: "shipment-company",
-                  label: tc("table.customer"),
-                  value: companyFilter,
-                  onChange: setCompanyFilter,
-                  options: masterSelectOptions(masters.companies, tc("filters.all")),
-                },
-                {
-                  id: "shipment-service",
-                  label: t("table.service"),
-                  value: serviceTypeFilter,
-                  onChange: setServiceTypeFilter,
-                  options: masterSelectOptions(masters.serviceTypes, tc("filters.all")),
-                },
-                {
-                  id: "shipment-coverage",
-                  label: t("columns.coverage"),
-                  value: coverageFilter,
-                  onChange: setCoverageFilter,
-                  options: [
-                    { value: "all", label: tc("filters.all") },
-                    ...COVERAGE_FILTER_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
-                      value: o.value,
-                      label: o.label,
-                    })),
-                  ],
-                },
-                {
-                  id: "shipment-origin",
-                  label: t("filters.origin"),
-                  value: originFilter,
-                  onChange: setOriginFilter,
-                  options: masterSelectOptions(masters.locations, tc("filters.all")),
-                },
-                {
-                  id: "shipment-destination",
-                  label: t("filters.destination"),
-                  value: destinationFilter,
-                  onChange: setDestinationFilter,
-                  options: masterSelectOptions(masters.locations, tc("filters.all")),
-                },
-              ]}
-              dates={[
-                {
-                  id: "shipment-date-from",
-                  label: `${t("filters.departureDate")} (${tc("filters.from")})`,
-                  value: dateFrom,
-                  onChange: setDateFrom,
-                },
-                {
-                  id: "shipment-date-to",
-                  label: `${t("filters.departureDate")} (${tc("filters.to")})`,
-                  value: dateTo,
-                  onChange: setDateTo,
-                },
-              ]}
-            />
-          </div>
-
-          <ShipmentTable
-            rows={rows}
-            meta={meta}
-            perPage={PER_PAGE}
-            loading={loading}
+        <CardContent className="space-y-4">
+          <TableToolbar
+            searchPlaceholder={t("searchPlaceholder")}
+            searchValue={searchInput}
+            onSearchChange={setSearchInput}
+            filterLabel={tc("filters.status")}
+            filterValue={statusFilter}
+            onFilterChange={setStatusFilter}
+            filterOptions={shipmentStatusFilters}
           />
+          <AdminListFilters
+            selects={[
+              {
+                id: "shipment-company",
+                label: tc("table.customer"),
+                value: companyFilter,
+                onChange: setCompanyFilter,
+                options: masterSelectOptions(masters.companies, tc("filters.all")),
+              },
+              {
+                id: "shipment-service",
+                label: t("table.service"),
+                value: serviceTypeFilter,
+                onChange: setServiceTypeFilter,
+                options: masterSelectOptions(masters.serviceTypes, tc("filters.all")),
+              },
+              {
+                id: "shipment-coverage",
+                label: t("columns.coverage"),
+                value: coverageFilter,
+                onChange: setCoverageFilter,
+                options: coverageFilterOptions,
+              },
+              {
+                id: "shipment-origin",
+                label: t("filters.origin"),
+                value: originFilter,
+                onChange: setOriginFilter,
+                options: masterSelectOptions(masters.locations, tc("filters.all")),
+              },
+              {
+                id: "shipment-destination",
+                label: t("filters.destination"),
+                value: destinationFilter,
+                onChange: setDestinationFilter,
+                options: masterSelectOptions(masters.locations, tc("filters.all")),
+              },
+            ]}
+            dates={[
+              {
+                id: "shipment-date-from",
+                label: `${t("filters.departureDate")} (${tc("filters.from")})`,
+                value: dateFrom,
+                onChange: setDateFrom,
+              },
+              {
+                id: "shipment-date-to",
+                label: `${t("filters.departureDate")} (${tc("filters.to")})`,
+                value: dateTo,
+                onChange: setDateTo,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
 
-          {meta && meta.last_page > 1 && (
-            <div className="p-4 border-t border-zinc-50">
-              <PaginationBar
-                currentPage={meta.current_page}
-                lastPage={meta.last_page}
-                total={meta.total}
-                from={meta.from}
-                to={meta.to}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1">
+          <CardTitle>{t("listTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ShipmentTable rows={rows} meta={meta} perPage={PER_PAGE} loading={loading} />
+
+          {meta && meta.last_page > 1 ? (
+            <PaginationBar
+              currentPage={meta.current_page}
+              lastPage={meta.last_page}
+              total={meta.total}
+              from={meta.from}
+              to={meta.to}
+              onPageChange={setPage}
+            />
+          ) : null}
         </CardContent>
       </Card>
     </div>

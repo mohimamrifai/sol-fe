@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Users, CheckCircle2, XCircle, Shield, type LucideIcon } from "lucide-react";
+import { ClickableStatCardShell } from "@/components/shared/clickable-stat-card-shell";
 import { cn } from "@/lib/utils";
 
 interface Counts {
@@ -29,9 +30,10 @@ const KEYS: (keyof Counts)[] = ["total", "active", "inactive", "company_admin"];
 
 interface Props {
   counts: Partial<Counts>;
+  onCardClick?: (key: keyof Counts) => void;
 }
 
-export function UserStatsCards({ counts }: Props) {
+export function UserStatsCards({ counts, onCardClick }: Props) {
   const t = useTranslations("Users");
 
   return (
@@ -40,9 +42,9 @@ export function UserStatsCards({ counts }: Props) {
         const Icon = ICONS[key];
         const value = counts[key] ?? 0;
         return (
-          <div
+          <ClickableStatCardShell
             key={key}
-            className="flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)] sm:p-5"
+            onClick={onCardClick ? () => onCardClick(key) : undefined}
           >
             <div className="flex items-start justify-between gap-2">
               <span className="font-semibold uppercase tracking-wider text-[10px] text-zinc-500">
@@ -55,7 +57,7 @@ export function UserStatsCards({ counts }: Props) {
             <div className="truncate tabular-nums font-bold tracking-tight text-zinc-900 text-2xl sm:text-3xl">
               {new Intl.NumberFormat("id-ID").format(value)}
             </div>
-          </div>
+          </ClickableStatCardShell>
         );
       })}
     </div>

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, FileText, RefreshCcw } from "lucide-react";
+import { FileText } from "lucide-react";
 import { DocumentStatsCards } from "@/components/documents/document-stats-cards";
 import {
   DocumentFilters,
@@ -11,11 +11,11 @@ import {
   type DocumentFiltersValue,
 } from "@/components/documents/document-filters";
 import { DocumentTable } from "@/components/documents/document-table";
+import { ListErrorBanner } from "@/components/shared/list-error-banner";
 import { useCustomerDocumentStats } from "@/hooks/use-customer-documents-stats";
 import { useCustomerDocumentsList } from "@/hooks/use-customer-documents-list";
 import { useCustomerDocumentShipmentOptions } from "@/hooks/use-customer-document-shipment-options";
-import { Button } from "@/components/ui/button";
-import type { DocumentRow, DocumentFilterTypeKey } from "@/lib/document-types";
+import type { DocumentRow, DocumentFilterTypeKey, DocumentStats } from "@/lib/document-types";
 import { DOCUMENT_FILTER_TYPES } from "@/lib/document-types";
 
 const PER_PAGE = 15;
@@ -100,6 +100,17 @@ export default function CustomerDocumentsListPage() {
   const rows = ((list.data?.data ?? []) as unknown as DocumentRow[]);
   const total = list.data?.total ?? 0;
 
+  const handleCardClick = React.useCallback(
+    (key: keyof DocumentStats) => {
+      if (key === "total") {
+        setFilters({ ...state.filters, type: "" });
+        return;
+      }
+      setFilters({ ...state.filters, type: key as DocumentFilterTypeKey });
+    },
+    [setFilters, state.filters]
+  );
+
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -120,12 +131,13 @@ export default function CustomerDocumentsListPage() {
 
       <DocumentStatsCards
         counts={stats.data ?? { total: 0, booking: 0, shipment: 0, billing: 0 }}
+        onCardClick={handleCardClick}
       />
 
       <DocumentFilters value={state.filters} onChange={setFilters} shipmentOptions={shipmentOptions} />
 
       {list.error ? (
-        <ErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
+        <ListErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
       ) : (
         <DocumentTable
           rows={rows}
@@ -136,21 +148,6 @@ export default function CustomerDocumentsListPage() {
           loading={list.isLoading}
         />
       )}
-    </div>
-  );
-}
-
-function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-      <div className="flex items-center gap-2">
-        <AlertCircle className="h-4 w-4" />
-        <span>{message}</span>
-      </div>
-      <Button variant="outline" size="sm" onClick={onRetry} className="h-8 gap-1 px-2 text-xs">
-        <RefreshCcw className="h-3 w-3" />
-        Retry
-      </Button>
     </div>
   );
 }

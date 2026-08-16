@@ -1,46 +1,53 @@
 {
   "AdminShipments": {
-    "pageTitle": "Shipment Management",
-    "pageSubtitle": "Shipment customer dan pelacakan operasional.",
+    "pageTitle": "Manajemen Shipment",
+    "pageSubtitle": "Shipment pelanggan dan pelacakan operasional.",
     "listTitle": "Daftar Shipment",
-    "searchPlaceholder": "Cari Nomor Shipment atau CN…",
-    "filterStatus": "Filter Status",
+    "filterTitle": "Filter",
+    "searchPlaceholder": "Cari nomor shipment atau CN…",
+    "filterStatus": "Status",
     "columns": {
-      "shipmentNo": "Shipment No",
-      "bookingNo": "Booking No",
-      "cnNumber": "CN Number",
-      "origin": "Origin",
-      "destination": "Destination",
+      "shipmentNo": "No. Shipment",
+      "bookingNo": "No. Booking",
+      "cnNumber": "No. CN",
+      "origin": "Asal",
+      "destination": "Tujuan",
       "coverage": "Coverage"
     },
+    "coverageOptions": {
+      "port_to_port": "Port ke Port",
+      "door_to_port": "Door ke Port",
+      "port_to_door": "Port ke Door",
+      "door_to_door": "Door ke Door"
+    },
     "filters": {
-      "origin": "Origin",
-      "destination": "Destination",
+      "origin": "Asal",
+      "destination": "Tujuan",
       "departureDate": "Tanggal Keberangkatan"
     },
     "stats": {
-      "planning": "Planning",
-      "readyForDeparture": "Ready for Departure",
-      "inTransit": "In Transit",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
+      "planning": "Perencanaan",
+      "readyForDeparture": "Siap Berangkat",
+      "inTransit": "Dalam Transit",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
     },
     "table": {
       "viewDetail": "Lihat detail shipment",
       "cnActionsMenu": "Menu aksi CN",
       "cnActionsMenuWithNumber": "Menu aksi CN {number}",
-      "service": "Service",
+      "service": "Layanan",
       "route": "Rute",
       "empty": "Belum ada shipment ditemukan.",
-      "updatedCaption": "Data Shipment Terupdate"
+      "updatedCaption": "Data shipment terbaru"
     },
     "toasts": {
       "loadFailed": "Gagal memuat shipment."
     },
     "transport": {
-      "title": "Transport Assignment",
-      "originTitle": "Origin Transport",
-      "destinationTitle": "Destination Transport",
+      "title": "Penugasan Transport",
+      "originTitle": "Transport Asal",
+      "destinationTitle": "Transport Tujuan",
       "vendor": "Vendor",
       "selectVendor": "Pilih vendor",
       "vehicleType": "Tipe Kendaraan",
@@ -51,8 +58,8 @@
       "pickupDateTime": "Jadwal Pickup",
       "deliveryDateTime": "Jadwal Delivery",
       "remark": "Catatan",
-      "saved": "Transport assignment disimpan.",
-      "saveFailed": "Gagal menyimpan transport assignment."
+      "saved": "Penugasan transport disimpan.",
+      "saveFailed": "Gagal menyimpan penugasan transport."
     },
     "invalidId": "ID shipment tidak valid."
   }

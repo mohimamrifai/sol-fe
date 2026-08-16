@@ -9,8 +9,8 @@
       "payments": "Pembayaran",
       "companySettings": "Profil Saya",
       "company": "Profil Perusahaan",
-      "locations": "Locations",
-      "users": "Users",
+      "locations": "Lokasi",
+      "users": "Pengguna",
       "customerManagement": "Manajemen Pelanggan",
       "bookingManagement": "Manajemen Booking",
       "shipmentManagement": "Manajemen Pengiriman",
@@ -27,7 +27,7 @@
       "logout": "Keluar"
     },
     "roleTitles": {
-      "super_admin": "Dashboard Super Admin",
+      "super_admin": "Dashboard Administrator Utama",
       "operations": "Dashboard Operations",
       "finance": "Dashboard Finance",
       "sales": "Dashboard Sales",
@@ -53,6 +53,11 @@
       "paymentReceived": "Pembayaran Invoice {number} berhasil diterima."
     },
     "loading": "Memuat dashboard…",
+    "common": {
+      "retry": "Coba lagi",
+      "unavailableTitle": "Dashboard tidak tersedia",
+      "unavailableDescription": "Role tidak dikenali."
+    },
     "cards": {
       "bookingDraft": "Booking (Draft)",
       "bookingDraftHint": "Booking yang belum disubmit",
@@ -115,6 +120,7 @@
     },
     "quickAction": {
       "title": "Aksi Cepat",
+      "description": "Pintasan menuju fitur yang sering dipakai.",
       "createBooking": "Buat Booking",
       "trackShipment": "Lacak Shipment",
       "viewInvoice": "Lihat Invoice",

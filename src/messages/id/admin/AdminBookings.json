@@ -1,25 +1,32 @@
 {
   "AdminBookings": {
-    "title": "Bookings",
-    "pageTitle": "Booking Management",
-    "pageSubtitle": "Booking customer dan konversi ke shipment.",
+    "title": "Booking",
+    "pageTitle": "Manajemen Booking",
+    "pageSubtitle": "Booking pelanggan dan konversi ke shipment.",
     "addBooking": "Tambah Booking",
     "listTitle": "Daftar Booking",
+    "filterTitle": "Filter",
     "searchPlaceholder": "Cari nomor booking atau kargo…",
     "columns": {
-      "bookingNo": "Kode Booking",
-      "customer": "Customer",
-      "origin": "Origin",
-      "destination": "Destination",
-      "route": "Route",
-      "service": "Service",
+      "bookingNo": "No. Booking",
+      "customer": "Pelanggan",
+      "origin": "Asal",
+      "destination": "Tujuan",
+      "route": "Rute",
+      "service": "Layanan",
       "coverage": "Coverage",
-      "bookingDate": "Booking Date",
+      "bookingDate": "Tanggal Booking",
       "status": "Status"
+    },
+    "coverageOptions": {
+      "port_to_port": "Port ke Port",
+      "door_to_port": "Door ke Port",
+      "port_to_door": "Port ke Door",
+      "door_to_door": "Door ke Door"
     },
     "filters": {
       "submitted": "Diajukan",
-      "underReview": "Under Review",
+      "underReview": "Dalam Review",
       "confirmed": "Terkonfirmasi",
       "rejected": "Ditolak",
       "cancelled": "Dibatalkan"
@@ -27,23 +34,23 @@
     "stats": {
       "draft": "Draft",
       "draftHint": "Booking belum disubmit.",
-      "submitted": "Submitted",
+      "submitted": "Diajukan",
       "submittedHint": "Menunggu konfirmasi internal.",
-      "confirmed": "Confirmed",
+      "confirmed": "Terkonfirmasi",
       "confirmedHint": "Dikonfirmasi, siap dikonversi ke shipment.",
       "converted": "Dikonversi ke Shipment"
     },
     "actions": {
       "detail": "Detail",
       "submit": "Submit",
-      "confirm": "Confirm",
-      "reject": "Reject",
-      "convert": "Convert to Shipment",
-      "viewShipment": "View Shipment",
-      "delete": "Delete",
-      "editBooking": "Edit booking",
-      "edit": "Edit booking",
-      "duplicate": "Duplicate booking"
+      "confirm": "Konfirmasi",
+      "reject": "Tolak",
+      "convert": "Konversi ke Shipment",
+      "viewShipment": "Lihat Shipment",
+      "delete": "Hapus",
+      "editBooking": "Edit Booking",
+      "edit": "Edit Booking",
+      "duplicate": "Duplikat Booking"
     },
     "toasts": {
       "submitted": "Booking disubmit.",
@@ -60,18 +67,18 @@
       "convertFailed": "Gagal konversi.",
       "rejectFailed": "Gagal menolak.",
       "updateFailed": "Gagal memperbarui booking.",
-      "loadFailed": "Gagal memuat booking",
+      "loadFailed": "Gagal memuat booking.",
       "editLoadFailed": "Gagal memuat form edit booking."
     },
     "confirm": {
       "deleteDraft": "Hapus booking draft ini?"
     },
     "rejectDialog": {
-      "title": "Tolak booking",
+      "title": "Tolak Booking",
       "reasonLabel": "Alasan Penolakan",
-      "selectPlaceholder": "Pilih alasan...",
+      "selectPlaceholder": "Pilih alasan…",
       "otherLabel": "Alasan Spesifik",
-      "otherPlaceholder": "Ketikkan alasan penolakan...",
+      "otherPlaceholder": "Ketikkan alasan penolakan…",
       "other": "Lainnya",
       "reasons": {
         "capacity": "Kapasitas pengiriman penuh",

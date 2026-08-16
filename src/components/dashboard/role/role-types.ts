@@ -110,3 +110,13 @@ export const CARD_LABEL_KEY: Record<
   invoice_unpaid: "invoiceUnpaid",
   invoice_outstanding_amount: "invoiceOutstanding",
 };
+
+/** Maps each dashboard stat card to its filtered list page. */
+export const CARD_HREF: Record<(typeof ORDERED_CARD_KEYS)[number], string> = {
+  booking_draft: "/dashboard/booking?status=draft",
+  booking_submitted: "/dashboard/booking?status=submitted",
+  shipment_active: "/dashboard/shipments?status=in_progress",
+  shipment_completed: "/dashboard/shipments?status=completed",
+  invoice_unpaid: "/dashboard/invoices?status=unpaid",
+  invoice_outstanding_amount: "/dashboard/invoices?status=unpaid",
+};

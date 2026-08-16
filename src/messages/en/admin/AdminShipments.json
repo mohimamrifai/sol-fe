@@ -3,6 +3,7 @@
     "pageTitle": "Shipment Management",
     "pageSubtitle": "Real-time shipment, container, and rack monitoring.",
     "listTitle": "Shipment List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search shipment number or CN…",
     "filterStatus": "Filter Status",
     "columns": {
@@ -12,6 +13,12 @@
       "origin": "Origin",
       "destination": "Destination",
       "coverage": "Coverage"
+    },
+    "coverageOptions": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
     },
     "filters": {
       "origin": "Origin",

@@ -59,6 +59,7 @@ const DashboardVendorViewer = dynamic(
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const t = useTranslations("Dashboard.roleTitles");
+  const tCommon = useTranslations("Dashboard.common");
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState<AdminDashboardPayload | null>(null);
@@ -170,8 +171,8 @@ export default function DashboardPage() {
       default:
         return (
           <div className="flex min-w-0 w-full flex-1 flex-col gap-4">
-            <h1 className="text-xl font-semibold">Dashboard tidak tersedia</h1>
-            <p className="text-sm text-muted-foreground">Role tidak dikenali.</p>
+            <h1 className="text-xl font-semibold">{tCommon("unavailableTitle")}</h1>
+            <p className="text-sm text-muted-foreground">{tCommon("unavailableDescription")}</p>
           </div>
         );
     }

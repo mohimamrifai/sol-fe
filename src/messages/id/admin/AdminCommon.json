@@ -38,7 +38,7 @@
       "actions": "Aksi",
       "empty": "Belum ada data.",
       "rowsOnPage": "Baris pada halaman ini.",
-      "customer": "Customer",
+      "customer": "Pelanggan",
       "status": "Status"
     },
     "filters": {
@@ -64,7 +64,7 @@
       "booking": {
         "draft": "Draft",
         "submitted": "Diajukan",
-        "under_review": "Under Review",
+        "under_review": "Dalam Review",
         "approved": "Terkonfirmasi",
         "confirmed": "Terkonfirmasi",
         "rejected": "Ditolak",
@@ -98,12 +98,12 @@
         "chargeback": "Chargeback"
       },
       "shipment": {
-        "planning": "Planning",
+        "planning": "Perencanaan",
         "in_progress": "Dalam Proses",
-        "ready_for_departure": "Ready for Departure",
-        "in_transit": "In Transit",
-        "completed": "Completed",
-        "cancelled": "Cancelled",
+        "ready_for_departure": "Siap Berangkat",
+        "in_transit": "Dalam Transit",
+        "completed": "Selesai",
+        "cancelled": "Dibatalkan",
         "booking_created": "Booking Dibuat",
         "created": "Dibuat",
         "survey_completed": "Survey Selesai",

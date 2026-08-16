@@ -29,6 +29,7 @@ import type {
   CustomerDashboardPayload,
 } from "@/lib/dashboard-api";
 import {
+  CARD_HREF,
   CARD_LABEL_KEY,
   ORDERED_CARD_KEYS,
   getRoleVisibility,
@@ -87,6 +88,7 @@ export function RoleDashboard({ role, data, loading }: Props) {
                 icon={Icon}
                 iconClassName={meta.tone}
                 asCurrency={isCurrency}
+                href={CARD_HREF[key]}
               />
             );
           })}

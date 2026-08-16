@@ -24,6 +24,7 @@ interface PageProps {
 export default function CustomerShipmentDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const t = useTranslations("Shipments.detail");
+  const tCommon = useTranslations("Dashboard.common");
   const router = useRouter();
   const [downloading, setDownloading] = React.useState(false);
   const query = useCustomerShipmentDetail(id);
@@ -70,7 +71,7 @@ export default function CustomerShipmentDetailPage({ params }: PageProps) {
             className="h-8 gap-1 px-2 text-xs"
           >
             <RefreshCcw className="h-3 w-3" />
-            Retry
+            {tCommon("retry")}
           </Button>
         </div>
       </div>

@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { AlertCircle, Receipt, RefreshCcw } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Receipt } from "lucide-react";
 import { InvoiceStatsCards } from "@/components/invoices/invoice-stats-cards";
 import {
   InvoiceFilters,
@@ -10,12 +11,14 @@ import {
   type InvoiceFiltersValue,
 } from "@/components/invoices/invoice-filters";
 import { InvoiceTable } from "@/components/invoices/invoice-table";
+import { ListErrorBanner } from "@/components/shared/list-error-banner";
 import { useCustomerInvoiceStats } from "@/hooks/use-customer-invoice-stats";
 import { useCustomerInvoicesList } from "@/hooks/use-customer-invoices-list";
-import { Button } from "@/components/ui/button";
-import type { CustomerInvoiceRow } from "@/lib/invoice-types";
+import { INVOICE_STATUSES, type CustomerInvoiceRow, type CustomerInvoiceStats } from "@/lib/invoice-types";
 
 const PER_PAGE = 15;
+
+const INVOICE_STATUS_FILTER_KEYS = [...INVOICE_STATUSES, "unpaid"] as const;
 
 interface PageState {
   filters: InvoiceFiltersValue;
@@ -29,6 +32,8 @@ const INITIAL_STATE: PageState = {
 
 export default function CustomerInvoicesListPage() {
   const t = useTranslations("Invoices");
+  const searchParams = useSearchParams();
+  const didInitFromQuery = React.useRef(false);
   const [state, setState] = React.useState<PageState>(INITIAL_STATE);
 
   const setFilters = React.useCallback((filters: InvoiceFiltersValue) => {
@@ -38,6 +43,25 @@ export default function CustomerInvoicesListPage() {
   const setPage = React.useCallback((page: number) => {
     setState((prev) => (prev.page === page ? prev : { ...prev, page }));
   }, []);
+
+  React.useEffect(() => {
+    if (didInitFromQuery.current) return;
+    const statusRaw = searchParams.get("status");
+    const nextStatus =
+      statusRaw && (INVOICE_STATUS_FILTER_KEYS as readonly string[]).includes(statusRaw)
+        ? (statusRaw as InvoiceFiltersValue["status"] | "unpaid")
+        : "";
+
+    if (nextStatus) {
+      didInitFromQuery.current = true;
+      setState({
+        filters: { ...INVOICE_FILTER_DEFAULTS, status: nextStatus as InvoiceFiltersValue["status"] },
+        page: 1,
+      });
+    } else {
+      didInitFromQuery.current = true;
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -50,6 +74,13 @@ export default function CustomerInvoicesListPage() {
 
   const rows = (list.data?.data ?? []) as unknown as CustomerInvoiceRow[];
   const total = list.data?.total ?? 0;
+
+  const handleCardClick = React.useCallback(
+    (key: keyof CustomerInvoiceStats) => {
+      setFilters({ ...state.filters, status: key });
+    },
+    [setFilters, state.filters]
+  );
 
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2 pb-24">
@@ -69,12 +100,13 @@ export default function CustomerInvoicesListPage() {
 
       <InvoiceStatsCards
         counts={stats.data ?? { draft: 0, issued: 0, partially_paid: 0, paid: 0, overdue: 0 }}
+        onCardClick={handleCardClick}
       />
 
       <InvoiceFilters value={state.filters} onChange={setFilters} />
 
       {list.error ? (
-        <ErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
+        <ListErrorBanner message={t("loadError")} onRetry={() => list.refetch()} />
       ) : (
         <InvoiceTable
           rows={rows}
@@ -85,21 +117,6 @@ export default function CustomerInvoicesListPage() {
           loading={list.isLoading}
         />
       )}
-    </div>
-  );
-}
-
-function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-      <div className="flex items-center gap-2">
-        <AlertCircle className="h-4 w-4" />
-        <span>{message}</span>
-      </div>
-      <Button variant="outline" size="sm" onClick={onRetry} className="h-8 gap-1 px-2 text-xs">
-        <RefreshCcw className="h-3 w-3" />
-        Retry
-      </Button>
     </div>
   );
 }

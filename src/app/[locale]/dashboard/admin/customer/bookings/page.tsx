@@ -138,6 +138,29 @@ export default function AdminBookingsPage() {
     [t, tc]
   );
 
+  const coverageFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.all") },
+      ...COVERAGE_FILTER_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
+        value: o.value,
+        label: t(`coverageOptions.${o.value}` as Parameters<typeof t>[0]),
+      })),
+    ],
+    [t, tc]
+  );
+
+  const coverageLabel = useCallback(
+    (value?: string | null) => {
+      if (!value) return "—";
+      const coverageKeys = ["port_to_port", "door_to_port", "port_to_door", "door_to_door"] as const;
+      if ((coverageKeys as readonly string[]).includes(value)) {
+        return t(`coverageOptions.${value}` as Parameters<typeof t>[0]);
+      }
+      return value.replace(/_/g, " ");
+    },
+    [t]
+  );
+
   const statusParam = statusFilter === "all" ? undefined : statusFilter;
 
   const {
@@ -370,11 +393,12 @@ export default function AdminBookingsPage() {
         countDraft={countDraft}
         countSubmitted={countSubmitted}
         countConfirmed={countConfirmed}
+        onCardClick={(key) => setStatusFilter(key)}
       />
 
       <Card className="min-w-0 overflow-hidden">
-        <CardHeader className="space-y-1">
-          <CardTitle>{t("listTitle")}</CardTitle>
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableToolbar
@@ -407,13 +431,7 @@ export default function AdminBookingsPage() {
                 label: t("columns.coverage"),
                 value: coverageFilter,
                 onChange: setCoverageFilter,
-                options: [
-                  { value: "all", label: tc("filters.all") },
-                  ...COVERAGE_FILTER_OPTIONS.filter((o) => o.value !== "all").map((o) => ({
-                    value: o.value,
-                    label: o.label,
-                  })),
-                ],
+                options: coverageFilterOptions,
               },
               {
                 id: "booking-origin",
@@ -445,6 +463,14 @@ export default function AdminBookingsPage() {
               },
             ]}
           />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1">
+          <CardTitle>{t("listTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {loadingTable ? (
             <div className="space-y-3">
               {[...Array(PER_PAGE)].map((_, i) => (
@@ -487,8 +513,8 @@ export default function AdminBookingsPage() {
                       <TableCell>{booking.origin_location?.name ?? "—"}</TableCell>
                       <TableCell>{booking.destination_location?.name ?? "—"}</TableCell>
                       <TableCell>{booking.service_type?.name ?? booking.service_type?.code ?? "—"}</TableCell>
-                      <TableCell className="text-xs capitalize">
-                        {booking.shipment_coverage?.replace(/_/g, " ") ?? "—"}
+                      <TableCell className="text-xs">
+                        {coverageLabel(booking.shipment_coverage)}
                       </TableCell>
                       <TableCell className="text-xs tabular-nums">
                         {booking.created_at ? String(booking.created_at).slice(0, 10) : "—"}
