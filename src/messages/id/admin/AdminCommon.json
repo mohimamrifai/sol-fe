@@ -73,8 +73,8 @@
       },
       "invoice": {
         "draft": "Draft",
-        "issued": "Issued",
-        "partially_paid": "Partially Paid",
+        "issued": "Diterbitkan",
+        "partially_paid": "Dibayar Sebagian",
         "unpaid": "Belum bayar",
         "paid": "Lunas",
         "overdue": "Jatuh tempo",
@@ -119,24 +119,24 @@
         "ready_for_pickup": "Siap Diambil"
       },
       "vendorInvoice": {
-        "received": "Received",
-        "under_verification": "Under Verification",
-        "ready_for_payment": "Ready for Payment",
-        "paid": "Paid",
-        "rejected": "Rejected"
+        "received": "Diterima",
+        "under_verification": "Dalam Verifikasi",
+        "ready_for_payment": "Siap Dibayar",
+        "paid": "Lunas",
+        "rejected": "Ditolak"
       },
       "vendorPayment": {
-        "waiting_approval": "Waiting Approval",
-        "ready_to_pay": "Ready to Pay",
-        "paid": "Paid",
-        "cancelled": "Cancelled"
+        "waiting_approval": "Menunggu Persetujuan",
+        "ready_to_pay": "Siap Dibayar",
+        "paid": "Lunas",
+        "cancelled": "Dibatalkan"
       },
       "vendorJobOrder": {
         "draft": "Draft",
-        "sent": "Sent",
-        "in_progress": "In Progress",
-        "completed": "Completed",
-        "cancelled": "Cancelled"
+        "sent": "Terkirim",
+        "in_progress": "Dalam Proses",
+        "completed": "Selesai",
+        "cancelled": "Dibatalkan"
       }
     },
     "errors": {

@@ -15,6 +15,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Textarea } from "@/components/ui/textarea";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import {
   actionsCellClass,
@@ -112,6 +113,25 @@ export default function AdminVendorInvoicesPage() {
 
   const receiveDateToday = new Date().toISOString().slice(0, 10);
 
+  const vendorFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allVendor") },
+      ...vendors.map((v) => ({ value: String(v.id), label: v.label })),
+    ],
+    [t, vendors]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allStatus") },
+      ...STATUS.map((key) => ({
+        value: key,
+        label: t(`stats.${key}` as "stats.received"),
+      })),
+    ],
+    [t]
+  );
+
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, vendorFilter, statusFilter, invoiceDateFrom, invoiceDateTo, receiveDateFrom, receiveDateTo]);
@@ -197,11 +217,11 @@ export default function AdminVendorInvoicesPage() {
       fd.append("invoice_file", file);
       selectedJo.forEach((id) => fd.append("job_order_ids[]", String(id)));
       await receiveAdminVendorInvoice(fd);
-      toast.success("Invoice vendor diterima.");
+      toast.success(t("toasts.receiveSuccess"));
       setReceiveOpen(false);
       void load();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menyimpan.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -238,58 +258,63 @@ export default function AdminVendorInvoicesPage() {
       />
 
       <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
+          <AdminListFilters
+            selects={[
+              {
+                id: "vi-vendor",
+                label: t("columns.vendor"),
+                value: vendorFilter,
+                onChange: setVendorFilter,
+                options: vendorFilterOptions,
+              },
+              {
+                id: "vi-status",
+                label: t("columns.status"),
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statusFilterOptions,
+              },
+            ]}
+            dates={[
+              {
+                id: "vi-invoice-from",
+                label: `${t("filters.invoiceDate")} (${tc("filters.from")})`,
+                value: invoiceDateFrom,
+                onChange: setInvoiceDateFrom,
+              },
+              {
+                id: "vi-invoice-to",
+                label: `${t("filters.invoiceDate")} (${tc("filters.to")})`,
+                value: invoiceDateTo,
+                onChange: setInvoiceDateTo,
+              },
+              {
+                id: "vi-receive-from",
+                label: `${t("filters.receiveDate")} (${tc("filters.from")})`,
+                value: receiveDateFrom,
+                onChange: setReceiveDateFrom,
+              },
+              {
+                id: "vi-receive-to",
+                label: `${t("filters.receiveDate")} (${tc("filters.to")})`,
+                value: receiveDateTo,
+                onChange: setReceiveDateTo,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
           <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
-          <div className="flex flex-wrap gap-3">
-            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Vendor">
-                  {vendorFilter === "all"
-                    ? t("filters.allVendor")
-                    : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allVendor")}</SelectItem>
-                {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Status">
-                  {statusFilter === "all" ? t("filters.allStatus") : vendorInvoiceStatusLabel(statusFilter)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
-                {STATUS.map((s) => <SelectItem key={s} value={s}>{t(`stats.${s}` as "stats.received")}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Invoice Date From</Label>
-                <Input className="h-9 w-36" type="date" value={invoiceDateFrom} onChange={(e) => setInvoiceDateFrom(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Invoice Date To</Label>
-                <Input className="h-9 w-36" type="date" value={invoiceDateTo} onChange={(e) => setInvoiceDateTo(e.target.value)} />
-              </div>
-            </div>
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Receive Date From</Label>
-                <Input className="h-9 w-36" type="date" value={receiveDateFrom} onChange={(e) => setReceiveDateFrom(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Receive Date To</Label>
-                <Input className="h-9 w-36" type="date" value={receiveDateTo} onChange={(e) => setReceiveDateTo(e.target.value)} />
-              </div>
-            </div>
-          </div>
-
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -353,41 +378,39 @@ export default function AdminVendorInvoicesPage() {
 
       <Dialog open={receiveOpen} onOpenChange={setReceiveOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader><DialogTitle>Receive Vendor Invoice</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("receiveDialog.title")}</DialogTitle></DialogHeader>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="md:col-span-2">
-              <Label>Vendor</Label>
+              <Label>{t("receiveDialog.vendor")}</Label>
               <Select value={vendorId} onValueChange={(v) => v && setVendorId(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih vendor">
-                    {vendorId ? activeVendors.find((v) => String(v.id) === vendorId)?.label ?? "—" : null}
-                  </SelectValue>
+                  <SelectValue placeholder={t("receiveDialog.selectVendor")} />
                 </SelectTrigger>
                 <SelectContent>
                   {activeVendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Vendor Invoice Number</Label><Input value={externalNo} onChange={(e) => setExternalNo(e.target.value)} /></div>
-            <div><Label>Invoice Date</Label><Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} /></div>
-            <div><Label>Receive Date</Label><Input type="date" value={receiveDateToday} readOnly disabled /></div>
-            <div><Label>Currency</Label><Input value="IDR" readOnly disabled /></div>
-            <div><Label>Invoice Amount</Label><Input inputMode="decimal" value={invoiceAmount} onChange={(e) => setInvoiceAmount(e.target.value)} /></div>
-            <div><Label>Tax Amount</Label><Input inputMode="decimal" value={taxAmount} onChange={(e) => setTaxAmount(e.target.value)} /></div>
-            <div><Label>Total Invoice</Label><Input readOnly value={formatIdr(totalInvoice)} disabled /></div>
-            <div className="md:col-span-2"><Label>Upload Invoice</Label><Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></div>
-            <div className="md:col-span-2"><Label>Remark</Label><Textarea value={remark} onChange={(e) => setRemark(e.target.value)} rows={2} /></div>
+            <div><Label>{t("receiveDialog.vendorInvoiceNumber")}</Label><Input value={externalNo} onChange={(e) => setExternalNo(e.target.value)} /></div>
+            <div><Label>{t("receiveDialog.invoiceDate")}</Label><Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} /></div>
+            <div><Label>{t("receiveDialog.receiveDate")}</Label><Input type="date" value={receiveDateToday} readOnly disabled /></div>
+            <div><Label>{t("receiveDialog.currency")}</Label><Input value="IDR" readOnly disabled /></div>
+            <div><Label>{t("receiveDialog.invoiceAmount")}</Label><Input inputMode="decimal" value={invoiceAmount} onChange={(e) => setInvoiceAmount(e.target.value)} /></div>
+            <div><Label>{t("receiveDialog.taxAmount")}</Label><Input inputMode="decimal" value={taxAmount} onChange={(e) => setTaxAmount(e.target.value)} /></div>
+            <div><Label>{t("receiveDialog.totalInvoice")}</Label><Input readOnly value={formatIdr(totalInvoice)} disabled /></div>
+            <div className="md:col-span-2"><Label>{t("receiveDialog.uploadInvoice")}</Label><Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></div>
+            <div className="md:col-span-2"><Label>{t("receiveDialog.remark")}</Label><Textarea value={remark} onChange={(e) => setRemark(e.target.value)} rows={2} /></div>
           </div>
           <div className="space-y-2">
-            <Label>Job Order Matching</Label>
+            <Label>{t("receiveDialog.jobOrderMatching")}</Label>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead />
-                  <TableHead>JO No</TableHead>
-                  <TableHead>Shipment</TableHead>
-                  <TableHead>Completion</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>{t("receiveDialog.joNo")}</TableHead>
+                  <TableHead>{t("receiveDialog.shipment")}</TableHead>
+                  <TableHead>{t("receiveDialog.completion")}</TableHead>
+                  <TableHead className="text-right">{t("receiveDialog.amount")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -411,13 +434,17 @@ export default function AdminVendorInvoicesPage() {
               </TableBody>
             </Table>
             <p className="text-sm text-muted-foreground">
-              Selected: {selectedJo.length} · JO Total: {formatIdr(selectedJoTotal)} · Difference: {formatIdr(totalInvoice - selectedJoTotal)}
+              {t("receiveDialog.selectedSummary", {
+                count: selectedJo.length,
+                joTotal: formatIdr(selectedJoTotal),
+                difference: formatIdr(totalInvoice - selectedJoTotal),
+              })}
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReceiveOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setReceiveOpen(false)}>{tc("actions.cancel")}</Button>
             <Button disabled={saving || !file || selectedJo.length === 0} onClick={() => void submitReceive()}>
-              {saving ? "Menyimpan…" : "Simpan"}
+              {saving ? tc("actions.saving") : tc("actions.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

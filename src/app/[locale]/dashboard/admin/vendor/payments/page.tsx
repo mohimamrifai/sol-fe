@@ -1,17 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import {
   actionsCellClass,
@@ -25,7 +23,7 @@ import { useVendorPaymentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { fetchAdminVendorPayments, fetchAdminVendorPaymentStats, fetchAdminVendors } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
-import { formatIdr, VENDOR_PAYMENT_METHOD_OPTIONS, vendorPaymentMethodLabel } from "@/lib/vendor-fsd-options";
+import { formatIdr, VENDOR_PAYMENT_METHOD_OPTIONS } from "@/lib/vendor-fsd-options";
 import { cn } from "@/lib/utils";
 import {
   Ban,
@@ -71,6 +69,36 @@ export default function AdminVendorPaymentsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const vendorFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allVendor") },
+      ...vendors.map((v) => ({ value: String(v.id), label: v.label })),
+    ],
+    [t, vendors]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allStatus") },
+      ...STATUS.map((key) => ({
+        value: key,
+        label: t(`stats.${key}` as "stats.paid"),
+      })),
+    ],
+    [t]
+  );
+
+  const paymentMethodFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allMethod") },
+      ...VENDOR_PAYMENT_METHOD_OPTIONS.map((m) => ({
+        value: m.value,
+        label: t(`paymentMethods.${m.value}` as "paymentMethods.transfer"),
+      })),
+    ],
+    [t]
+  );
 
   useEffect(() => {
     setPage(1);
@@ -135,63 +163,58 @@ export default function AdminVendorPaymentsPage() {
       />
 
       <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
+          <AdminListFilters
+            selects={[
+              {
+                id: "vp-vendor",
+                label: t("columns.vendor"),
+                value: vendorFilter,
+                onChange: setVendorFilter,
+                options: vendorFilterOptions,
+              },
+              {
+                id: "vp-status",
+                label: t("columns.status"),
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statusFilterOptions,
+              },
+              {
+                id: "vp-method",
+                label: t("columns.paymentMethod"),
+                value: paymentMethodFilter,
+                onChange: setPaymentMethodFilter,
+                options: paymentMethodFilterOptions,
+              },
+            ]}
+            dates={[
+              {
+                id: "vp-date-from",
+                label: `${t("filters.paymentDate")} (${tc("filters.from")})`,
+                value: dateFrom,
+                onChange: setDateFrom,
+              },
+              {
+                id: "vp-date-to",
+                label: `${t("filters.paymentDate")} (${tc("filters.to")})`,
+                value: dateTo,
+                onChange: setDateTo,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
           <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
-          <div className="flex flex-wrap gap-3">
-            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Vendor">
-                  {vendorFilter === "all"
-                    ? "All Vendor"
-                    : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Vendor</SelectItem>
-                {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder={t("columns.status")}>
-                  {statusFilter === "all" ? t("filters.allStatus") : vendorPaymentStatusLabel(statusFilter)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
-                {STATUS.map((s) => <SelectItem key={s} value={s}>{t(`stats.${s}` as "stats.paid")}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={paymentMethodFilter} onValueChange={(v) => v && setPaymentMethodFilter(v)}>
-              <SelectTrigger className="h-9 w-44">
-                <SelectValue placeholder="Payment Method">
-                  {paymentMethodFilter === "all"
-                    ? "All Method"
-                    : vendorPaymentMethodLabel(paymentMethodFilter)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Method</SelectItem>
-                {VENDOR_PAYMENT_METHOD_OPTIONS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date From</Label>
-                <Input className="h-9 w-36" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date To</Label>
-                <Input className="h-9 w-36" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-              </div>
-            </div>
-          </div>
-
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (

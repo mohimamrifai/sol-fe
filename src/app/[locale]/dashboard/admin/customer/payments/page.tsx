@@ -222,8 +222,8 @@ export default function AdminPaymentsPage() {
       <PaymentStats stats={paymentStats} />
 
       <Card className="min-w-0 overflow-hidden">
-        <CardHeader className="space-y-1">
-          <CardTitle>{t("listTitle")}</CardTitle>
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableToolbar
@@ -273,6 +273,14 @@ export default function AdminPaymentsPage() {
               },
             ]}
           />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1">
+          <CardTitle>{t("listTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (

@@ -36,116 +36,190 @@
     "empty": "Tidak ada data vendor."
   },
   "AdminVendorPricing": {
-    "pageTitle": "Vendor Pricing",
+    "pageTitle": "Harga Vendor",
     "pageSubtitle": "Kelola harga vendor per rute, layanan, dan tipe kendaraan/kontainer.",
-    "addPricing": "Add Pricing",
-    "listTitle": "Daftar Vendor Pricing",
-    "searchPlaceholder": "Cari vendor, origin, destination…",
+    "addPricing": "Tambah Pricing",
+    "listTitle": "Daftar Harga Vendor",
+    "filterTitle": "Filter",
+    "searchPlaceholder": "Cari vendor, asal, tujuan…",
     "stats": {
-      "active": "Active Pricing",
-      "inactive": "Inactive Pricing",
-      "vendors": "Vendors",
+      "active": "Pricing Aktif",
+      "inactive": "Pricing Nonaktif",
+      "vendors": "Vendor",
       "total": "Total Pricing"
     },
     "columns": {
       "vendor": "Vendor",
-      "service": "Service",
-      "origin": "Origin",
-      "destination": "Destination",
-      "vehicleContainer": "Vehicle / Container",
-      "price": "Price",
+      "service": "Layanan",
+      "origin": "Asal",
+      "destination": "Tujuan",
+      "vehicleContainer": "Kendaraan / Kontainer",
+      "price": "Harga",
       "status": "Status",
-      "createdDate": "Created Date"
+      "createdDate": "Tanggal Dibuat"
     },
     "filters": {
       "allVendor": "Semua Vendor",
-      "allService": "Semua Service",
+      "allService": "Semua Layanan",
       "allStatus": "Semua Status",
-      "active": "Active",
-      "inactive": "Inactive"
+      "active": "Aktif",
+      "inactive": "Nonaktif"
+    },
+    "filterPlaceholders": {
+      "vendor": "Vendor",
+      "serviceCategory": "Kategori Layanan",
+      "status": "Status"
+    },
+    "serviceCategories": {
+      "rail": "Kereta Api",
+      "trucking_pickup": "Trucking Pickup",
+      "trucking_delivery": "Trucking Delivery",
+      "container_rental": "Sewa Kontainer",
+      "lift_on_o": "Lift On-Off",
+      "storage": "Storage",
+      "other": "Lainnya"
     },
     "actions": {
       "deactivate": "Nonaktifkan"
     },
+    "toasts": {
+      "loadFailed": "Gagal memuat pricing.",
+      "deactivated": "Pricing dinonaktifkan.",
+      "deactivateFailed": "Gagal menonaktifkan pricing."
+    },
     "empty": "Tidak ada data pricing."
   },
   "AdminVendorJobOrders": {
-    "pageTitle": "Vendor Job Orders",
-    "pageSubtitle": "Pantau job order vendor dari assignment shipment hingga completion.",
+    "pageTitle": "Job Order Vendor",
+    "pageSubtitle": "Pantau job order vendor dari assignment shipment hingga selesai.",
     "listTitle": "Daftar Job Order",
+    "filterTitle": "Filter",
     "searchPlaceholder": "Cari JO, shipment, vendor…",
     "stats": {
       "draft": "Draft",
-      "sent": "Sent",
-      "in_progress": "In Progress",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
+      "sent": "Terkirim",
+      "in_progress": "Dalam Proses",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
     },
     "columns": {
-      "joNo": "JO No",
+      "joNo": "No. JO",
       "shipment": "Shipment",
       "vendor": "Vendor",
-      "service": "Service",
-      "route": "Route",
+      "service": "Layanan",
+      "route": "Rute",
       "status": "Status",
-      "created": "Created"
+      "created": "Tanggal Dibuat"
     },
     "filters": {
       "allVendor": "Semua Vendor",
-      "allStatus": "Semua Status"
+      "allStatus": "Semua Status",
+      "allService": "Semua Layanan",
+      "allOrigin": "Semua Asal",
+      "allDestination": "Semua Tujuan",
+      "origin": "Asal",
+      "destination": "Tujuan",
+      "createdDate": "Tanggal Dibuat"
+    },
+    "serviceTypes": {
+      "pickup": "Pickup",
+      "delivery": "Delivery",
+      "rail": "Kereta Api"
+    },
+    "toasts": {
+      "loadFailed": "Gagal memuat job order.",
+      "loadFailedDescription": "Silakan coba lagi nanti."
     },
     "empty": "Tidak ada job order."
   },
   "AdminVendorInvoices": {
-    "pageTitle": "Vendor Invoices",
+    "pageTitle": "Invoice Vendor",
     "pageSubtitle": "Terima, verifikasi, dan pantau invoice vendor (accounts payable).",
-    "receiveInvoice": "Receive Invoice",
-    "listTitle": "Daftar Vendor Invoice",
+    "receiveInvoice": "Terima Invoice",
+    "listTitle": "Daftar Invoice Vendor",
+    "filterTitle": "Filter",
     "searchPlaceholder": "Cari invoice, vendor, JO…",
     "stats": {
-      "received": "Received",
-      "under_verification": "Under Verification",
-      "ready_for_payment": "Ready for Payment",
-      "paid": "Paid",
-      "rejected": "Rejected"
+      "received": "Diterima",
+      "under_verification": "Dalam Verifikasi",
+      "ready_for_payment": "Siap Dibayar",
+      "paid": "Lunas",
+      "rejected": "Ditolak"
     },
     "columns": {
-      "invoiceNo": "Vendor Invoice No",
+      "invoiceNo": "No. Invoice Vendor",
       "vendor": "Vendor",
-      "invoiceDate": "Invoice Date",
-      "receiveDate": "Receive Date",
+      "invoiceDate": "Tanggal Invoice",
+      "receiveDate": "Tanggal Terima",
       "total": "Total",
       "status": "Status"
     },
     "filters": {
       "allVendor": "Semua Vendor",
-      "allStatus": "Semua Status"
+      "allStatus": "Semua Status",
+      "invoiceDate": "Tanggal Invoice",
+      "receiveDate": "Tanggal Terima"
+    },
+    "receiveDialog": {
+      "title": "Terima Invoice Vendor",
+      "vendor": "Vendor",
+      "selectVendor": "Pilih vendor",
+      "vendorInvoiceNumber": "No. Invoice Vendor",
+      "invoiceDate": "Tanggal Invoice",
+      "receiveDate": "Tanggal Terima",
+      "currency": "Mata Uang",
+      "invoiceAmount": "Nominal Invoice",
+      "taxAmount": "Pajak",
+      "totalInvoice": "Total Invoice",
+      "uploadInvoice": "Unggah Invoice",
+      "remark": "Catatan",
+      "jobOrderMatching": "Pencocokan Job Order",
+      "joNo": "No. JO",
+      "shipment": "Shipment",
+      "completion": "Selesai",
+      "amount": "Nominal",
+      "selectedSummary": "Dipilih: {count} · Total JO: {joTotal} · Selisih: {difference}"
+    },
+    "toasts": {
+      "receiveSuccess": "Invoice vendor diterima.",
+      "saveFailed": "Gagal menyimpan."
     },
     "empty": "Tidak ada invoice vendor."
   },
   "AdminVendorPayments": {
-    "pageTitle": "Vendor Payments",
-    "pageSubtitle": "Approval dan pencatatan pembayaran ke vendor (accounts payable).",
-    "listTitle": "Daftar Vendor Payment",
-    "searchPlaceholder": "Cari payment no, invoice, vendor…",
+    "pageTitle": "Pembayaran Vendor",
+    "pageSubtitle": "Persetujuan dan pencatatan pembayaran ke vendor (accounts payable).",
+    "listTitle": "Daftar Pembayaran Vendor",
+    "filterTitle": "Filter",
+    "searchPlaceholder": "Cari no. payment, invoice, vendor…",
     "stats": {
-      "waiting_approval": "Waiting Approval",
-      "ready_to_pay": "Ready to Pay",
-      "paid": "Paid",
-      "cancelled": "Cancelled"
+      "waiting_approval": "Menunggu Persetujuan",
+      "ready_to_pay": "Siap Dibayar",
+      "paid": "Lunas",
+      "cancelled": "Dibatalkan"
     },
     "columns": {
-      "paymentNo": "Payment No",
+      "paymentNo": "No. Payment",
       "vendor": "Vendor",
-      "invoiceNo": "Invoice No",
-      "invoiceAmount": "Invoice Amt",
-      "paid": "Paid",
-      "date": "Date",
-      "status": "Status"
+      "invoiceNo": "No. Invoice",
+      "invoiceAmount": "Nominal Invoice",
+      "paid": "Dibayar",
+      "date": "Tanggal",
+      "status": "Status",
+      "paymentMethod": "Metode Pembayaran"
     },
     "filters": {
-      "allStatus": "Semua Status"
+      "allVendor": "Semua Vendor",
+      "allStatus": "Semua Status",
+      "allMethod": "Semua Metode",
+      "paymentDate": "Tanggal Pembayaran"
     },
-    "empty": "Tidak ada payment vendor."
+    "paymentMethods": {
+      "transfer": "Transfer",
+      "giro": "Giro",
+      "cash": "Tunai",
+      "virtual_account": "Virtual Account"
+    },
+    "empty": "Tidak ada pembayaran vendor."
   }
 }

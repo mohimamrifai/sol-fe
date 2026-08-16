@@ -6,6 +6,7 @@
     "createSuccess": "Container created successfully.",
     "updateSuccess": "Container updated.",
     "listTitle": "Container List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search container number…",
     "empty": "No container data.",
     "detailSubtitle": "Container detail and active assignment.",
@@ -18,6 +19,13 @@
       "available": "Available",
       "reserved": "Reserved",
       "inTransit": "In Transit",
+      "maintenance": "Maintenance",
+      "inactive": "Inactive"
+    },
+    "statuses": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "in_transit": "In Transit",
       "maintenance": "Maintenance",
       "inactive": "Inactive"
     },

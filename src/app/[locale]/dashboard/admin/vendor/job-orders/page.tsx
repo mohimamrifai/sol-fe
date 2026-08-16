@@ -1,17 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import {
   actionsCellClass,
@@ -22,7 +20,13 @@ import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useVendorJobOrderStatusLabel } from "@/hooks/use-admin-status-labels";
-import { fetchAdminLocations, fetchAdminVendorJobOrders, fetchAdminVendorJobOrderStats, fetchAdminVendors } from "@/lib/admin-api";
+import {
+  fetchAdminLocations,
+  fetchAdminVendorJobOrders,
+  fetchAdminVendorJobOrderStats,
+  fetchAdminVendors,
+} from "@/lib/admin-api";
+import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { cn } from "@/lib/utils";
@@ -40,11 +44,7 @@ import { useTranslations } from "next-intl";
 
 const PER_PAGE = 10;
 const STATUS_OPTIONS = ["draft", "sent", "in_progress", "completed", "cancelled"] as const;
-const SERVICE_TYPE_OPTIONS = [
-  { value: "pickup", label: "Pickup" },
-  { value: "delivery", label: "Delivery" },
-  { value: "rail", label: "Rail" },
-] as const;
+const SERVICE_TYPE_KEYS = ["pickup", "delivery", "rail"] as const;
 
 const STATUS_META: Record<(typeof STATUS_OPTIONS)[number], { icon: typeof FilePenLine; iconClassName: string }> = {
   draft: { icon: FilePenLine, iconClassName: "text-zinc-600 bg-zinc-100" },
@@ -80,6 +80,53 @@ export default function AdminVendorJobOrdersPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const vendorFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allVendor") },
+      ...vendors.map((v) => ({ value: String(v.id), label: v.label })),
+    ],
+    [t, vendors]
+  );
+
+  const serviceTypeFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allService") },
+      ...SERVICE_TYPE_KEYS.map((key) => ({
+        value: key,
+        label: t(`serviceTypes.${key}`),
+      })),
+    ],
+    [t]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allStatus") },
+      ...STATUS_OPTIONS.map((key) => ({
+        value: key,
+        label: t(`stats.${key}` as "stats.draft"),
+      })),
+    ],
+    [t]
+  );
+
+  const originFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allOrigin") },
+      ...locations.map((l) => ({ value: String(l.id), label: l.label })),
+    ],
+    [t, locations]
+  );
+
+  const destinationFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allDestination") },
+      ...locations.map((l) => ({ value: String(l.id), label: l.label })),
+    ],
+    [t, locations]
+  );
 
   useEffect(() => {
     setPage(1);
@@ -88,6 +135,7 @@ export default function AdminVendorJobOrdersPage() {
   const load = useCallback(async () => {
     if (!authHydrated) return;
     setLoading(true);
+    setError(null);
     try {
       const [listRes, statsRes] = await Promise.all([
         fetchAdminVendorJobOrders({
@@ -107,15 +155,31 @@ export default function AdminVendorJobOrdersPage() {
       setRows((listRes as LaravelPaginated<Record<string, unknown>>).data ?? []);
       setMeta(listRes as LaravelPaginated<Record<string, unknown>>);
       setStats((statsRes as { data: Record<string, number> }).data);
-    } catch {
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t("toasts.loadFailed"));
       setRows([]);
       setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, vendorFilter, statusFilter, serviceTypeFilter, originFilter, destinationFilter, dateFrom, dateTo]);
+  }, [
+    authHydrated,
+    page,
+    debouncedSearch,
+    vendorFilter,
+    statusFilter,
+    serviceTypeFilter,
+    originFilter,
+    destinationFilter,
+    dateFrom,
+    dateTo,
+    t,
+  ]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
@@ -135,11 +199,11 @@ export default function AdminVendorJobOrdersPage() {
 
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
-      <AdminPageHeader
-        icon={ClipboardList}
-        title={t("pageTitle")}
-        description={t("pageSubtitle")}
-      />
+      <AdminPageHeader icon={ClipboardList} title={t("pageTitle")} description={t("pageSubtitle")} />
+
+      {error ? (
+        <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+      ) : null}
 
       <AdminStatsCards
         className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
@@ -156,89 +220,72 @@ export default function AdminVendorJobOrdersPage() {
       />
 
       <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
+          <AdminListFilters
+            selects={[
+              {
+                id: "jo-vendor",
+                label: t("columns.vendor"),
+                value: vendorFilter,
+                onChange: setVendorFilter,
+                options: vendorFilterOptions,
+              },
+              {
+                id: "jo-service",
+                label: t("columns.service"),
+                value: serviceTypeFilter,
+                onChange: setServiceTypeFilter,
+                options: serviceTypeFilterOptions,
+              },
+              {
+                id: "jo-status",
+                label: t("columns.status"),
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statusFilterOptions,
+              },
+              {
+                id: "jo-origin",
+                label: t("filters.origin"),
+                value: originFilter,
+                onChange: setOriginFilter,
+                options: originFilterOptions,
+              },
+              {
+                id: "jo-destination",
+                label: t("filters.destination"),
+                value: destinationFilter,
+                onChange: setDestinationFilter,
+                options: destinationFilterOptions,
+              },
+            ]}
+            dates={[
+              {
+                id: "jo-date-from",
+                label: `${t("filters.createdDate")} (${tc("filters.from")})`,
+                value: dateFrom,
+                onChange: setDateFrom,
+              },
+              {
+                id: "jo-date-to",
+                label: `${t("filters.createdDate")} (${tc("filters.to")})`,
+                value: dateTo,
+                onChange: setDateTo,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
           <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
-          <div className="flex flex-wrap gap-3">
-            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Vendor">
-                  {vendorFilter === "all"
-                    ? t("filters.allVendor")
-                    : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allVendor")}</SelectItem>
-                {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={serviceTypeFilter} onValueChange={(v) => v && setServiceTypeFilter(v)}>
-              <SelectTrigger className="h-9 w-40">
-                <SelectValue placeholder="Service">
-                  {serviceTypeFilter === "all"
-                    ? "All Service"
-                    : SERVICE_TYPE_OPTIONS.find((s) => s.value === serviceTypeFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Service</SelectItem>
-                {SERVICE_TYPE_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-40">
-                <SelectValue placeholder="Status">
-                  {statusFilter === "all" ? t("filters.allStatus") : vendorJobOrderStatusLabel(statusFilter)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
-                {STATUS_OPTIONS.map((s) => <SelectItem key={s} value={s}>{t(`stats.${s}` as "stats.draft")}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={originFilter} onValueChange={(v) => v && setOriginFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Origin">
-                  {originFilter === "all"
-                    ? "All Origin"
-                    : locations.find((l) => String(l.id) === originFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Origin</SelectItem>
-                {locations.map((l) => <SelectItem key={l.id} value={String(l.id)}>{l.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={destinationFilter} onValueChange={(v) => v && setDestinationFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Destination">
-                  {destinationFilter === "all"
-                    ? "All Destination"
-                    : locations.find((l) => String(l.id) === destinationFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Destination</SelectItem>
-                {locations.map((l) => <SelectItem key={l.id} value={String(l.id)}>{l.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date From</Label>
-                <Input className="h-9 w-36" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date To</Label>
-                <Input className="h-9 w-36" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-              </div>
-            </div>
-          </div>
-
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -262,23 +309,36 @@ export default function AdminVendorJobOrdersPage() {
                 <TableBody>
                   {rows.map((r, i) => (
                     <TableRow key={String(r.id)} className="group">
-                      <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
+                      <TableCell className="tabular-nums text-muted-foreground">
+                        {rowNumber(meta?.current_page ?? page, PER_PAGE, i)}
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{String(r.job_order_number)}</TableCell>
                       <TableCell>{String(r.shipment_number ?? "—")}</TableCell>
                       <TableCell className="font-medium">{String(r.vendor ?? "—")}</TableCell>
                       <TableCell>{String(r.service_label ?? "—")}</TableCell>
                       <TableCell>{String(r.route ?? "—")}</TableCell>
-                      <TableCell><Badge variant="outline">{String(r.status_label ?? vendorJobOrderStatusLabel(String(r.status)))}</Badge></TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{r.created_at ? new Date(String(r.created_at)).toLocaleDateString("id-ID") : "—"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {String(r.status_label ?? vendorJobOrderStatusLabel(String(r.status)))}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {r.created_at ? new Date(String(r.created_at)).toLocaleDateString("id-ID") : "—"}
+                      </TableCell>
                       <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                         <div className="flex justify-end">
                           <DropdownMenu>
-                            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}>
+                            <DropdownMenuTrigger
+                              className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">{tc("actions.actionsMenu")}</span>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="min-w-44">
-                              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`${basePath}/${r.id}`)}>
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => router.push(`${basePath}/${r.id}`)}
+                              >
                                 <Eye className="h-4 w-4" /> {tc("actions.viewDetail")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -295,7 +355,14 @@ export default function AdminVendorJobOrdersPage() {
                 )}
               </Table>
               {meta ? (
-                <PaginationBar currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} from={meta.from} to={meta.to} onPageChange={setPage} />
+                <PaginationBar
+                  currentPage={meta.current_page}
+                  lastPage={meta.last_page}
+                  total={meta.total}
+                  from={meta.from}
+                  to={meta.to}
+                  onPageChange={setPage}
+                />
               ) : null}
             </>
           )}

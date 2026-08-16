@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -11,13 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -36,6 +29,7 @@ import {
   ADMIN_LIST_PAGE_CLASS,
 } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { VendorPricingCreateDialog } from "@/components/dashboard/admin/vendor/vendor-pricing-create-dialog";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -49,17 +43,15 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
-import {
-  formatIdr,
-  SERVICE_CATEGORY_OPTIONS,
-  serviceCategoryLabel,
-} from "@/lib/vendor-fsd-options";
+import { formatIdr, SERVICE_CATEGORY_OPTIONS } from "@/lib/vendor-fsd-options";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Eye, Layers, MoreHorizontal, Plus, Store, Tags, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 const PER_PAGE = 10;
+
+const SERVICE_CATEGORY_KEYS = SERVICE_CATEGORY_OPTIONS.map((o) => o.value);
 
 type PricingRow = Record<string, unknown>;
 
@@ -89,6 +81,45 @@ export default function AdminVendorPricingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+
+  const serviceCategoryLabel = useCallback(
+    (value: string) => {
+      if (!value) return "—";
+      if ((SERVICE_CATEGORY_KEYS as readonly string[]).includes(value)) {
+        return t(`serviceCategories.${value}` as Parameters<typeof t>[0]);
+      }
+      return value.replace(/_/g, " ");
+    },
+    [t]
+  );
+
+  const serviceCategoryFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allService") },
+      ...SERVICE_CATEGORY_OPTIONS.map((o) => ({
+        value: o.value,
+        label: t(`serviceCategories.${o.value}` as Parameters<typeof t>[0]),
+      })),
+    ],
+    [t]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allStatus") },
+      { value: "active", label: t("filters.active") },
+      { value: "inactive", label: t("filters.inactive") },
+    ],
+    [t]
+  );
+
+  const vendorFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allVendor") },
+      ...vendorOptions.map((v) => ({ value: String(v.id), label: v.label })),
+    ],
+    [t, vendorOptions]
+  );
 
   useEffect(() => {
     setPage(1);
@@ -134,16 +165,21 @@ export default function AdminVendorPricingPage() {
       setRows(paginated.data ?? []);
       setMeta(paginated);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Gagal memuat pricing.");
+      setError(e instanceof ApiError ? e.message : t("toasts.loadFailed"));
       setRows([]);
       setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, vendorFilter, serviceFilter, statusFilter]);
+  }, [authHydrated, page, debouncedSearch, vendorFilter, serviceFilter, statusFilter, t]);
 
-  useEffect(() => { void loadStats(); void loadVendors(); }, [loadStats, loadVendors]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void loadStats();
+    void loadVendors();
+  }, [loadStats, loadVendors]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   useEffect(() => {
     if (searchParams.get("create") === "1") {
@@ -157,17 +193,24 @@ export default function AdminVendorPricingPage() {
   const deactivate = async (id: number) => {
     try {
       await deactivateAdminPricing(id);
-      toast.success("Pricing dinonaktifkan.");
+      toast.success(t("toasts.deactivated"));
       void load();
       void loadStats();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Gagal menonaktifkan pricing.");
+      toast.error(e instanceof ApiError ? e.message : t("toasts.deactivateFailed"));
     }
   };
 
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
-      <VendorPricingCreateDialog open={createOpen} onOpenChange={setCreateOpen} onSaved={() => { void load(); void loadStats(); }} />
+      <VendorPricingCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSaved={() => {
+          void load();
+          void loadStats();
+        }}
+      />
 
       <AdminPageHeader
         icon={Tags}
@@ -190,66 +233,80 @@ export default function AdminVendorPricingPage() {
       <AdminStatsCards
         className="sm:grid-cols-2 xl:grid-cols-4"
         cards={[
-          { key: "active", label: t("stats.active"), value: stats?.active ?? 0, icon: CheckCircle2, iconClassName: "text-emerald-700 bg-emerald-100" },
-          { key: "inactive", label: t("stats.inactive"), value: stats?.inactive ?? 0, icon: XCircle, iconClassName: "text-zinc-600 bg-zinc-100" },
-          { key: "vendors", label: t("stats.vendors"), value: stats?.vendors ?? 0, icon: Store, iconClassName: "text-sky-700 bg-sky-100" },
-          { key: "total", label: t("stats.total"), value: stats?.total ?? 0, icon: Layers, iconClassName: "text-violet-700 bg-violet-100" },
+          {
+            key: "active",
+            label: t("stats.active"),
+            value: stats?.active ?? 0,
+            icon: CheckCircle2,
+            iconClassName: "text-emerald-700 bg-emerald-100",
+          },
+          {
+            key: "inactive",
+            label: t("stats.inactive"),
+            value: stats?.inactive ?? 0,
+            icon: XCircle,
+            iconClassName: "text-zinc-600 bg-zinc-100",
+          },
+          {
+            key: "vendors",
+            label: t("stats.vendors"),
+            value: stats?.vendors ?? 0,
+            icon: Store,
+            iconClassName: "text-sky-700 bg-sky-100",
+          },
+          {
+            key: "total",
+            label: t("stats.total"),
+            value: stats?.total ?? 0,
+            icon: Layers,
+            iconClassName: "text-violet-700 bg-violet-100",
+          },
         ]}
       />
+
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableToolbar
+            searchPlaceholder={t("searchPlaceholder")}
+            searchValue={searchInput}
+            onSearchChange={setSearchInput}
+          />
+          <AdminListFilters
+            selects={[
+              {
+                id: "pricing-vendor",
+                label: t("columns.vendor"),
+                value: vendorFilter,
+                onChange: setVendorFilter,
+                options: vendorFilterOptions,
+              },
+              {
+                id: "pricing-service",
+                label: t("columns.service"),
+                value: serviceFilter,
+                onChange: setServiceFilter,
+                options: serviceCategoryFilterOptions,
+              },
+              {
+                id: "pricing-status",
+                label: t("columns.status"),
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statusFilterOptions,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
 
       <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
           <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={searchInput} onSearchChange={setSearchInput} />
-          <div className="flex flex-wrap gap-3">
-            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Vendor">
-                  {vendorFilter === "all"
-                    ? t("filters.allVendor")
-                    : vendorOptions.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allVendor")}</SelectItem>
-                {vendorOptions.map((v) => (
-                  <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={serviceFilter} onValueChange={(v) => v && setServiceFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Service Category">
-                  {serviceFilter === "all" ? t("filters.allService") : serviceCategoryLabel(serviceFilter)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allService")}</SelectItem>
-                {SERVICE_CATEGORY_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-36">
-                <SelectValue placeholder="Status">
-                  {statusFilter === "all"
-                    ? t("filters.allStatus")
-                    : statusFilter === "active"
-                      ? t("filters.active")
-                      : t("filters.inactive")}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
-                <SelectItem value="active">{t("filters.active")}</SelectItem>
-                <SelectItem value="inactive">{t("filters.inactive")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -285,7 +342,7 @@ export default function AdminVendorPricingPage() {
                       <TableCell className="text-right tabular-nums">{formatIdr(row.unit_price as string)}</TableCell>
                       <TableCell>
                         <Badge variant={row.is_active !== false ? "default" : "secondary"}>
-                          {row.is_active !== false ? "Active" : "Inactive"}
+                          {row.is_active !== false ? t("filters.active") : t("filters.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -294,12 +351,17 @@ export default function AdminVendorPricingPage() {
                       <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                         <div className="flex justify-end">
                           <DropdownMenu>
-                            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}>
+                            <DropdownMenuTrigger
+                              className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">{tc("actions.actionsMenu")}</span>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="min-w-44">
-                              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`${basePath}/${row.id}`)}>
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => router.push(`${basePath}/${row.id}`)}
+                              >
                                 <Eye className="h-4 w-4" /> {tc("actions.viewDetail")}
                               </DropdownMenuItem>
                               {row.is_active !== false ? (

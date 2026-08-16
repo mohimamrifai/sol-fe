@@ -1,16 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { actionsCellClass, actionsHeadClass, ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
@@ -26,6 +26,7 @@ import { useTranslations } from "next-intl";
 
 const PER_PAGE = 10;
 const STATUS_OPTIONS = ["available", "reserved", "in_transit", "maintenance", "inactive"] as const;
+const OWNERSHIP_OPTIONS = ["company", "vendor"] as const;
 
 export default function AdminContainersPage() {
   const params = useParams();
@@ -53,9 +54,135 @@ export default function AdminContainersPage() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
 
+  const ownershipLabel = useCallback(
+    (value: string) => {
+      if (value === "company") return t("filters.company");
+      if (value === "vendor") return t("filters.vendor");
+      return value;
+    },
+    [t]
+  );
+
+  const statusLabel = useCallback(
+    (value: string) => {
+      const key = value.toLowerCase().replace(/\s+/g, "_") as (typeof STATUS_OPTIONS)[number];
+      if (t.has(`statuses.${key}`)) return t(`statuses.${key}` as "statuses.available");
+      return value;
+    },
+    [t]
+  );
+
+  const ownershipFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allOwnership") },
+      ...OWNERSHIP_OPTIONS.map((key) => ({
+        value: key,
+        label: t(`filters.${key}` as "filters.company"),
+      })),
+    ],
+    [t]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      ...STATUS_OPTIONS.map((key) => ({
+        value: key,
+        label: t(`statuses.${key}` as "statuses.available"),
+      })),
+    ],
+    [t, tc]
+  );
+
+  const typeFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allType") },
+      ...types.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [t, types]
+  );
+
+  const yardFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allYard") },
+      ...yards.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [t, yards]
+  );
+
+  const vendorFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allVendor") },
+      ...vendors.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [t, vendors]
+  );
+
+  const filterSelects = useMemo(() => {
+    const selects = [
+      {
+        id: "ct-ownership",
+        label: t("filters.ownership"),
+        value: ownershipFilter,
+        onChange: setOwnershipFilter,
+        options: ownershipFilterOptions,
+      },
+      {
+        id: "ct-status",
+        label: tc("table.status"),
+        value: statusFilter,
+        onChange: setStatusFilter,
+        options: statusFilterOptions,
+      },
+      {
+        id: "ct-type",
+        label: t("columns.type"),
+        value: typeFilter,
+        onChange: setTypeFilter,
+        options: typeFilterOptions,
+      },
+      {
+        id: "ct-yard",
+        label: t("columns.yard"),
+        value: yardFilter,
+        onChange: setYardFilter,
+        options: yardFilterOptions,
+      },
+    ];
+
+    if (ownershipFilter === "vendor") {
+      selects.push({
+        id: "ct-vendor",
+        label: t("filters.vendor"),
+        value: vendorFilter,
+        onChange: setVendorFilter,
+        options: vendorFilterOptions,
+      });
+    }
+
+    return selects;
+  }, [
+    t,
+    tc,
+    ownershipFilter,
+    statusFilter,
+    typeFilter,
+    yardFilter,
+    vendorFilter,
+    ownershipFilterOptions,
+    statusFilterOptions,
+    typeFilterOptions,
+    yardFilterOptions,
+    vendorFilterOptions,
+  ]);
+
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, ownershipFilter, statusFilter, typeFilter, yardFilter, vendorFilter]);
+
+  useEffect(() => {
+    if (ownershipFilter !== "vendor") setVendorFilter("all");
+  }, [ownershipFilter]);
 
   const load = useCallback(async () => {
     if (!authHydrated) return;
@@ -137,70 +264,20 @@ export default function AdminContainersPage() {
       />
 
       <Card className="min-w-0 overflow-hidden">
-        <CardHeader><CardTitle>{t("listTitle")}</CardTitle></CardHeader>
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
-          <div className="flex flex-wrap gap-3">
-            <Select value={ownershipFilter} onValueChange={(v) => v && setOwnershipFilter(v)}>
-              <SelectTrigger className="h-9 w-40">
-                <SelectValue placeholder={t("filters.ownership")}>
-                  {ownershipFilter === "all" ? t("filters.allOwnership") : ownershipFilter}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allOwnership")}</SelectItem>
-                <SelectItem value="company">{t("filters.company")}</SelectItem>
-                <SelectItem value="vendor">{t("filters.vendor")}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-40">
-                <SelectValue placeholder={tc("table.status")}>
-                  {statusFilter === "all" ? tc("filters.allStatus") : statusFilter}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tc("filters.allStatus")}</SelectItem>
-                {STATUS_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={(v) => v && setTypeFilter(v)}>
-              <SelectTrigger className="h-9 w-44">
-                <SelectValue placeholder={t("columns.type")}>
-                  {typeFilter === "all" ? t("filters.allType") : types.find((x) => String(x.id) === typeFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allType")}</SelectItem>
-                {types.map((x) => <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={yardFilter} onValueChange={(v) => v && setYardFilter(v)}>
-              <SelectTrigger className="h-9 w-44">
-                <SelectValue placeholder={t("columns.yard")}>
-                  {yardFilter === "all" ? t("filters.allYard") : yards.find((x) => String(x.id) === yardFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allYard")}</SelectItem>
-                {yards.map((x) => <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            {ownershipFilter === "vendor" ? (
-              <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-                <SelectTrigger className="h-9 w-44">
-                  <SelectValue placeholder={t("filters.vendor")}>
-                    {vendorFilter === "all" ? t("filters.allVendor") : vendors.find((x) => String(x.id) === vendorFilter)?.label ?? "—"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.allVendor")}</SelectItem>
-                  {vendors.map((x) => <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            ) : null}
-          </div>
+          <AdminListFilters selects={filterSelects} />
+        </CardContent>
+      </Card>
 
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1">
+          <CardTitle>{t("listTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -224,10 +301,10 @@ export default function AdminContainersPage() {
                       <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
                       <TableCell className="font-mono text-xs">{String(r.container_number)}</TableCell>
                       <TableCell>{String(r.container_type ?? "—")}</TableCell>
-                      <TableCell>{String(r.ownership ?? "—")}</TableCell>
+                      <TableCell>{ownershipLabel(String(r.ownership ?? "—"))}</TableCell>
                       <TableCell>{String(r.current_yard ?? "—")}</TableCell>
                       <TableCell className="tabular-nums">{String(r.utilization_pct ?? 0)}%</TableCell>
-                      <TableCell><Badge variant="outline">{String(r.status ?? "—")}</Badge></TableCell>
+                      <TableCell><Badge variant="outline">{statusLabel(String(r.status ?? "—"))}</Badge></TableCell>
                       <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                         <DropdownMenu>
                           <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}>
@@ -243,7 +320,11 @@ export default function AdminContainersPage() {
                     </TableRow>
                   ))}
                 </TableBody>
-                {rows.length === 0 ? <TableCaption className="text-xs">{t("empty")}</TableCaption> : null}
+                {rows.length === 0 ? (
+                  <TableCaption className="text-xs">{t("empty")}</TableCaption>
+                ) : (
+                  <TableCaption className="text-xs">{tc("table.rowsOnPage")}</TableCaption>
+                )}
               </Table>
               {meta ? <PaginationBar currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} from={meta.from} to={meta.to} onPageChange={setPage} /> : null}
             </>

@@ -3,6 +3,7 @@
     "pageTitle": "Customer Invoice Management",
     "pageSubtitle": "Invoices, issuance, and Midtrans payment links.",
     "listTitle": "Invoice List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search invoice number…",
     "generateInvoice": "Generate Invoice",
     "createManual": "Create Manual Invoice",

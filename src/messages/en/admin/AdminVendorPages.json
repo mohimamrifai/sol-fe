@@ -40,6 +40,7 @@
     "pageSubtitle": "Manage vendor rates by route, service, and vehicle/container type.",
     "addPricing": "Add Pricing",
     "listTitle": "Vendor Pricing List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search vendor, origin, or destination…",
     "stats": {
       "active": "Active Pricing",
@@ -64,8 +65,27 @@
       "active": "Active",
       "inactive": "Inactive"
     },
+    "filterPlaceholders": {
+      "vendor": "Vendor",
+      "serviceCategory": "Service Category",
+      "status": "Status"
+    },
+    "serviceCategories": {
+      "rail": "Rail",
+      "trucking_pickup": "Trucking Pickup",
+      "trucking_delivery": "Trucking Delivery",
+      "container_rental": "Container Rental",
+      "lift_on_o": "Lift On-Off",
+      "storage": "Storage",
+      "other": "Other"
+    },
     "actions": {
       "deactivate": "Deactivate"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load pricing.",
+      "deactivated": "Pricing deactivated.",
+      "deactivateFailed": "Failed to deactivate pricing."
     },
     "empty": "No pricing data yet."
   },
@@ -73,6 +93,7 @@
     "pageTitle": "Vendor Job Orders",
     "pageSubtitle": "Track vendor job orders from shipment assignment through completion.",
     "listTitle": "Job Order List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search JO, shipment, or vendor…",
     "stats": {
       "draft": "Draft",
@@ -92,7 +113,22 @@
     },
     "filters": {
       "allVendor": "All Vendors",
-      "allStatus": "All Status"
+      "allStatus": "All Status",
+      "allService": "All Services",
+      "allOrigin": "All Origins",
+      "allDestination": "All Destinations",
+      "origin": "Origin",
+      "destination": "Destination",
+      "createdDate": "Created Date"
+    },
+    "serviceTypes": {
+      "pickup": "Pickup",
+      "delivery": "Delivery",
+      "rail": "Rail"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load job orders",
+      "loadFailedDescription": "Please try again later."
     },
     "empty": "No job orders yet."
   },
@@ -101,6 +137,7 @@
     "pageSubtitle": "Receive, verify, and track vendor invoices (accounts payable).",
     "receiveInvoice": "Receive Invoice",
     "listTitle": "Vendor Invoice List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search invoice, vendor, or JO…",
     "stats": {
       "received": "Received",
@@ -119,7 +156,33 @@
     },
     "filters": {
       "allVendor": "All Vendors",
-      "allStatus": "All Status"
+      "allStatus": "All Status",
+      "invoiceDate": "Invoice Date",
+      "receiveDate": "Receive Date"
+    },
+    "receiveDialog": {
+      "title": "Receive Vendor Invoice",
+      "vendor": "Vendor",
+      "selectVendor": "Select vendor",
+      "vendorInvoiceNumber": "Vendor Invoice Number",
+      "invoiceDate": "Invoice Date",
+      "receiveDate": "Receive Date",
+      "currency": "Currency",
+      "invoiceAmount": "Invoice Amount",
+      "taxAmount": "Tax Amount",
+      "totalInvoice": "Total Invoice",
+      "uploadInvoice": "Upload Invoice",
+      "remark": "Remark",
+      "jobOrderMatching": "Job Order Matching",
+      "joNo": "JO No",
+      "shipment": "Shipment",
+      "completion": "Completion",
+      "amount": "Amount",
+      "selectedSummary": "Selected: {count} · JO Total: {joTotal} · Difference: {difference}"
+    },
+    "toasts": {
+      "receiveSuccess": "Vendor invoice received.",
+      "saveFailed": "Failed to save."
     },
     "empty": "No vendor invoices yet."
   },
@@ -127,6 +190,7 @@
     "pageTitle": "Vendor Payments",
     "pageSubtitle": "Approve and record payments to vendors (accounts payable).",
     "listTitle": "Vendor Payment List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search payment no, invoice, or vendor…",
     "stats": {
       "waiting_approval": "Waiting Approval",
@@ -141,10 +205,20 @@
       "invoiceAmount": "Invoice Amt",
       "paid": "Paid",
       "date": "Date",
-      "status": "Status"
+      "status": "Status",
+      "paymentMethod": "Payment Method"
     },
     "filters": {
-      "allStatus": "All Status"
+      "allVendor": "All Vendors",
+      "allStatus": "All Status",
+      "allMethod": "All Methods",
+      "paymentDate": "Payment Date"
+    },
+    "paymentMethods": {
+      "transfer": "Transfer",
+      "giro": "Giro",
+      "cash": "Cash",
+      "virtual_account": "Virtual Account"
     },
     "empty": "No vendor payments yet."
   }

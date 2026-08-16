@@ -1,13 +1,14 @@
 {
   "AdminInvoices": {
-    "pageTitle": "Customer Invoice Management",
+    "pageTitle": "Manajemen Invoice Pelanggan",
     "pageSubtitle": "Invoice, penerbitan, dan link pembayaran Midtrans.",
     "listTitle": "Daftar Invoice",
+    "filterTitle": "Filter",
     "searchPlaceholder": "Cari nomor invoice…",
     "generateInvoice": "Generate Invoice",
-    "createManual": "Create Manual Invoice",
+    "createManual": "Buat Invoice Manual",
     "columns": {
-      "invoiceNo": "Nomor Invoice",
+      "invoiceNo": "No. Invoice",
       "shipment": "Shipment",
       "amount": "Jumlah",
       "issuedDate": "Tanggal Terbit",
@@ -15,23 +16,23 @@
     },
     "stats": {
       "draft": "Draft",
-      "issued": "Issued",
-      "partiallyPaid": "Partially Paid",
-      "paid": "Paid",
-      "cancelled": "Cancelled"
+      "issued": "Diterbitkan",
+      "partiallyPaid": "Dibayar Sebagian",
+      "paid": "Lunas",
+      "cancelled": "Dibatalkan"
     },
     "actions": {
       "viewDetail": "Lihat detail invoice",
       "downloadPdf": "Unduh PDF",
-      "issue": "Issue Invoice",
+      "issue": "Terbitkan Invoice",
       "cancelDraft": "Batalkan Draft",
       "createMidtransLink": "Buat Link Midtrans",
-      "creatingLink": "Membuat link...",
+      "creatingLink": "Membuat link…",
       "edit": "Edit invoice",
       "delete": "Hapus invoice"
     },
     "detail": {
-      "title": "Detail invoice",
+      "title": "Detail Invoice",
       "internalRef": "Referensi internal #{id}",
       "invoiceLabel": "Invoice",
       "description": "Deskripsi",
@@ -61,7 +62,7 @@
       "uploadWhenPaid": "Upload saat lunas",
       "back": "Kembali ke daftar invoice"
     },
-    "generatePaymentLink": "Generate Payment Link",
+    "generatePaymentLink": "Generate Link Pembayaran",
     "confirm": {
       "cancelDraft": "Batalkan invoice draft ini?"
     },
@@ -76,7 +77,7 @@
       "pdfDownloaded": "PDF invoice berhasil diunduh.",
       "pdfFailed": "Gagal mengunduh PDF.",
       "issued": "Invoice diterbitkan.",
-      "issueFailed": "Gagal issue invoice.",
+      "issueFailed": "Gagal menerbitkan invoice.",
       "cancelled": "Invoice dibatalkan.",
       "cancelFailed": "Gagal membatalkan invoice.",
       "linkCopied": "Link pembayaran disalin."
@@ -87,16 +88,16 @@
     },
     "generateDialog": {
       "title": "Generate Invoice",
-      "description": "Shipment completed yang belum memiliki invoice. Pilih satu atau lebih untuk dibuat draft invoice.",
+      "description": "Shipment selesai yang belum memiliki invoice. Pilih satu atau lebih untuk dibuat draft invoice.",
       "loading": "Memuat shipment…",
       "noEligible": "Tidak ada shipment eligible.",
       "columns": {
-        "shipmentNo": "Shipment No",
-        "cnNo": "CN No",
-        "customer": "Customer",
-        "service": "Service",
-        "completed": "Completed",
-        "amount": "Amount"
+        "shipmentNo": "No. Shipment",
+        "cnNo": "No. CN",
+        "customer": "Pelanggan",
+        "service": "Layanan",
+        "completed": "Selesai",
+        "amount": "Jumlah"
       },
       "success": "{count} invoice draft dibuat.",
       "failed": "Gagal generate invoice."

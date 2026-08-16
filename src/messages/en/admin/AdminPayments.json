@@ -3,6 +3,7 @@
     "pageTitle": "Payment / AR Management",
     "pageSubtitle": "Payments, Midtrans, and receivables for all customers.",
     "listTitle": "Payment List",
+    "filterTitle": "Filters",
     "recordPayment": "Record Payment",
     "generatePaymentLink": "Generate Payment Link",
     "searchPlaceholder": "Search payment no, invoice no, or customer…",
