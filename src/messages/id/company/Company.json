@@ -3,16 +3,15 @@
     "title": "Profil Perusahaan",
     "subtitle": "Kelola informasi perusahaan, pengaturan komersial, dan dokumen Anda.",
     "tabs": {
-      "info": "Informasi Perusahaan",
+      "info": "Profil Perusahaan",
       "commercial": "Informasi Komersial",
       "documents": "Dokumen",
-      "activities": "Aktivitas"
+      "activities": "Log Aktivitas"
     },
     "sections": {
       "companyInfo": "Informasi Perusahaan",
       "companyAddress": "Alamat Perusahaan",
-      "contact": "Kontak",
-      "operational": "Operasional",
+      "operationalInformation": "Informasi Operasional",
       "commercial": "Informasi Komersial",
       "documents": "Dokumen",
       "activities": "Log Aktivitas"
@@ -20,21 +19,24 @@
     "form": {
       "businessEntity": "Bentuk Usaha",
       "name": "Nama Perusahaan",
-      "companyCode": "Kode Pelanggan",
+      "companyCode": "Customer Code",
+      "companyLogo": "Logo Perusahaan",
+      "uploadLogo": "Unggah Logo",
+      "logoHint": "JPG atau PNG, maks 5 MB.",
+      "logoSaved": "Logo perusahaan diperbarui.",
+      "logoFailed": "Gagal mengunggah logo.",
       "npwp": "NPWP",
-      "nib": "NIB",
       "address": "Alamat",
       "country": "Negara",
       "province": "Provinsi",
       "city": "Kota",
       "district": "Kecamatan",
       "postalCode": "Kode Pos",
-      "email": "Email",
-      "phone": "Telepon",
-      "website": "Website",
-      "contactPerson": "Contact Person",
-      "businessCategory": "Kategori Bisnis",
-      "monthlyShipmentEstimate": "Estimasi Pengiriman per Bulan",
+      "email": "Company Email",
+      "phone": "Company Phone",
+      "website": "Company Website",
+      "businessCategory": "Business Category",
+      "monthlyShipmentEstimate": "Monthly Shipment Estimate",
       "save": "Simpan Perubahan",
       "saving": "Menyimpan…",
       "saved": "Profil berhasil diperbarui.",
@@ -43,28 +45,28 @@
     },
     "businessCategory": {
       "trading": "Trading",
-      "manufacturing": "Manufaktur",
+      "manufacturing": "Manufacturing",
       "retail": "Retail",
       "distributor": "Distributor",
       "e_commerce": "E-Commerce",
-      "logistics": "Logistik",
-      "others": "Lainnya"
+      "logistics": "Logistics",
+      "others": "Others"
     },
     "monthlyEstimate": {
-      "under_10": "Di bawah 10 pengiriman",
-      "10_to_50": "10–50 pengiriman",
-      "50_to_100": "50–100 pengiriman",
-      "over_100": "Di atas 100 pengiriman"
+      "under_10": "<10",
+      "10_to_50": "10-50",
+      "50_to_100": "50-100",
+      "over_100": ">100"
     },
     "commercialFields": {
-      "billingType": "Tipe Penagihan",
-      "pricingType": "Tipe Harga",
-      "discountPercent": "Diskon",
-      "billingCycle": "Siklus Penagihan",
-      "paymentTerm": "Termin Pembayaran",
-      "creditLimit": "Limit Kredit",
-      "currentDepositBalance": "Saldo Deposit",
-      "outstandingBalance": "Saldo Outstanding"
+      "billingType": "Billing Type",
+      "pricingType": "Pricing Type",
+      "discountPercent": "Discount (%)",
+      "billingCycle": "Billing Cycle",
+      "paymentTerm": "Payment Term",
+      "creditLimit": "Credit Limit",
+      "currentDepositBalance": "Current Deposit Balance",
+      "outstandingBalance": "Outstanding Balance"
     },
     "commercialLabels": {
       "billingType": {
@@ -72,49 +74,61 @@
         "prepaid": "Prepaid"
       },
       "pricingType": {
-        "standard": "Standar",
-        "volume": "Volume",
-        "tiered": "Bertingkat"
+        "standard": "Standard",
+        "discount": "Discount"
       },
       "billingCycle": {
-        "end_of_month": "Akhir Bulan",
-        "half_monthly_1": "Tengah Bulan (Tanggal 1)",
-        "half_monthly_15": "Tengah Bulan (Tanggal 15)",
-        "weekly": "Mingguan",
-        "monthly": "Bulanan"
+        "per_shipment": "Per Shipment",
+        "semi_monthly": "Semi Monthly",
+        "monthly": "Monthly",
+        "end_of_month": "End of Month",
+        "half_monthly_1": "Semi Monthly (Tanggal 1)",
+        "half_monthly_15": "Semi Monthly (Tanggal 15)",
+        "half_monthly_2": "Semi Monthly (Tanggal 2)",
+        "both_half": "Kedua Semi Monthly",
+        "weekly": "Weekly"
       },
       "paymentTerm": {
         "net_7": "Net 7",
         "net_14": "Net 14",
         "net_30": "Net 30",
         "net_45": "Net 45",
-        "prepaid": "Prabayar",
-        "cod": "Bayar di Tempat"
+        "net_60": "Net 60",
+        "prepaid": "Prepaid",
+        "cod": "COD"
       }
     },
     "documents": {
-      "title": "Dokumen Perusahaan",
-      "description": "Unggah NPWP, NIB, Business License, atau dokumen pendukung lainnya.",
-      "add": "Unggah Dokumen",
-      "empty": "Belum ada dokumen yang diunggah.",
+      "title": "Dokumen",
+      "add": "Upload Document",
+      "noFile": "Belum ada dokumen",
       "type": {
         "npwp": "NPWP",
         "nib": "NIB",
         "business_license": "Business License",
-        "other": "Lainnya"
+        "other": "Other Documents"
       },
       "upload": {
-        "title": "Unggah Dokumen",
+        "title": "Upload Document",
         "type": "Tipe Dokumen",
-        "label": "Label (Opsional)",
+        "label": "Label",
+        "labelOptional": "Opsional",
         "file": "File",
-        "submit": "Unggah",
-        "maxSize": "Maks 5 MB · PDF, JPG, PNG"
+        "submit": "Upload",
+        "maxSize": "Maks 5 MB · PDF, JPG, PNG",
+        "fileRequired": "Pilih file terlebih dahulu.",
+        "success": "Dokumen berhasil diunggah.",
+        "failed": "Gagal mengunggah dokumen."
       },
       "actions": {
-        "preview": "Pratinjau",
-        "download": "Unduh",
-        "delete": "Hapus"
+        "preview": "View",
+        "download": "Download",
+        "previewFailed": "Gagal membuka pratinjau.",
+        "downloadFailed": "Gagal mengunduh."
+      },
+      "table": {
+        "document": "Document",
+        "actions": "Action"
       }
     },
     "activities": {
@@ -127,11 +141,6 @@
       "title": "Perusahaan tidak ditemukan",
       "description": "Kami tidak dapat menemukan informasi perusahaan Anda. Silakan hubungi tim support.",
       "back": "Kembali ke dashboard"
-    },
-    "companyStatus": {
-      "active": "Aktif",
-      "inactive": "Tidak Aktif",
-      "pending": "Menunggu"
     },
     "common": {
       "cancel": "Batal",

@@ -45,6 +45,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editInvoice?: VendorInvoice | null;
+  initialShipmentId?: string;
 };
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -188,7 +189,7 @@ function FileDropzone({
   );
 }
 
-export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice }: Props) {
+export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice, initialShipmentId }: Props) {
   const tCommon = useTranslations("Vendor.common");
   const t = useTranslations("Vendor.invoices.form");
   const tSection = useTranslations("Vendor.invoices.form.sections");
@@ -203,6 +204,7 @@ export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice }: Pro
   const { data: eligibles } = useEligibleJobOrders();
 
   const [shipmentId, setShipmentId] = useState<string>("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState(
     new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
@@ -222,8 +224,10 @@ export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice }: Pro
       setInvoiceAmount(String(editInvoice.invoice_amount));
       setTaxAmount(String(editInvoice.tax_amount));
       setNotes(editInvoice.notes ?? "");
+    } else if (initialShipmentId && open) {
+      setShipmentId(initialShipmentId);
     }
-  }, [editInvoice]);
+  }, [editInvoice, initialShipmentId, open]);
 
   const subtotal = Number(invoiceAmount || 0);
   const tax = Number(taxAmount || 0);
@@ -245,6 +249,7 @@ export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice }: Pro
 
   const reset = () => {
     setShipmentId("");
+    setInvoiceNumber("");
     setInvoiceDate(new Date().toISOString().slice(0, 10));
     setDueDate(new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
     setInvoiceAmount("");
@@ -259,6 +264,7 @@ export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice }: Pro
     try {
       const fd = new FormData();
       fd.append("shipment_id", shipmentId);
+      if (!isEdit) fd.append("invoice_number", invoiceNumber);
       fd.append("invoice_date", invoiceDate);
       fd.append("due_date", dueDate);
       fd.append("invoice_amount", invoiceAmount);
@@ -350,6 +356,20 @@ export function VendorInvoiceFormDialog({ open, onOpenChange, editInvoice }: Pro
                 {tSection("invoiceInfo")}
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {!isEdit && (
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label className="text-xs font-medium text-zinc-700">
+                      {tF("invoiceNumber")} <span className="text-rose-500">*</span>
+                    </Label>
+                    <Input
+                      value={invoiceNumber}
+                      onChange={(e) => setInvoiceNumber(e.target.value)}
+                      placeholder="INV-V-000001"
+                      className="h-10"
+                      required
+                    />
+                  </div>
+                )}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700">{tF("invoiceDate")}</Label>
                   <Input

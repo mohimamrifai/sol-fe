@@ -3,7 +3,7 @@
     "title": "Company Profile",
     "subtitle": "Manage your company information, commercial settings, and documents.",
     "tabs": {
-      "info": "Company Information",
+      "info": "Company Profile",
       "commercial": "Commercial Information",
       "documents": "Documents",
       "activities": "Activity Log"
@@ -11,8 +11,7 @@
     "sections": {
       "companyInfo": "Company Information",
       "companyAddress": "Company Address",
-      "contact": "Contact",
-      "operational": "Operational",
+      "operationalInformation": "Operational Information",
       "commercial": "Commercial Information",
       "documents": "Documents",
       "activities": "Activity Log"
@@ -21,18 +20,21 @@
       "businessEntity": "Business Entity",
       "name": "Company Name",
       "companyCode": "Customer Code",
+      "companyLogo": "Company Logo",
+      "uploadLogo": "Upload Logo",
+      "logoHint": "JPG or PNG, max 5 MB.",
+      "logoSaved": "Company logo updated.",
+      "logoFailed": "Failed to upload logo.",
       "npwp": "NPWP",
-      "nib": "NIB",
       "address": "Address",
       "country": "Country",
       "province": "Province",
       "city": "City",
       "district": "District",
       "postalCode": "Postal Code",
-      "email": "Email",
-      "phone": "Phone",
-      "website": "Website",
-      "contactPerson": "Contact Person",
+      "email": "Company Email",
+      "phone": "Company Phone",
+      "website": "Company Website",
       "businessCategory": "Business Category",
       "monthlyShipmentEstimate": "Monthly Shipment Estimate",
       "save": "Save Changes",
@@ -51,19 +53,19 @@
       "others": "Others"
     },
     "monthlyEstimate": {
-      "under_10": "Under 10 shipments",
-      "10_to_50": "10–50 shipments",
-      "50_to_100": "50–100 shipments",
-      "over_100": "Over 100 shipments"
+      "under_10": "<10",
+      "10_to_50": "10-50",
+      "50_to_100": "50-100",
+      "over_100": ">100"
     },
     "commercialFields": {
       "billingType": "Billing Type",
       "pricingType": "Pricing Type",
-      "discountPercent": "Discount",
+      "discountPercent": "Discount (%)",
       "billingCycle": "Billing Cycle",
       "paymentTerm": "Payment Term",
       "creditLimit": "Credit Limit",
-      "currentDepositBalance": "Deposit Balance",
+      "currentDepositBalance": "Current Deposit Balance",
       "outstandingBalance": "Outstanding Balance"
     },
     "commercialLabels": {
@@ -73,48 +75,60 @@
       },
       "pricingType": {
         "standard": "Standard",
-        "volume": "Volume",
-        "tiered": "Tiered"
+        "discount": "Discount"
       },
       "billingCycle": {
+        "per_shipment": "Per Shipment",
+        "semi_monthly": "Semi Monthly",
+        "monthly": "Monthly",
         "end_of_month": "End of Month",
-        "half_monthly_1": "Half Monthly (1st)",
-        "half_monthly_15": "Half Monthly (15th)",
-        "weekly": "Weekly",
-        "monthly": "Monthly"
+        "half_monthly_1": "Semi Monthly (1st)",
+        "half_monthly_15": "Semi Monthly (15th)",
+        "half_monthly_2": "Semi Monthly (2nd)",
+        "both_half": "Both Half Monthly",
+        "weekly": "Weekly"
       },
       "paymentTerm": {
         "net_7": "Net 7",
         "net_14": "Net 14",
         "net_30": "Net 30",
         "net_45": "Net 45",
+        "net_60": "Net 60",
         "prepaid": "Prepaid",
-        "cod": "Cash on Delivery"
+        "cod": "COD"
       }
     },
     "documents": {
-      "title": "Company Documents",
-      "description": "Upload NPWP, NIB, Business License, or other supporting documents.",
+      "title": "Documents",
       "add": "Upload Document",
-      "empty": "No documents uploaded yet.",
+      "noFile": "No document uploaded",
       "type": {
         "npwp": "NPWP",
         "nib": "NIB",
         "business_license": "Business License",
-        "other": "Other"
+        "other": "Other Documents"
       },
       "upload": {
         "title": "Upload Document",
         "type": "Document Type",
-        "label": "Label (Optional)",
+        "label": "Label",
+        "labelOptional": "Optional",
         "file": "File",
         "submit": "Upload",
-        "maxSize": "Max 5 MB · PDF, JPG, PNG"
+        "maxSize": "Max 5 MB · PDF, JPG, PNG",
+        "fileRequired": "Please select a file.",
+        "success": "Document uploaded.",
+        "failed": "Upload failed."
       },
       "actions": {
-        "preview": "Preview",
+        "preview": "View",
         "download": "Download",
-        "delete": "Delete"
+        "previewFailed": "Preview failed.",
+        "downloadFailed": "Download failed."
+      },
+      "table": {
+        "document": "Document",
+        "actions": "Action"
       }
     },
     "activities": {
@@ -127,11 +141,6 @@
       "title": "Company not found",
       "description": "We couldn't find your company information. Please contact support.",
       "back": "Back to dashboard"
-    },
-    "companyStatus": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "pending": "Pending"
     },
     "common": {
       "cancel": "Cancel",

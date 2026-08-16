@@ -13,11 +13,25 @@ export const DOCUMENT_TYPES = [
   "tax_invoice",
   "payment_receipt",
   "other_supporting",
+  "msds_file",
 ] as const;
 
 export type DocumentTypeKey = (typeof DOCUMENT_TYPES)[number];
 
 export const DOCUMENT_TYPE_KEYS: DocumentTypeKey[] = [...DOCUMENT_TYPES];
+
+/** FSD filter keys sent as `type` query param */
+export const DOCUMENT_FILTER_TYPES = [
+  "booking",
+  "shipment",
+  "invoice",
+  "tax_invoice",
+  "pod",
+  "delivery_order",
+  "other",
+] as const;
+
+export type DocumentFilterTypeKey = (typeof DOCUMENT_FILTER_TYPES)[number];
 
 export const DOCUMENT_BUCKETS = ["booking", "shipment", "billing"] as const;
 export type DocumentBucketKey = (typeof DOCUMENT_BUCKETS)[number];
@@ -48,9 +62,12 @@ export interface DocumentRow {
       | "proof_of_delivery"
       | "invoice"
       | "tax_invoice"
-      | "payment_receipt";
+      | "payment_receipt"
+      | "other_supporting"
+      | "msds_file";
     id: number;
     file_path?: string | null;
+    entity?: string;
   };
 }
 

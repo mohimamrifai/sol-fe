@@ -98,7 +98,9 @@ export function StepAdminAccount() {
           <span>
             {t("field.termsLabel")}{" "}
             <Link
-              href="#"
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-medium text-black underline-offset-2 hover:underline"
             >
               {t("field.termsLink")}

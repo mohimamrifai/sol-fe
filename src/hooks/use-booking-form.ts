@@ -12,7 +12,7 @@ import {
   fetchCustomerMasterCargoCategories,
   fetchCustomerMasterDgClasses,
   fetchCustomerMasterShipmentCoverages,
-  fetchCustomerBranches,
+  fetchCustomerLocations,
   estimateBookingPrice,
   createCustomerBookingMultipart,
   updateCustomerBooking,
@@ -48,7 +48,19 @@ export type CC = {
 
 export type DC = { id: number; name: string; code: string; total_estimated?: number };
 export type Coverage = { value: string };
-export type Branch = { id: number; name: string; address?: string | null; city?: string | null; phone?: string | null; contact_person?: string | null };
+export type CustomerLoc = {
+  id: number;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  pic_name?: string | null;
+  pic_email?: string | null;
+  pic_mobile?: string | null;
+  province?: string | null;
+  city?: string | null;
+  district?: string | null;
+  postal_code?: string | null;
+};
 export type EstimateBreakdown = {
   freight: number;
   discount: number;
@@ -68,6 +80,7 @@ export type PackageRow = {
   width_cm: number;
   height_cm: number;
   remark: string;
+  cargo_category_id: string;
   is_dangerous_goods: boolean;
   un_number: string;
   dg_class_id: string;
@@ -84,6 +97,7 @@ export type ContainerRow = {
   gross_weight_kg: number;
   cargo_description: string;
   remark: string;
+  cargo_category_id: string;
   is_dangerous_goods: boolean;
   un_number: string;
   dg_class_id: string;
@@ -123,7 +137,7 @@ export function useBookingForm(opts?: { editId?: number }) {
   const [cargoCategories, setCargoCategories] = useState<CC[]>([]);
   const [dgClasses, setDgClasses] = useState<DC[]>([]);
   const [coverages, setCoverages] = useState<Coverage[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const [customerLocations, setCustomerLocations] = useState<CustomerLoc[]>([]);
 
   // Form State
   const [originId, setOriginId] = useState("");
@@ -167,7 +181,7 @@ export function useBookingForm(opts?: { editId?: number }) {
   const [shipperAddress, setShipperAddress] = useState("");
   const [shipperPhone, setShipperPhone] = useState("");
   const [isShipperSameAsAccount, setIsShipperSameAsAccount] = useState(false);
-  const [shipperBranchId, setShipperBranchId] = useState("");
+  const [shipperLocationId, setShipperLocationId] = useState("");
   const [shipperPicName, setShipperPicName] = useState("");
   const [shipperPicEmail, setShipperPicEmail] = useState("");
   const [shipperPicMobile, setShipperPicMobile] = useState("");
@@ -180,7 +194,7 @@ export function useBookingForm(opts?: { editId?: number }) {
   const [consigneeAddress, setConsigneeAddress] = useState("");
   const [consigneePhone, setConsigneePhone] = useState("");
   const [consigneeType, setConsigneeType] = useState<"customer_location" | "external">("external");
-  const [consigneeBranchId, setConsigneeBranchId] = useState("");
+  const [consigneeLocationId, setConsigneeLocationId] = useState("");
   const [consigneePicName, setConsigneePicName] = useState("");
   const [consigneePicEmail, setConsigneePicEmail] = useState("");
   const [consigneePicMobile, setConsigneePicMobile] = useState("");
@@ -212,7 +226,7 @@ export function useBookingForm(opts?: { editId?: number }) {
     let active = true;
     (async () => {
       try {
-        const [locRes, mRes, ctRes, asRes, ccRes, dgRes, covRes, brRes] = await Promise.all([
+        const [locRes, mRes, ctRes, asRes, ccRes, dgRes, covRes, clRes] = await Promise.all([
           fetchCustomerMasterLocations({ type: "station" }),
           fetchCustomerMasterTransportModes(),
           fetchCustomerMasterContainerTypes(),
@@ -220,7 +234,7 @@ export function useBookingForm(opts?: { editId?: number }) {
           fetchCustomerMasterCargoCategories(),
           fetchCustomerMasterDgClasses(),
           fetchCustomerMasterShipmentCoverages(),
-          fetchCustomerBranches(),
+          fetchCustomerLocations({ status: "active", perPage: 500 }),
         ]);
         if (!active) return;
         setLocations(((locRes as LaravelPaginated<Loc>).data ?? []) as Loc[]);
@@ -233,7 +247,7 @@ export function useBookingForm(opts?: { editId?: number }) {
         const rawCoverages = (covRes as { data: Coverage[] }).data ?? [];
         setCoverages(rawCoverages);
         if (rawCoverages[0]?.value && !rebookId && !editId) setShipmentCoverage(String(rawCoverages[0].value));
-        setBranches(((brRes as { data: Branch[] }).data ?? []) as Branch[]);
+        setCustomerLocations(((clRes as LaravelPaginated<CustomerLoc>).data ?? []) as CustomerLoc[]);
         if (rawModes[0]?.id && !rebookId && !editId) setModeId(String(rawModes[0].id));
 
         // Pre-fill from an existing booking — rebook (clone for a new booking) or edit (mutate existing).
@@ -267,7 +281,7 @@ export function useBookingForm(opts?: { editId?: number }) {
             setShipperName(String(bd.shipper_name ?? ""));
             setShipperAddress(String(bd.shipper_address ?? ""));
             setShipperPhone(String(bd.shipper_phone ?? ""));
-            setShipperBranchId(bd.shipper_branch_id ? String(bd.shipper_branch_id) : "");
+            setShipperLocationId(bd.shipper_location_id ? String(bd.shipper_location_id) : "");
 
             const shipperSnapshot = bd.shipper_snapshot as Record<string, unknown> | null | undefined;
             if (shipperSnapshot) {
@@ -284,7 +298,7 @@ export function useBookingForm(opts?: { editId?: number }) {
             setConsigneeAddress(String(bd.consignee_address ?? ""));
             setConsigneePhone(String(bd.consignee_phone ?? ""));
             setConsigneeType((bd.consignee_type as "customer_location" | "external" | undefined) ?? "external");
-            setConsigneeBranchId(bd.consignee_branch_id ? String(bd.consignee_branch_id) : "");
+            setConsigneeLocationId(bd.consignee_location_id ? String(bd.consignee_location_id) : "");
 
             const consigneeSnapshot = bd.consignee_snapshot as Record<string, unknown> | null | undefined;
             if (consigneeSnapshot) {
@@ -308,6 +322,7 @@ export function useBookingForm(opts?: { editId?: number }) {
                   width_cm: Number(p.width ?? 0),
                   height_cm: Number(p.height ?? 0),
                   remark: String(p.remark ?? ""),
+                  cargo_category_id: p.cargo_category_id != null ? String(p.cargo_category_id) : "",
                   is_dangerous_goods: Boolean(p.is_dangerous_goods),
                   un_number: String(p.un_number ?? ""),
                   dg_class_id: p.dg_class_id != null ? String(p.dg_class_id) : "",
@@ -328,6 +343,7 @@ export function useBookingForm(opts?: { editId?: number }) {
                   gross_weight_kg: Number(c.gross_weight_kg ?? 0),
                   cargo_description: String(c.cargo_description ?? ""),
                   remark: String(c.remark ?? ""),
+                  cargo_category_id: c.cargo_category_id != null ? String(c.cargo_category_id) : "",
                   is_dangerous_goods: Boolean(c.is_dangerous_goods),
                   un_number: String(c.un_number ?? ""),
                   dg_class_id: c.dg_class_id != null ? String(c.dg_class_id) : "",
@@ -461,6 +477,7 @@ export function useBookingForm(opts?: { editId?: number }) {
                 width_cm: Number(itemWidth) || 0,
                 height_cm: Number(itemHeight) || 0,
                 remark: "",
+                cargo_category_id: cargoCategoryId || defaultGeneralCategoryId(cargoCategories),
                 is_dangerous_goods: false,
                 un_number: "",
                 dg_class_id: "",
@@ -484,6 +501,7 @@ export function useBookingForm(opts?: { editId?: number }) {
                 gross_weight_kg: Number(weight) || 0,
                 cargo_description: cargo || "Cargo",
                 remark: "",
+                cargo_category_id: cargoCategoryId || defaultGeneralCategoryId(cargoCategories),
                 is_dangerous_goods: false,
                 un_number: "",
                 dg_class_id: "",
@@ -501,6 +519,7 @@ export function useBookingForm(opts?: { editId?: number }) {
       const l = Number(p.length_cm) || 0;
       const w = Number(p.width_cm) || 0;
       const h = Number(p.height_cm) || 0;
+      const isDg = isDgCargoCategory(cargoCategories, p.cargo_category_id);
       return {
         description: p.description || null,
         package_type: p.package_type || null,
@@ -510,30 +529,35 @@ export function useBookingForm(opts?: { editId?: number }) {
         height: h || null,
         weight_kg: Number(p.weight_kg) || null,
         remark: p.remark || null,
-        is_dangerous_goods: p.is_dangerous_goods ? 1 : 0,
-        dg_class_id: p.is_dangerous_goods && p.dg_class_id ? Number(p.dg_class_id) : null,
-        un_number: p.is_dangerous_goods ? (p.un_number || null) : null,
-        packing_group: p.is_dangerous_goods ? (p.packing_group || null) : null,
-        proper_shipping_name: p.is_dangerous_goods ? (p.proper_shipping_name || null) : null,
-        flash_point: p.is_dangerous_goods && p.flash_point_c ? Number(p.flash_point_c) : null,
-        dg_remark: p.is_dangerous_goods ? (p.dg_remark || null) : null,
+        cargo_category_id: p.cargo_category_id ? Number(p.cargo_category_id) : null,
+        is_dangerous_goods: isDg ? 1 : 0,
+        dg_class_id: isDg && p.dg_class_id ? Number(p.dg_class_id) : null,
+        un_number: isDg ? (p.un_number || null) : null,
+        packing_group: isDg ? (p.packing_group || null) : null,
+        proper_shipping_name: isDg ? (p.proper_shipping_name || null) : null,
+        flash_point: isDg && p.flash_point_c ? Number(p.flash_point_c) : null,
+        dg_remark: isDg ? (p.dg_remark || null) : null,
       };
     });
 
-    const ctrRows = effectiveContainers.map((c) => ({
-      container_type_id: c.container_type_id ? Number(c.container_type_id) : null,
-      quantity: Number(c.quantity) || 1,
-      gross_weight_kg: Number(c.gross_weight_kg) || null,
-      cargo_description: c.cargo_description || null,
-      remark: c.remark || null,
-      is_dangerous_goods: c.is_dangerous_goods ? 1 : 0,
-      dg_class_id: c.is_dangerous_goods && c.dg_class_id ? Number(c.dg_class_id) : null,
-      un_number: c.is_dangerous_goods ? (c.un_number || null) : null,
-      packing_group: c.is_dangerous_goods ? (c.packing_group || null) : null,
-      proper_shipping_name: c.is_dangerous_goods ? (c.proper_shipping_name || null) : null,
-      flash_point: c.is_dangerous_goods && c.flash_point_c ? Number(c.flash_point_c) : null,
-      dg_remark: c.is_dangerous_goods ? (c.dg_remark || null) : null,
-    }));
+    const ctrRows = effectiveContainers.map((c) => {
+      const isDg = isDgCargoCategory(cargoCategories, c.cargo_category_id);
+      return {
+        container_type_id: c.container_type_id ? Number(c.container_type_id) : null,
+        quantity: Number(c.quantity) || 1,
+        gross_weight_kg: Number(c.gross_weight_kg) || null,
+        cargo_description: c.cargo_description || null,
+        remark: c.remark || null,
+        cargo_category_id: c.cargo_category_id ? Number(c.cargo_category_id) : null,
+        is_dangerous_goods: isDg ? 1 : 0,
+        dg_class_id: isDg && c.dg_class_id ? Number(c.dg_class_id) : null,
+        un_number: isDg ? (c.un_number || null) : null,
+        packing_group: isDg ? (c.packing_group || null) : null,
+        proper_shipping_name: isDg ? (c.proper_shipping_name || null) : null,
+        flash_point: isDg && c.flash_point_c ? Number(c.flash_point_c) : null,
+        dg_remark: isDg ? (c.dg_remark || null) : null,
+      };
+    });
 
     const pkgTotalCbm = effectivePackages.reduce((acc, p) => {
       const qty = Number(p.piece_count) || 1;
@@ -549,8 +573,8 @@ export function useBookingForm(opts?: { editId?: number }) {
     const ctrFirstType = effectiveContainers[0]?.container_type_id;
 
     const anyItemDg =
-      effectivePackages.some((p) => p.is_dangerous_goods) ||
-      effectiveContainers.some((c) => c.is_dangerous_goods);
+      effectivePackages.some((p) => isDgCargoCategory(cargoCategories, p.cargo_category_id)) ||
+      effectiveContainers.some((c) => isDgCargoCategory(cargoCategories, c.cargo_category_id));
 
     return {
       origin_location_id: originId ? Number(originId) : null,
@@ -581,7 +605,7 @@ export function useBookingForm(opts?: { editId?: number }) {
       shipper_name: shipperName || null,
       shipper_address: shipperAddress || null,
       shipper_phone: shipperPhone || null,
-      shipper_branch_id: shipperBranchId ? Number(shipperBranchId) : null,
+      shipper_location_id: shipperLocationId ? Number(shipperLocationId) : null,
       shipper_snapshot: {
         company: shipperName || null,
         pic_name: shipperPicName || null,
@@ -599,7 +623,7 @@ export function useBookingForm(opts?: { editId?: number }) {
       consignee_address: consigneeAddress || null,
       consignee_phone: consigneePhone || null,
       consignee_type: consigneeType,
-      consignee_branch_id: consigneeType === "customer_location" && consigneeBranchId ? Number(consigneeBranchId) : null,
+      consignee_location_id: consigneeType === "customer_location" && consigneeLocationId ? Number(consigneeLocationId) : null,
       consignee_snapshot: {
         company: consigneeName || null,
         pic_name: consigneePicName || null,
@@ -783,7 +807,7 @@ export function useBookingForm(opts?: { editId?: number }) {
   };
 
   return {
-    locations, modes, serviceTypes, containerTypes, addServices, cargoCategories, dgClasses, coverages, branches,
+    locations, modes, serviceTypes, containerTypes, addServices, cargoCategories, dgClasses, coverages, customerLocations,
     originId, setOriginId,
     destId, setDestId,
     modeId, setModeId,
@@ -813,7 +837,7 @@ export function useBookingForm(opts?: { editId?: number }) {
     shipperAddress, setShipperAddress,
     shipperPhone, setShipperPhone,
     isShipperSameAsAccount, setIsShipperSameAsAccount,
-    shipperBranchId, setShipperBranchId,
+    shipperLocationId, setShipperLocationId,
     shipperPicName, setShipperPicName,
     shipperPicEmail, setShipperPicEmail,
     shipperPicMobile, setShipperPicMobile,
@@ -825,7 +849,7 @@ export function useBookingForm(opts?: { editId?: number }) {
     consigneeAddress, setConsigneeAddress,
     consigneePhone, setConsigneePhone,
     consigneeType, setConsigneeType,
-    consigneeBranchId, setConsigneeBranchId,
+    consigneeLocationId, setConsigneeLocationId,
     consigneePicName, setConsigneePicName,
     consigneePicEmail, setConsigneePicEmail,
     consigneePicMobile, setConsigneePicMobile,
@@ -845,4 +869,14 @@ export function useBookingForm(opts?: { editId?: number }) {
     submitDraft,
     mode: editId ? ("edit" as const) : ("create" as const),
   };
+}
+
+function isDgCargoCategory(categories: CC[], categoryId: string): boolean {
+  const cat = categories.find((c) => String(c.id) === categoryId);
+  return cat?.code === "DG";
+}
+
+function defaultGeneralCategoryId(categories: CC[]): string {
+  const gen = categories.find((c) => c.code === "GEN");
+  return gen ? String(gen.id) : "";
 }

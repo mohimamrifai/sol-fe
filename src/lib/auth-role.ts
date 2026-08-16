@@ -7,7 +7,7 @@ const INTERNAL_UI_ROLES = [
   "sales",
 ] as const;
 
-const CUSTOMER_UI_ROLES = ["company_admin", "ops_pic", "finance_pic"] as const;
+const CUSTOMER_UI_ROLES = ["company_admin", "ops_pic", "finance_pic", "viewer"] as const;
 
 const VENDOR_UI_ROLES = [
   "vendor_company_admin",
@@ -78,4 +78,9 @@ export function isVendorOpsUser(user: AuthUser | null): boolean {
 export function isVendorFinanceUser(user: AuthUser | null): boolean {
   if (!user) return false;
   return isVendorUser(user) && (user.roles ?? []).includes("vendor_finance_pic");
+}
+
+export function isCustomerViewer(user: AuthUser | null): boolean {
+  if (!user) return false;
+  return isCustomerUser(user) && (user.roles ?? []).includes("viewer");
 }

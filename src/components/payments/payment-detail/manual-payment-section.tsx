@@ -57,6 +57,7 @@ export function ManualPaymentSection({ payment }: Props) {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const enabled = payment.manual_payment.enabled;
+  const canSubmitManual = payment.actions?.can_submit_manual !== false;
   const isSubmitted = payment.manual.status === "submitted" || payment.manual.status === "verified";
   const isVerified = payment.manual.status === "verified";
   const isRejected = payment.manual.status === "rejected";
@@ -175,7 +176,7 @@ export function ManualPaymentSection({ payment }: Props) {
           </div>
         ) : null}
 
-        {enabled && !isVerified ? (
+        {enabled && canSubmitManual && !isVerified ? (
           <form onSubmit={onSubmit} className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label className="text-xs text-zinc-600">{tForm("paymentDate")}</Label>

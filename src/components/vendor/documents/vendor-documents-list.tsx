@@ -13,7 +13,8 @@ const STATS_CONFIG = [
   { key: "job_order", icon: ClipboardList, tone: "indigo" },
   { key: "consignment_note", icon: FileText, tone: "blue" },
   { key: "delivery_order", icon: Truck, tone: "amber" },
-  { key: "proof_of_completion", icon: FileCheck, tone: "emerald" },
+  { key: "proof_of_delivery", icon: FileCheck, tone: "emerald" },
+  { key: "supporting", icon: FileBox, tone: "purple" },
 ] as const;
 
 const TONE_CLASS = {
@@ -21,6 +22,7 @@ const TONE_CLASS = {
   blue: "bg-blue-50 text-blue-600 border-blue-100",
   amber: "bg-amber-50 text-amber-600 border-amber-100",
   emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  purple: "bg-purple-50 text-purple-600 border-purple-100",
 };
 
 export function VendorDocumentsList() {
@@ -49,7 +51,7 @@ export function VendorDocumentsList() {
       </div>
 
       {statsLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="border-zinc-200/60">
               <CardContent className="p-5">
@@ -60,7 +62,7 @@ export function VendorDocumentsList() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {STATS_CONFIG.map(({ key, icon: Icon, tone }) => (
             <Card key={key} className="border-zinc-200/60">
               <CardContent className="flex items-center gap-4 p-5">
@@ -100,6 +102,7 @@ export function VendorDocumentsList() {
                     <th className="px-4 py-3 font-medium">{t("table.name")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.type")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.jo")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.shipment")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.uploadedBy")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.uploadDate")}</th>
                   </tr>
@@ -112,10 +115,11 @@ export function VendorDocumentsList() {
                       className="cursor-pointer border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
                     >
                       <td className="px-4 py-3 text-zinc-900">{doc.name}</td>
-                      <td className="px-4 py-3 text-zinc-600">{doc.type_label}</td>
+                      <td className="px-4 py-3 text-zinc-600">{doc.type_label ?? doc.document_type_label}</td>
                       <td className="px-4 py-3 font-mono text-xs text-zinc-700">{doc.jo_number}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-zinc-700">{doc.shipment_number}</td>
                       <td className="px-4 py-3 text-zinc-600">{doc.uploaded_by}</td>
-                      <td className="px-4 py-3 text-zinc-600">{doc.uploaded_at}</td>
+                      <td className="px-4 py-3 text-zinc-600">{doc.uploaded_at ?? doc.upload_date}</td>
                     </tr>
                   ))}
                 </tbody>

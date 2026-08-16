@@ -4,33 +4,61 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, Plus, ListChecks, Zap } from "lucide-react";
+import { useAuthStore } from "@/lib/store";
+import {
+  isVendorAdminUser,
+  isVendorFinanceUser,
+  isVendorOpsUser,
+} from "@/lib/auth-role";
 
 export function VendorQuickActions() {
   const t = useTranslations("Vendor.dashboard");
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  const canJobOrders =
+    isVendorAdminUser(user) || isVendorOpsUser(user);
+  const canInvoices =
+    isVendorAdminUser(user) || isVendorFinanceUser(user);
+
   const items = [
-    {
-      key: "pendingJobs",
-      label: t("quickActions.viewPending"),
-      icon: ClipboardList,
-      onClick: () => router.push("/dashboard/vendor/job-orders?status=pending_acceptance"),
-      tone: "bg-amber-50 text-amber-700 border-amber-100",
-    },
-    {
-      key: "createInvoice",
-      label: t("quickActions.createInvoice"),
-      icon: Plus,
-      onClick: () => router.push("/dashboard/vendor/invoices"),
-      tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    },
-    {
-      key: "myJobOrders",
-      label: t("quickActions.myJobOrders"),
-      icon: ListChecks,
-      onClick: () => router.push("/dashboard/vendor/job-orders"),
-      tone: "bg-blue-50 text-blue-700 border-blue-100",
-    },
-  ];
+    canJobOrders
+      ? {
+          key: "pendingJobs",
+          label: t("quickActions.viewPending"),
+          icon: ClipboardList,
+          onClick: () =>
+            router.push("/dashboard/vendor/job-orders?status=pending_acceptance"),
+          tone: "bg-amber-50 text-amber-700 border-amber-100",
+        }
+      : null,
+    canInvoices
+      ? {
+          key: "createInvoice",
+          label: t("quickActions.createInvoice"),
+          icon: Plus,
+          onClick: () => router.push("/dashboard/vendor/invoices?create=1"),
+          tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        }
+      : null,
+    canJobOrders
+      ? {
+          key: "myJobOrders",
+          label: t("quickActions.myJobOrders"),
+          icon: ListChecks,
+          onClick: () => router.push("/dashboard/vendor/job-orders"),
+          tone: "bg-blue-50 text-blue-700 border-blue-100",
+        }
+      : null,
+  ].filter(Boolean) as Array<{
+    key: string;
+    label: string;
+    icon: typeof ClipboardList;
+    onClick: () => void;
+    tone: string;
+  }>;
+
+  if (items.length === 0) return null;
 
   return (
     <Card>

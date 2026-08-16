@@ -65,8 +65,8 @@ export function ActivityLogSection() {
                   className="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3"
                 >
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-zinc-900">{e.title ?? "—"}</p>
-                    {e.description ? (
+                    <p className="text-sm font-medium text-zinc-900">{e.title ?? e.description ?? "—"}</p>
+                    {e.description && e.description !== e.title ? (
                       <p className="text-xs text-zinc-600">{e.description}</p>
                     ) : null}
                     <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">

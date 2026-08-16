@@ -27,16 +27,19 @@ async function openBlobInNewTab(blob: Blob) {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-function parseShipmentId(listPath: string | null | undefined): number | null {
-  if (!listPath) return null;
+function parseListParams(listPath: string | null | undefined): URLSearchParams {
+  if (!listPath) return new URLSearchParams();
   const qIndex = listPath.indexOf("?");
-  if (qIndex < 0) return null;
-  const qs = listPath.slice(qIndex + 1);
-  const params = new URLSearchParams(qs);
-  const v = params.get("shipment_id");
-  if (!v) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
+  if (qIndex < 0) return new URLSearchParams();
+  return new URLSearchParams(listPath.slice(qIndex + 1));
+}
+
+function navigateToSupportingList(
+  listPath: string | null | undefined,
+  router: ReturnType<typeof useRouter>,
+) {
+  const params = parseListParams(listPath);
+  router.push(`/dashboard/documents${params.toString() ? `?${params.toString()}` : ""}`);
 }
 
 export function SupportingDocumentsSection({ invoice }: Props) {
@@ -71,11 +74,11 @@ export function SupportingDocumentsSection({ invoice }: Props) {
   }
 
   function onViewSupportingList(doc: CustomerInvoiceDetail["supporting_documents"][number]) {
-    const shipmentId = parseShipmentId(doc.list_path);
-    const q = new URLSearchParams();
-    if (shipmentId != null) q.set("shipment_id", String(shipmentId));
-    q.set("type", "shipment");
-    router.push(`/dashboard/documents${q.toString() ? `?${q.toString()}` : ""}`);
+    navigateToSupportingList(doc.list_path, router);
+  }
+
+  function onDownloadSupportingList(doc: CustomerInvoiceDetail["supporting_documents"][number]) {
+    navigateToSupportingList(doc.list_path, router);
   }
 
   return (
@@ -104,16 +107,28 @@ export function SupportingDocumentsSection({ invoice }: Props) {
                   <td className="px-4 py-3 text-right">
                     <div className="inline-flex items-center gap-1">
                       {isList ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onViewSupportingList(doc)}
-                          disabled={disabled}
-                          className="h-7 gap-1 px-2 text-xs"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          {t("view")}
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onViewSupportingList(doc)}
+                            disabled={disabled}
+                            className="h-7 gap-1 px-2 text-xs"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            {t("view")}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onDownloadSupportingList(doc)}
+                            disabled={disabled}
+                            className="h-7 gap-1 px-2 text-xs"
+                          >
+                            <Download className="h-3 w-3" />
+                            {t("download")}
+                          </Button>
+                        </>
                       ) : (
                         <>
                           <Button

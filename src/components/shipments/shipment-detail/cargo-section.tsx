@@ -101,7 +101,7 @@ export function CargoSection({ data }: Props) {
                         {c.container_number ?? "—"}
                       </td>
                       <td className="px-3 py-2 text-zinc-700">{c.container_type ?? "—"}</td>
-                      <td className="px-3 py-2 text-zinc-700">{c.cargo_description ?? "—"}</td>
+                      <td className="px-3 py-2 text-zinc-700">{c.cargo_category ?? "—"}</td>
                       <td className="px-3 py-2 text-right tabular-nums text-zinc-900">
                         {fmtNum(c.cargo_weight_kg)}
                       </td>

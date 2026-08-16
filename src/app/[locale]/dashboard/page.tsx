@@ -36,6 +36,9 @@ const DashboardOpsPic = dynamic(
 const DashboardFinancePic = dynamic(
   () => import("@/components/dashboard/role/DashboardFinancePic").then((m) => m.DashboardFinancePic)
 );
+const DashboardViewer = dynamic(
+  () => import("@/components/dashboard/role/DashboardViewer").then((m) => m.DashboardViewer)
+);
 const DashboardVendorCompanyAdmin = dynamic(
   () => import("@/components/dashboard/role/DashboardVendorCompanyAdmin").then(
     (m) => m.DashboardVendorCompanyAdmin
@@ -154,6 +157,8 @@ export default function DashboardPage() {
         return <DashboardOpsPic {...customerProps} />;
       case "finance_pic":
         return <DashboardFinancePic {...customerProps} />;
+      case "viewer":
+        return <DashboardViewer {...customerProps} />;
       case "vendor_company_admin":
         return <DashboardVendorCompanyAdmin />;
       case "vendor_ops_pic":

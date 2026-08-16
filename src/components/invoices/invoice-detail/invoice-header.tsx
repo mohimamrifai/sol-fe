@@ -11,6 +11,8 @@ import { downloadCustomerInvoicePdf, payInvoice } from "@/lib/customer-api";
 import { downloadBlob } from "@/lib/download-blob";
 import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
 import { ensureMidtransSnapLoaded, openMidtransSnap } from "@/lib/midtrans-client";
+import { isCustomerViewer } from "@/lib/auth-role";
+import { useAuthStore } from "@/lib/store";
 import type { CustomerInvoiceDetail } from "@/lib/invoice-types";
 import { ApiError } from "@/lib/api-client";
 
@@ -31,6 +33,8 @@ export function InvoiceHeader({ invoice, onPaid }: Props) {
   const tInfo = useTranslations("Invoices.detail.section1");
   const tStatus = useTranslations("Invoices.status");
   const router = useRouter();
+  const { user } = useAuthStore();
+  const readOnly = isCustomerViewer(user);
   const [downloading, setDownloading] = React.useState(false);
   const [paying, setPaying] = React.useState(false);
 
@@ -125,7 +129,7 @@ export function InvoiceHeader({ invoice, onPaid }: Props) {
             <Download className="h-4 w-4" />
             {t("downloadPdf")}
           </Button>
-          {invoice.actions.can_pay_now ? (
+          {invoice.actions.can_pay_now && !readOnly ? (
             <Button
               variant="default"
               size="sm"

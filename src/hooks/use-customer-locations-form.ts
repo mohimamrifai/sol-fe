@@ -8,6 +8,7 @@ import {
 } from "@/lib/customer-api";
 import { LOCATIONS_LIST_KEY } from "./use-customer-locations-list";
 import { LOCATION_DETAIL_KEY } from "./use-customer-location-detail";
+import { LOCATION_ACTIVITIES_KEY } from "./use-customer-location-activities";
 
 export function useCreateLocation() {
   const qc = useQueryClient();
@@ -25,6 +26,7 @@ export function useUpdateLocation() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: [...LOCATIONS_LIST_KEY] });
       qc.invalidateQueries({ queryKey: [...LOCATION_DETAIL_KEY, vars.id] });
+      qc.invalidateQueries({ queryKey: [...LOCATION_ACTIVITIES_KEY, vars.id] });
     },
   });
 }
@@ -37,6 +39,7 @@ export function useChangeLocationStatus() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: [...LOCATIONS_LIST_KEY] });
       qc.invalidateQueries({ queryKey: [...LOCATION_DETAIL_KEY, vars.id] });
+      qc.invalidateQueries({ queryKey: [...LOCATION_ACTIVITIES_KEY, vars.id] });
     },
   });
 }

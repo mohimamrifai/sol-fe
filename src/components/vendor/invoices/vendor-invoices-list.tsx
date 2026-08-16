@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Receipt, Plus, FileText, CheckCircle2, XCircle, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,19 @@ export function VendorInvoicesList() {
   const t = useTranslations("Vendor.invoices");
   const tCommon = useTranslations("Vendor.common");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
+  const [prefillJobOrderId, setPrefillJobOrderId] = useState<string>("");
+
+  useEffect(() => {
+    if (searchParams.get("create") === "1") {
+      setShowCreate(true);
+      const joId = searchParams.get("job_order_id");
+      if (joId) setPrefillJobOrderId(joId);
+    }
+  }, [searchParams]);
   const { data: stats, isLoading: statsLoading } = useVendorInvoiceStats();
   const { data, isLoading } = useVendorInvoices({ ...filters, page, per_page: 15 });
 
@@ -176,7 +187,11 @@ export function VendorInvoicesList() {
         </CardContent>
       </Card>
 
-      <VendorInvoiceFormDialog open={showCreate} onOpenChange={setShowCreate} />
+      <VendorInvoiceFormDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        initialShipmentId={prefillJobOrderId || undefined}
+      />
     </div>
   );
 }

@@ -19,16 +19,21 @@ export function VendorInvoiceFilters({ onChange }: Props) {
   const [status, setStatus] = useState("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [dueFrom, setDueFrom] = useState("");
+  const [dueTo, setDueTo] = useState("");
 
   useEffect(() => {
-    const handle = setTimeout(() => onChange({ search, status, from, to }), 300);
+    const handle = setTimeout(
+      () => onChange({ search, status, from, to, due_from: dueFrom, due_to: dueTo }),
+      300,
+    );
     return () => clearTimeout(handle);
-  }, [search, status, from, to, onChange]);
+  }, [search, status, from, to, dueFrom, dueTo, onChange]);
 
   return (
     <Card>
-      <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 md:grid-cols-3 md:items-end">
-        <div className="relative sm:col-span-2 md:col-span-1">
+      <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative sm:col-span-2">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <Input
             value={search}
@@ -50,16 +55,26 @@ export function VendorInvoiceFilters({ onChange }: Props) {
             <SelectItem value="paid">{tStat("paid")}</SelectItem>
           </SelectContent>
         </Select>
-        <DateRangePicker
-          from={from}
-          to={to}
-          onChange={({ from: f, to: tt }) => { setFrom(f); setTo(tt); }}
-        />
-        <div className="sm:col-span-2 md:col-span-3 md:flex md:justify-end">
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <span className="text-xs text-zinc-500">{tFilter("invoiceDate")}</span>
+          <DateRangePicker from={from} to={to} onChange={({ from: f, to: tt }) => { setFrom(f); setTo(tt); }} />
+        </div>
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <span className="text-xs text-zinc-500">{tFilter("dueDate")}</span>
+          <DateRangePicker from={dueFrom} to={dueTo} onChange={({ from: f, to: tt }) => { setDueFrom(f); setDueTo(tt); }} />
+        </div>
+        <div className="sm:col-span-2 lg:col-span-4 lg:flex lg:justify-end">
           <Button
             variant="outline"
             className="h-10 w-full md:w-auto"
-            onClick={() => { setSearch(""); setStatus("all"); setFrom(""); setTo(""); }}
+            onClick={() => {
+              setSearch("");
+              setStatus("all");
+              setFrom("");
+              setTo("");
+              setDueFrom("");
+              setDueTo("");
+            }}
           >
             <X className="mr-1 h-4 w-4" /> {tCommon("reset")}
           </Button>

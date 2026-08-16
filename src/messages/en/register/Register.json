@@ -71,6 +71,8 @@
       "districtSubRegionPlaceholder": "e.g. Manhattan",
       "postalCode": "Postal Code",
       "postalCodePlaceholder": "12130",
+      "postalCodeSearch": "Type postal code...",
+      "postalCodeEmpty": "Type postal code and press Enter",
       "address": "Address",
       "addressPlaceholder": "123 Test St, Suite 1, District",
       "businessCategory": "Business Category",

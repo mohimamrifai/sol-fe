@@ -16,8 +16,11 @@ import {
 } from "@/lib/payment-status";
 import { paymentMethodKey } from "@/lib/payment-utils";
 import { ensureMidtransSnapLoaded, openMidtransSnap } from "@/lib/midtrans-client";
+import { isCustomerViewer } from "@/lib/auth-role";
+import { useAuthStore } from "@/lib/store";
 import { ApiError } from "@/lib/api-client";
 import { usePayInvoice } from "@/hooks/use-pay-invoice";
+import { useSyncMidtransPayment } from "@/hooks/use-sync-midtrans-payment";
 import type { PaymentDetail } from "@/lib/payment-types";
 
 interface Props {
@@ -46,10 +49,14 @@ export function PaymentHeader({ payment, onSynced, onPaid }: Props) {
   const t = useTranslations("Payments.detail.header");
   const tStatus = useTranslations("Payments.status");
   const tMethod = useTranslations("Payments.paymentMethod");
+  const tActions = useTranslations("Payments.actions");
   const router = useRouter();
+  const { user } = useAuthStore();
+  const readOnly = isCustomerViewer(user);
   const [downloading, setDownloading] = React.useState(false);
   const [paying, setPaying] = React.useState(false);
   const payMutation = usePayInvoice();
+  const syncMutation = useSyncMidtransPayment();
 
   async function onDownloadReceipt() {
     setDownloading(true);
@@ -85,8 +92,18 @@ export function PaymentHeader({ payment, onSynced, onPaid }: Props) {
     }
   }
 
-  const canPay = payment.actions?.can_pay_now;
-  const showSync = payment.payment_method === "midtrans" && payment.status === "pending";
+  async function onSyncMidtrans() {
+    try {
+      await syncMutation.mutateAsync(payment.id);
+      toast.success(tActions("syncSuccess"));
+      onSynced?.();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : tActions("syncError"));
+    }
+  }
+
+  const canPay = payment.actions?.can_pay_now && !readOnly;
+  const showSync = payment.actions?.can_sync_midtrans && payment.payment_record_status === "pending";
   const methodKey = paymentMethodKey(payment.payment_method);
   const methodLabel = methodKey ? tMethod(methodKey) : (payment.payment_method || "—");
   const rawStatus = String(payment.status);
@@ -135,12 +152,18 @@ export function PaymentHeader({ payment, onSynced, onPaid }: Props) {
 
         <div className="flex flex-wrap items-center gap-2">
           {showSync ? (
-            <Button variant="outline" size="sm" onClick={onSynced} className="h-9 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void onSyncMidtrans()}
+              disabled={syncMutation.isPending}
+              className="h-9 gap-2"
+            >
               <RefreshCw className="h-4 w-4" />
               {t("syncMidtrans")}
             </Button>
           ) : null}
-          {payment.status === "success" || payment.status === "settlement" ? (
+          {payment.payment_record_status === "success" || payment.payment_record_status === "settlement" ? (
             <Button
               variant="outline"
               size="sm"

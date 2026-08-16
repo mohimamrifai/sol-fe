@@ -4,12 +4,11 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  FileText, Plus, Trash2, Download, Eye, Loader2, Upload, X,
+  FileText, Plus, Download, Eye, Loader2, Upload, X,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,7 +23,6 @@ import { firstLaravelError } from "@/lib/laravel-errors";
 import {
   useCustomerCompanyDocuments,
   useUploadCompanyDocument,
-  useDeleteCompanyDocument,
 } from "@/hooks/use-customer-company-documents";
 import { downloadCustomerCompanyDocument, previewCustomerCompanyDocument } from "@/lib/customer-api";
 
@@ -33,33 +31,34 @@ interface DocumentItem {
   type?: string;
   label?: string;
   file_name?: string;
-  file_size?: number;
   uploaded_at?: string;
 }
 
-const DOC_TYPES = ["npwp", "nib", "business_license", "other"];
+const FSD_DOC_TYPES = ["npwp", "nib", "business_license", "other"] as const;
 
-function fmtSize(n?: number) {
-  if (!n) return "—";
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / 1024 / 1024).toFixed(1)} MB`;
-}
-
-function fmtDate(s?: string) {
-  if (!s) return "—";
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.toLocaleString("id-ID", {
-    year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit",
-  });
+function latestByType(docs: DocumentItem[]): Record<string, DocumentItem | undefined> {
+  const grouped: Record<string, DocumentItem[]> = {};
+  for (const d of docs) {
+    if (!d.type) continue;
+    grouped[d.type] = grouped[d.type] ?? [];
+    grouped[d.type].push(d);
+  }
+  const result: Record<string, DocumentItem | undefined> = {};
+  for (const type of FSD_DOC_TYPES) {
+    const list = grouped[type] ?? [];
+    result[type] = list.sort((a, b) => {
+      const ta = a.uploaded_at ? new Date(a.uploaded_at).getTime() : 0;
+      const tb = b.uploaded_at ? new Date(b.uploaded_at).getTime() : 0;
+      return tb - ta;
+    })[0];
+  }
+  return result;
 }
 
 export function DocumentsSection() {
   const t = useTranslations("Company");
   const { data, isLoading } = useCustomerCompanyDocuments();
   const uploadMutation = useUploadCompanyDocument();
-  const deleteMutation = useDeleteCompanyDocument();
 
   const [open, setOpen] = React.useState(false);
   const [type, setType] = React.useState<string>("npwp");
@@ -69,48 +68,38 @@ export function DocumentsSection() {
   const [previewingId, setPreviewingId] = React.useState<number | null>(null);
 
   const docs: DocumentItem[] = (data?.data ?? []) as unknown as DocumentItem[];
+  const byType = latestByType(docs);
 
   const handleUpload = async () => {
     if (!file) {
-      toast.error("Please select a file.");
+      toast.error(t("documents.upload.fileRequired"));
       return;
     }
     try {
       await uploadMutation.mutateAsync({ type, label: label.trim() || undefined, file });
-      toast.success("Document uploaded.");
+      toast.success(t("documents.upload.success"));
       setOpen(false);
       setFile(null);
       setLabel("");
       setType("npwp");
     } catch (e) {
-      const msg = e instanceof ApiError && e.status === 422 ? firstLaravelError(e.body) ?? e.message : e instanceof ApiError ? e.message : "Upload failed.";
+      const msg = e instanceof ApiError && e.status === 422 ? firstLaravelError(e.body) ?? e.message : e instanceof ApiError ? e.message : t("documents.upload.failed");
       toast.error(msg);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this document?")) return;
-    try {
-      await deleteMutation.mutateAsync(id);
-      toast.success("Document deleted.");
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Delete failed.");
-    }
-  };
-
-  const handleDownload = async (id: number) => {
+  const handleDownload = async (id: number, fileName?: string) => {
     setDownloadingId(id);
     try {
       const blob = await downloadCustomerCompanyDocument(id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const doc = docs.find((d) => d.id === id);
-      a.download = doc?.file_name || `document-${id}`;
+      a.download = fileName || `document-${id}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Download failed.");
+      toast.error(e instanceof ApiError ? e.message : t("documents.actions.downloadFailed"));
     } finally {
       setDownloadingId(null);
     }
@@ -123,7 +112,7 @@ export function DocumentsSection() {
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Preview failed.");
+      toast.error(e instanceof ApiError ? e.message : t("documents.actions.previewFailed"));
     } finally {
       setPreviewingId(null);
     }
@@ -132,13 +121,10 @@ export function DocumentsSection() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="space-y-1">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-tight text-zinc-900">
-            <FileText className="h-4 w-4 text-zinc-600" />
-            {t("documents.title")}
-          </CardTitle>
-          <CardDescription className="text-xs">{t("documents.description")}</CardDescription>
-        </div>
+        <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-tight text-zinc-900">
+          <FileText className="h-4 w-4 text-zinc-600" />
+          {t("documents.title")}
+        </CardTitle>
         <Button onClick={() => setOpen(true)} size="sm" className="h-9 gap-1">
           <Plus className="h-4 w-4" />
           {t("documents.add")}
@@ -147,72 +133,58 @@ export function DocumentsSection() {
       <CardContent>
         {isLoading ? (
           <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : docs.length === 0 ? (
-          <p className="py-6 text-center text-sm text-zinc-500">{t("documents.empty")}</p>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Label</TableHead>
-                  <TableHead>File</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead>Uploaded</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("documents.table.document")}</TableHead>
+                  <TableHead className="text-right">{t("documents.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {docs.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {d.type ? t(`documents.type.${d.type}` as `documents.type.${string}`) : "—"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">{d.label || "—"}</TableCell>
-                    <TableCell className="text-xs text-zinc-500 font-mono max-w-48 truncate">
-                      {d.file_name || "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-zinc-500">{fmtSize(d.file_size)}</TableCell>
-                    <TableCell className="text-xs text-zinc-500">{fmtDate(d.uploaded_at)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => void handlePreview(d.id)}
-                          disabled={previewingId === d.id}
-                          title={t("documents.actions.preview")}
-                        >
-                          {previewingId === d.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => void handleDownload(d.id)}
-                          disabled={downloadingId === d.id}
-                          title={t("documents.actions.download")}
-                        >
-                          {downloadingId === d.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => void handleDelete(d.id)}
-                          className="text-red-600 hover:text-red-700"
-                          title={t("documents.actions.delete")}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {FSD_DOC_TYPES.map((docType) => {
+                  const doc = byType[docType];
+                  return (
+                    <TableRow key={docType}>
+                      <TableCell className="font-medium text-sm">
+                        {t(`documents.type.${docType}` as `documents.type.${string}`)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {doc ? (
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => void handlePreview(doc.id)}
+                              disabled={previewingId === doc.id}
+                              className="h-8 gap-1"
+                            >
+                              {previewingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                              {t("documents.actions.preview")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => void handleDownload(doc.id, doc.file_name)}
+                              disabled={downloadingId === doc.id}
+                              className="h-8 gap-1"
+                            >
+                              {downloadingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                              {t("documents.actions.download")}
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-zinc-400">{t("documents.noFile")}</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -235,7 +207,7 @@ export function DocumentsSection() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent side="bottom">
-                  {DOC_TYPES.map((opt) => (
+                  {FSD_DOC_TYPES.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       {t(`documents.type.${opt}` as `documents.type.${string}`)}
                     </SelectItem>
@@ -250,7 +222,7 @@ export function DocumentsSection() {
               <Input
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                placeholder="Optional"
+                placeholder={t("documents.upload.labelOptional")}
                 className="h-10"
               />
             </div>
@@ -271,11 +243,6 @@ export function DocumentsSection() {
                   </Button>
                 ) : null}
               </div>
-              {file ? (
-                <p className="text-xs text-zinc-500">
-                  {file.name} ({fmtSize(file.size)})
-                </p>
-              ) : null}
             </div>
           </div>
           <DialogFooter>

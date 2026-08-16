@@ -67,6 +67,7 @@ type BookingDetail = {
   packages?: Array<{
     id: number;
     sequence?: number;
+    description?: string | null;
     package_type?: string;
     length?: number | null;
     width?: number | null;
@@ -74,6 +75,8 @@ type BookingDetail = {
     weight_kg?: number | null;
     volume_cbm?: number | null;
     piece_count?: number;
+    remark?: string | null;
+    cargo_category?: { name?: string; code?: string } | null;
     is_dangerous_goods?: boolean;
     dg_class?: { name?: string; code?: string } | null;
     un_number?: string | null;
@@ -87,6 +90,9 @@ type BookingDetail = {
     seal_number?: string | null;
     gross_weight_kg?: number | null;
     volume_cbm?: number | null;
+    cargo_description?: string | null;
+    remark?: string | null;
+    cargo_category?: { name?: string; code?: string } | null;
     equipment_condition?: string | null;
     temperature?: number | null;
     is_dangerous_goods?: boolean;
@@ -113,7 +119,8 @@ type Activity = {
   description?: string | null;
   actor_role?: "customer" | "internal" | "system" | string | null;
   actor?: { name?: string } | null;
-  created_at: string;
+  occurred_at?: string;
+  created_at?: string;
 };
 
 const CANCEL_REASONS = ["wrongService", "noShipment", "competitor", "incomplete", "other"] as const;
@@ -571,10 +578,12 @@ function CargoSection({ data, t }: { data: BookingDetail; t: ReturnType<typeof u
           <thead className="bg-zinc-50/60 text-left text-[11px] uppercase tracking-wider text-zinc-500">
             <tr>
               <th className="px-3 py-2 font-semibold">{t("sequence")}</th>
+              <th className="px-3 py-2 font-semibold">{t("description")}</th>
               <th className="px-3 py-2 font-semibold">{t("packageType")}</th>
               <th className="px-3 py-2 font-semibold">{t("dimensions")}</th>
               <th className="px-3 py-2 font-semibold">{t("weight")}</th>
               <th className="px-3 py-2 font-semibold">{t("volume")}</th>
+              <th className="px-3 py-2 font-semibold">{t("chargeableWeight")}</th>
               <th className="px-3 py-2 font-semibold">{t("pieces")}</th>
               <th className="px-3 py-2 font-semibold">{t("dg")}</th>
             </tr>
@@ -583,12 +592,14 @@ function CargoSection({ data, t }: { data: BookingDetail; t: ReturnType<typeof u
             {(data.packages ?? []).map((p) => (
               <tr key={p.id} className="border-t border-zinc-100">
                 <td className="px-3 py-2 text-zinc-700">{p.sequence ?? "—"}</td>
+                <td className="px-3 py-2 text-zinc-700">{p.description ?? "—"}</td>
                 <td className="px-3 py-2 text-zinc-700">{p.package_type ?? "—"}</td>
                 <td className="px-3 py-2 text-zinc-700 tabular-nums">
                   {p.length ?? "—"} × {p.width ?? "—"} × {p.height ?? "—"}
                 </td>
                 <td className="px-3 py-2 text-zinc-700 tabular-nums">{p.weight_kg ?? "—"}</td>
                 <td className="px-3 py-2 text-zinc-700 tabular-nums">{p.volume_cbm ?? "—"}</td>
+                <td className="px-3 py-2 text-zinc-700 tabular-nums">{calcPackageChargeableWeight(p)}</td>
                 <td className="px-3 py-2 text-zinc-700 tabular-nums">{p.piece_count ?? "—"}</td>
                 <td className="px-3 py-2 text-zinc-700">
                   {p.is_dangerous_goods ? (
@@ -618,9 +629,9 @@ function CargoSection({ data, t }: { data: BookingDetail; t: ReturnType<typeof u
               <th className="px-3 py-2 font-semibold">{t("containerNumber")}</th>
               <th className="px-3 py-2 font-semibold">{t("sealNumber")}</th>
               <th className="px-3 py-2 font-semibold">{t("weight")}</th>
-              <th className="px-3 py-2 font-semibold">{t("volume")}</th>
-              <th className="px-3 py-2 font-semibold">{t("equipmentCondition")}</th>
-              <th className="px-3 py-2 font-semibold">{t("temperature")}</th>
+              <th className="px-3 py-2 font-semibold">{t("cargoDescription")}</th>
+              <th className="px-3 py-2 font-semibold">{t("cargoCategory")}</th>
+              <th className="px-3 py-2 font-semibold">{t("remark")}</th>
               <th className="px-3 py-2 font-semibold">{t("dg")}</th>
             </tr>
           </thead>
@@ -632,9 +643,9 @@ function CargoSection({ data, t }: { data: BookingDetail; t: ReturnType<typeof u
                 <td className="px-3 py-2 font-mono text-xs text-zinc-700">{c.container_number ?? "—"}</td>
                 <td className="px-3 py-2 font-mono text-xs text-zinc-700">{c.seal_number ?? "—"}</td>
                 <td className="px-3 py-2 text-zinc-700 tabular-nums">{c.gross_weight_kg ?? "—"}</td>
-                <td className="px-3 py-2 text-zinc-700 tabular-nums">{c.volume_cbm ?? "—"}</td>
-                <td className="px-3 py-2 text-zinc-700">{c.equipment_condition ?? "—"}</td>
-                <td className="px-3 py-2 text-zinc-700 tabular-nums">{c.temperature ?? "—"}</td>
+                <td className="px-3 py-2 text-zinc-700">{c.cargo_description ?? "—"}</td>
+                <td className="px-3 py-2 text-zinc-700">{c.cargo_category?.name ?? "—"}</td>
+                <td className="px-3 py-2 text-zinc-700">{c.remark ?? "—"}</td>
                 <td className="px-3 py-2 text-zinc-700">
                   {c.is_dangerous_goods ? (
                     <span className="inline-flex items-center gap-1 text-xs">
@@ -800,8 +811,9 @@ function TimelineSection({ activities, t, locale }: { activities: Activity[]; t:
   return (
     <ol className="relative space-y-4 border-l border-zinc-200 pl-5">
       {activities.map((a) => {
-        const date = new Date(a.created_at);
-        const dateStr = isNaN(date.getTime()) ? a.created_at : formatShortDate(a.created_at, locale);
+        const ts = a.occurred_at ?? a.created_at ?? "";
+        const date = new Date(ts);
+        const dateStr = isNaN(date.getTime()) ? ts : formatShortDate(ts, locale);
         const timeStr = isNaN(date.getTime()) ? "" : date.toLocaleTimeString(locale === "en" ? "en-US" : "id-ID", { hour: "2-digit", minute: "2-digit" });
         const actorLabel = a.actor_role === "customer"
           ? t("actorCustomer")
@@ -831,12 +843,15 @@ function ActivityLogSection({ activities, locale }: { activities: Activity[]; t:
   }
   return (
     <ul className="list-disc space-y-2 pl-5 text-sm text-zinc-700">
-      {activities.map((a) => (
+      {activities.map((a) => {
+        const ts = a.occurred_at ?? a.created_at ?? "";
+        return (
         <li key={`log-${a.id}`}>
           <span className="font-medium text-zinc-900">{a.title}</span>
-          {a.description ? <> — <span>{a.description}</span> <span className="text-zinc-400">({formatShortDate(a.created_at, locale)})</span></> : <span className="text-zinc-400"> ({formatShortDate(a.created_at, locale)})</span>}
+          {a.description ? <> — <span>{a.description}</span> <span className="text-zinc-400">({formatShortDate(ts, locale)})</span></> : <span className="text-zinc-400"> ({formatShortDate(ts, locale)})</span>}
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }
@@ -846,4 +861,21 @@ function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function calcPackageChargeableWeight(p: {
+  weight_kg?: number | null;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
+  piece_count?: number;
+}): string {
+  const actual = Number(p.weight_kg) || 0;
+  const l = Number(p.length) || 0;
+  const w = Number(p.width) || 0;
+  const h = Number(p.height) || 0;
+  const qty = Number(p.piece_count) || 1;
+  const volumeWeight = l && w && h ? ((l * w * h) / 5000) * qty : 0;
+  const chargeable = Math.max(actual, volumeWeight);
+  return chargeable > 0 ? chargeable.toFixed(2) : "—";
 }

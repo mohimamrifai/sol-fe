@@ -1,0 +1,25 @@
+{
+  "Terms": {
+    "pageTitle": "Syarat & Ketentuan",
+    "pageSubtitle": "Ketentuan penggunaan layanan SOL Logistics untuk customer.",
+    "sections": {
+      "general": {
+        "title": "1. Ketentuan Umum",
+        "body": "Dengan mendaftar sebagai customer SOL Logistics, Anda menyetujui ketentuan ini. Data yang Anda berikan harus akurat dan dapat dipertanggungjawabkan secara hukum."
+      },
+      "review": {
+        "title": "2. Proses Review Registrasi",
+        "body": "Registrasi akan direview oleh tim internal. Status akun akan Pending Review hingga disetujui. Akun admin baru aktif setelah customer disetujui."
+      },
+      "data": {
+        "title": "3. Penggunaan Data",
+        "body": "Data perusahaan digunakan untuk operasional logistik, billing, dan komunikasi layanan. Kami menjaga kerahasiaan data sesuai kebijakan privasi perusahaan."
+      },
+      "service": {
+        "title": "4. Layanan",
+        "body": "Setelah aktivasi, customer dapat menggunakan portal untuk booking, shipment, invoice, dan payment sesuai skema billing yang berlaku."
+      }
+    },
+    "backToRegister": "Kembali ke registrasi"
+  }
+}

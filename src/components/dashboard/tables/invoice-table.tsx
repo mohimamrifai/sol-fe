@@ -23,9 +23,10 @@ interface Props {
   rows: CustomerDashboardInvoice[];
   locale: string;
   emptyText: string;
+  readOnly?: boolean;
 }
 
-export function InvoiceTable({ rows, locale, emptyText }: Props) {
+export function InvoiceTable({ rows, locale, emptyText, readOnly = false }: Props) {
   const t = useTranslations("Dashboard");
   const tf = useTWithFallback();
   return (
@@ -84,7 +85,7 @@ export function InvoiceTable({ rows, locale, emptyText }: Props) {
                       </Link>
                     }
                   />
-                  {i.outstanding > 0 ? (
+                  {readOnly || i.outstanding <= 0 ? null : (
                     <Button
                       variant="outline"
                       size="xs"
@@ -100,7 +101,7 @@ export function InvoiceTable({ rows, locale, emptyText }: Props) {
                         </Link>
                       }
                     />
-                  ) : null}
+                  )}
                 </div>
               </TableCell>
             </TableRow>

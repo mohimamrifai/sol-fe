@@ -7,6 +7,11 @@ export const VENDOR_TYPE_OPTIONS = [
   { value: "container_provider", label: "Container Provider" },
 ] as const;
 
+export const VENDOR_TYPE_FILTER_OPTIONS = [
+  ...VENDOR_TYPE_OPTIONS,
+  { value: "some_both", label: "Some / Both" },
+] as const;
+
 export const BUSINESS_ENTITY_OPTIONS = [
   { value: "company", label: "Company" },
   { value: "individual", label: "Individual" },

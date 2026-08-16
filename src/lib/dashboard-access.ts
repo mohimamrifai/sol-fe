@@ -22,6 +22,7 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
       "company_admin",
       "ops_pic",
       "finance_pic",
+      "viewer",
       "vendor_company_admin",
       "vendor_ops_pic",
       "vendor_finance_pic",
@@ -86,31 +87,31 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
     menuKey: "myBookings",
     url: "/dashboard/booking",
     requiredPermission: "view_bookings",
-    roles: ["company_admin", "ops_pic"] as const,
+    roles: ["company_admin", "ops_pic", "viewer"] as const,
   },
   {
     menuKey: "myShipments",
     url: "/dashboard/shipments",
     requiredPermission: "view_shipments",
-    roles: ["company_admin", "ops_pic"] as const,
+    roles: ["company_admin", "ops_pic", "viewer"] as const,
   },
   {
     menuKey: "documents",
     url: "/dashboard/documents",
     requiredPermission: "view_documents",
-    roles: ["company_admin", "ops_pic", "finance_pic"] as const,
+    roles: ["company_admin", "ops_pic", "finance_pic", "viewer"] as const,
   },
   {
     menuKey: "invoices",
     url: "/dashboard/invoices",
     requiredPermission: "view_invoices",
-    roles: ["company_admin", "finance_pic"] as const,
+    roles: ["company_admin", "finance_pic", "viewer"] as const,
   },
   {
     menuKey: "payments",
     url: "/dashboard/payments",
     requiredPermission: "view_payments",
-    roles: ["company_admin", "finance_pic"] as const,
+    roles: ["company_admin", "finance_pic", "viewer"] as const,
   },
   {
     menuKey: "companySettings",
@@ -147,8 +148,8 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
   {
     menuKey: "users",
     url: "/dashboard/vendor/users",
-    requiredPermission: "view_users",
-    roles: ["vendor_company_admin", "vendor_viewer"] as const,
+    requiredPermission: "view_vendor_users",
+    roles: ["vendor_company_admin"] as const,
   },
   {
     menuKey: "vendorJobOrders",
@@ -194,7 +195,7 @@ export const DASHBOARD_SIDEBAR_ITEM_DEFS = [
   {
     menuKey: "company",
     url: "/dashboard/vendor/company",
-    requiredPermission: "view_company",
+    requiredPermission: "view_vendor_company",
     roles: [
       "vendor_company_admin",
       "vendor_ops_pic",
@@ -272,6 +273,34 @@ export function evaluateDashboardPathAccess(user: AuthUser, pathname: string): A
     if (!isVendorUser(user)) {
       return { redirectTo: "/dashboard" };
     }
+
+    const menuRole = effectiveMenuRole(user);
+    if (!menuRole) {
+      return { redirectTo: "/dashboard" };
+    }
+
+    const permissions = (user.permissions as string[]) ?? [];
+    const vendorDefs = [...DASHBOARD_SIDEBAR_ITEM_DEFS]
+      .filter((d) => d.url.startsWith(VENDOR_DASHBOARD_PREFIX))
+      .sort((a, b) => b.url.length - a.url.length);
+
+    const matched = vendorDefs.find(
+      (def) => path === def.url || path.startsWith(`${def.url}/`),
+    );
+
+    if (matched) {
+      const allowedRoles = matched.roles as readonly string[];
+      if (!allowedRoles.includes(menuRole)) {
+        return { redirectTo: "/dashboard" };
+      }
+      if (
+        matched.requiredPermission &&
+        !permissions.includes(matched.requiredPermission)
+      ) {
+        return { redirectTo: "/dashboard" };
+      }
+    }
+
     return null;
   }
 

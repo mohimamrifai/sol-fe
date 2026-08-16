@@ -46,7 +46,7 @@ import type { LaravelPaginated } from "@/lib/types-api";
 import {
   BUSINESS_ENTITY_OPTIONS,
   vendorTypesLabel,
-  VENDOR_TYPE_OPTIONS,
+  VENDOR_TYPE_FILTER_OPTIONS,
   businessEntityLabel,
   vendorTypeLabel,
 } from "@/lib/vendor-fsd-options";
@@ -202,7 +202,7 @@ export default function AdminVendorListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("filters.allType")}</SelectItem>
-                {VENDOR_TYPE_OPTIONS.map((o) => (
+                {VENDOR_TYPE_FILTER_OPTIONS.map((o) => (
                   <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                 ))}
               </SelectContent>

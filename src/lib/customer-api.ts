@@ -334,6 +334,15 @@ export async function updateCustomerCompany(payload: Record<string, unknown>) {
   });
 }
 
+export async function uploadCustomerCompanyLogo(file: File) {
+  const form = new FormData();
+  form.append("logo", file);
+  return apiFetch<{ message: string; data: { logo_url: string } }>(`/customer/company/logo`, {
+    method: "POST",
+    body: form,
+  });
+}
+
 export async function fetchCustomerCompanyCommercial() {
   return apiFetch<{ data: Record<string, unknown> }>(`/customer/company/commercial`, { method: "GET" });
 }
@@ -367,10 +376,6 @@ export async function uploadCustomerCompanyDocument(payload: {
     method: "POST",
     body: form,
   });
-}
-
-export async function deleteCustomerCompanyDocument(documentId: number) {
-  return apiFetch(`/customer/company/documents/${documentId}`, { method: "DELETE" });
 }
 
 export async function downloadCustomerCompanyDocument(documentId: number) {
@@ -422,10 +427,15 @@ export async function changeCustomerLocationStatus(id: number, status: "active" 
   );
 }
 
-export async function fetchCustomerLocationActivities(id: number) {
-  return apiFetch<LaravelPaginated<Record<string, unknown>>>(`/customer/locations/${id}/activities`, {
-    method: "GET",
-  });
+export async function fetchCustomerLocationActivities(
+  id: number,
+  input?: ListQueryParams
+) {
+  const params = input ? `?${new URLSearchParams(Object.entries(input).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])).toString()}` : "";
+  return apiFetch<LaravelPaginated<Record<string, unknown>>>(
+    `/customer/locations/${id}/activities${params}`,
+    { method: "GET" }
+  );
 }
 
 // ── Users ──────────────────────────────────────────────────────

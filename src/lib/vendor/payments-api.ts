@@ -9,6 +9,7 @@ export type VendorPayment = {
     invoice_number: string;
     total_amount: number;
     shipment_id?: number;
+    jo_number?: string;
   };
   shipment_number?: string;
   payment_date: string;
@@ -32,6 +33,7 @@ export type VendorPayment = {
     invoice_number: string;
     total_amount: number;
     shipment_id?: number;
+    jo_number?: string;
   };
   activities?: Array<{
     id: number;

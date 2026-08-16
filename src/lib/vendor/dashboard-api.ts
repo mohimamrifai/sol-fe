@@ -13,6 +13,7 @@ export type VendorDashboardMyJob = {
   shipment_number: string;
   customer_name: string;
   service: string;
+  assigned_date?: string;
   origin: string;
   destination: string;
   due_date: string;
@@ -45,6 +46,7 @@ export type VendorDashboardPayload = {
   recent_activities: Array<{
     id: number;
     event_key: string;
+    description?: string;
     actor_name: string | null;
     occurred_at: string;
   }>;

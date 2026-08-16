@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSyncMidtransPayment } from "@/hooks/use-sync-midtrans-payment";
 import { usePayInvoice } from "@/hooks/use-pay-invoice";
+import { isCustomerViewer } from "@/lib/auth-role";
+import { useAuthStore } from "@/lib/store";
 import { ensureMidtransSnapLoaded, openMidtransSnap } from "@/lib/midtrans-client";
 import { ApiError } from "@/lib/api-client";
 import type { PaymentDetail } from "@/lib/payment-types";
@@ -36,6 +38,8 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 export function OnlinePaymentSection({ payment }: Props) {
   const t = useTranslations("Payments.detail.section3");
   const tActions = useTranslations("Payments.actions");
+  const { user } = useAuthStore();
+  const readOnly = isCustomerViewer(user);
   const syncMutation = useSyncMidtransPayment();
   const payMutation = usePayInvoice();
   const [paying, setPaying] = React.useState(false);
@@ -81,7 +85,8 @@ export function OnlinePaymentSection({ payment }: Props) {
     }
   }
 
-  const canPayNow = payment.actions?.can_pay_now && (info.active || !info.link);
+  const canPayNow = payment.actions?.can_pay_now && !readOnly && (info.active || !info.link);
+  const canSync = payment.actions?.can_sync_midtrans !== false && !readOnly;
 
   if (payment.invoice.outstanding_amount <= 0) {
     return null;
@@ -108,6 +113,7 @@ export function OnlinePaymentSection({ payment }: Props) {
       <CardContent>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Field label={t("paymentGateway")} value={info.payment_gateway} />
+          <Field label={t("linkStatus")} value={info.link_status === "active" ? t("active") : t("inactive")} />
           <Field label={t("transactionId")} value={info.transaction_id ?? "—"} />
           <Field label={t("paymentStatus")} value={info.payment_status} />
           <Field label={t("expiredAt")} value={formatDate(info.expired_at)} />
@@ -149,7 +155,7 @@ export function OnlinePaymentSection({ payment }: Props) {
             variant="ghost"
             size="sm"
             onClick={onSync}
-            disabled={syncMutation.isPending || !payment.midtrans_order_id}
+            disabled={syncMutation.isPending || !payment.midtrans_order_id || !canSync}
             className="h-9 gap-2"
           >
             <RefreshCw className="h-4 w-4" />

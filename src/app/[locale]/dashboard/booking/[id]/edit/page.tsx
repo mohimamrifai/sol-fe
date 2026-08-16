@@ -141,9 +141,9 @@ export default function EditBookingPage() {
 
           <PartyInfoSection
             kind="shipper"
-            branches={f.branches}
-            branchId={f.shipperBranchId}
-            setBranchId={f.setShipperBranchId}
+            customerLocations={f.customerLocations}
+            locationId={f.shipperLocationId}
+            setLocationId={f.setShipperLocationId}
             company={f.shipperName}
             setCompany={f.setShipperName}
             picName={f.shipperPicName}
@@ -168,9 +168,9 @@ export default function EditBookingPage() {
 
           <PartyInfoSection
             kind="consignee"
-            branches={f.branches}
-            branchId={f.consigneeBranchId}
-            setBranchId={f.setConsigneeBranchId}
+            customerLocations={f.customerLocations}
+            locationId={f.consigneeLocationId}
+            setLocationId={f.setConsigneeLocationId}
             destinationType={f.consigneeType}
             setDestinationType={f.setConsigneeType}
             showDeliveryNotes={showDeliveryNotes}

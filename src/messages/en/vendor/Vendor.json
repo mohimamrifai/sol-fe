@@ -21,6 +21,8 @@
       "delete": "Delete",
       "download": "Download",
       "preview": "Preview",
+      "detail": "Detail",
+      "error": "Something went wrong.",
       "actions": "Actions",
       "status": "Status",
       "type": "Type"
@@ -66,8 +68,11 @@
           "jo": "JO No.",
           "customer": "Customer",
           "service": "Service",
+          "assigned": "Assigned Date",
           "due": "Due Date",
-          "status": "Status"
+          "status": "Status",
+          "action": "Action",
+          "detail": "Detail"
         }
       },
       "performance": {
@@ -128,8 +133,11 @@
         "action": "Action",
         "rows": {
           "vendor_invoice": "Vendor Invoice",
+          "proof_of_completion": "Proof of Completion",
           "pending_submission": "Pending Submission",
-          "create": "Create"
+          "pending_upload": "Pending Upload",
+          "create": "Create",
+          "upload": "Upload"
         }
       }
     },
@@ -175,8 +183,27 @@
           "activityLog": "Activity Log"
         },
         "accept": "Accept Job",
+        "reject": "Reject Job",
         "submitProgress": "Submit Progress",
         "submitCompletion": "Submit Completion",
+        "priority": "Priority",
+        "assignedBy": "Assigned By",
+        "jobDescription": "Job Description",
+        "workLocation": "Work Location",
+        "containerNo": "Container No.",
+        "containerType": "Container Type",
+        "cargoDescription": "Cargo Description",
+        "pickupLocation": "Pickup Location",
+        "deliveryLocation": "Delivery Location",
+        "specialInstruction": "Special Instruction",
+        "rejectDialog": {
+          "title": "Reject Job Order",
+          "description": "Are you sure you want to reject this job order?",
+          "reasonLabel": "Rejection Reason (optional)",
+          "reasonPlaceholder": "Explain why this job order is rejected…",
+          "confirm": "Reject Job Order",
+          "success": "Job order rejected."
+        },
         "view": "View",
         "noDocuments": "No supporting documents available.",
         "noTimeline": "No timeline events.",
@@ -199,13 +226,21 @@
         "consignment_note": "Consignment Note",
         "delivery_order": "Delivery Order",
         "proof_of_completion": "Proof of Completion",
+        "proof_of_delivery": "Proof of Delivery",
         "supporting": "Supporting"
       },
       "filters": {
         "search": "Search by JO No / Shipment No / Document Name",
         "documentType": "Document Type",
         "serviceType": "Service",
-        "uploadDate": "Upload Date"
+        "uploadDate": "Upload Date",
+        "types": {
+          "jobOrder": "Job Order",
+          "consignmentNote": "Consignment Note (CN)",
+          "deliveryOrder": "Delivery Order (DO)",
+          "proofOfDelivery": "Proof of Delivery (POD)",
+          "supporting": "Supporting Document"
+        }
       },
       "table": {
         "name": "Document Name",
@@ -216,6 +251,14 @@
         "uploadDate": "Upload Date"
       },
       "detail": {
+        "type": "Document Type",
+        "format": "File Format",
+        "size": "File Size",
+        "joNo": "Job Order No.",
+        "shipmentNo": "Shipment No.",
+        "uploadedBy": "Uploaded By",
+        "previewUnavailable": "Preview is not available for this file type. Please download instead.",
+        "activityLog": "Activity Log",
         "sections": {
           "info": "Document Information",
           "preview": "Preview",

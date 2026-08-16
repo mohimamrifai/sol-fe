@@ -10,11 +10,13 @@
       "active": "Active"
     },
     "filters": {
-      "search": "Search by name or code",
-      "type": "Type",
+      "search": "Search by location name or code",
+      "type": "Location Type",
       "status": "Status",
       "province": "Province",
       "city": "City",
+      "allTypes": "All Types",
+      "allStatus": "All Status",
       "loading": "Loading…",
       "searchProvince": "Search province",
       "searchCity": "Search city",
@@ -22,13 +24,16 @@
     },
     "add": "Add Location",
     "table": {
-      "code": "Code",
-      "name": "Name",
-      "type": "Type",
+      "type": "Location Type",
+      "name": "Location Name",
+      "code": "Location Code",
       "city": "City",
       "pic": "PIC",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Action",
+      "detail": "Detail",
+      "edit": "Edit",
+      "empty": "No locations found."
     },
     "type": {
       "head_office": "Head Office",
@@ -44,10 +49,13 @@
         "create": "Add Location",
         "edit": "Edit Location"
       },
+      "infoSection": "Location Information",
       "type": "Location Type",
       "name": "Location Name",
-      "phone": "Phone",
-      "status": "Status",
+      "code": "Location Code",
+      "codeAutoGenerate": "Auto Generate",
+      "phone": "Location Telephone Number",
+      "status": "Location Status",
       "addressSection": "Address Information",
       "country": "Country",
       "province": "Province",
@@ -55,10 +63,10 @@
       "district": "District",
       "postalCode": "Postal Code",
       "address": "Address",
-      "picSection": "Person in Charge",
+      "picSection": "PIC Information",
       "picName": "PIC Name",
       "picEmail": "PIC Email",
-      "picMobile": "PIC Mobile",
+      "picMobile": "PIC Mobile Number",
       "save": "Save",
       "saving": "Saving…",
       "errors": {
@@ -71,34 +79,33 @@
       "sections": {
         "info": "Location Information",
         "address": "Address Information",
-        "pic": "Person in Charge",
+        "pic": "PIC Information",
         "activities": "Activity Log"
       },
       "fields": {
-        "code": "Code",
-        "type": "Type",
-        "name": "Name",
-        "phone": "Phone",
-        "status": "Status",
-        "createdAt": "Created At",
+        "type": "Location Type",
+        "name": "Location Name",
+        "code": "Location Code",
+        "phone": "Location Telephone Number",
+        "status": "Location Status",
         "country": "Country",
         "province": "Province",
         "city": "City",
         "district": "District",
         "postalCode": "Postal Code",
         "address": "Address",
-        "picName": "Name",
-        "picEmail": "Email",
-        "picMobile": "Mobile"
+        "picName": "PIC Name",
+        "picEmail": "PIC Email",
+        "picMobile": "PIC Mobile Number"
       },
       "actions": {
         "edit": "Edit",
-        "changeStatus": "Change Status",
         "back": "Back to Locations"
       }
     },
     "activities": {
       "title": "Activity Log",
+      "description": "Recent changes to this location.",
       "empty": "No activities recorded yet.",
       "actor": "by {name}"
     },

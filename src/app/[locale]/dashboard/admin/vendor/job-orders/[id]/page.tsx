@@ -11,12 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   fetchAdminVendorJobOrder,
+  fetchAdminVendorJobOrderPdf,
   sendAdminVendorJobOrder,
   updateAdminVendorJobOrder,
   uploadAdminVendorJobOrderDocument,
   verifyAdminVendorJobOrderCompletion,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
+import { downloadBlob } from "@/lib/download-blob";
 import { formatIdr, vehicleTypeLabel } from "@/lib/vendor-fsd-options";
 import { useVendorJobOrderStatusLabel } from "@/hooks/use-admin-status-labels";
 import { toast } from "sonner";
@@ -64,6 +66,7 @@ export default function AdminVendorJobOrderDetailPage() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryRemark, setDeliveryRemark] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const syncForm = (d: Record<string, unknown>) => {
     setVehiclePlate(String(d.vehicle_plate ?? ""));
@@ -148,6 +151,32 @@ export default function AdminVendorJobOrderDetailPage() {
       toast.error(e instanceof ApiError ? e.message : "Gagal mengunggah.");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const viewJobOrderPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const blob = await fetchAdminVendorJobOrderPdf(id);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Gagal membuka PDF.");
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  const downloadJobOrderPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const blob = await fetchAdminVendorJobOrderPdf(id);
+      downloadBlob(blob, `${String(detail?.job_order_number ?? id)}.pdf`);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Gagal mengunduh PDF.");
+    } finally {
+      setPdfBusy(false);
     }
   };
 
@@ -320,17 +349,30 @@ export default function AdminVendorJobOrderDetailPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Documents</CardTitle></CardHeader>
         <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
+            <span className="font-medium">Job Order PDF</span>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" variant="outline" disabled={pdfBusy} onClick={() => void viewJobOrderPdf()}>
+                View
+              </Button>
+              <Button type="button" size="sm" variant="outline" disabled={pdfBusy} onClick={() => void downloadJobOrderPdf()}>
+                Download
+              </Button>
+            </div>
+          </div>
           <ul className="space-y-2 text-sm">
-            {((detail.documents as Record<string, unknown>[]) ?? []).map((doc) => (
+            {((detail.documents as Record<string, unknown>[]) ?? [])
+              .filter((doc) => doc.document_type !== "job_order_pdf")
+              .map((doc) => (
               <li key={String(doc.id)} className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
-                <span>{String(doc.original_name ?? doc.document_type ?? "Document")}</span>
+                <span>{String(doc.original_name ?? "Supporting Document")}</span>
                 {doc.url ? (
                   <a className="text-primary underline text-xs" href={String(doc.url)} target="_blank" rel="noreferrer">Download</a>
                 ) : null}
               </li>
             ))}
-            {((detail.documents as unknown[]) ?? []).length === 0 ? (
-              <li className="text-muted-foreground">Belum ada dokumen.</li>
+            {((detail.documents as unknown[]) ?? []).filter((d) => (d as Record<string, unknown>).document_type !== "job_order_pdf").length === 0 ? (
+              <li className="text-muted-foreground">Belum ada supporting document.</li>
             ) : null}
           </ul>
           {isEditable ? (

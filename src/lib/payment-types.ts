@@ -29,22 +29,27 @@ export type ManualPaymentStatus =
   | "rejected";
 
 export interface PaymentListItem {
-  id: number;
-  payment_no: string;
+  id: number | null;
+  payment_id?: number | null;
+  payment_no?: string | null;
   payment_number?: number | null;
   invoice_id: number;
   invoice_number?: string | null;
+  customer_name?: string | null;
   shipment_number?: string | null;
   invoice_amount: number;
   paid_amount: number;
   outstanding_amount: number;
   amount: number;
-  payment_method: string;
+  payment_method?: string | null;
   payment_type?: string | null;
   payment_date?: string | null;
-  status: PaymentStatus;
+  status: PaymentStatusFilter | PaymentStatus;
+  payment_status?: string | null;
+  has_payment_record?: boolean;
   actions?: {
     can_view?: boolean;
+    detail_invoice_only?: boolean;
   };
 }
 
@@ -88,6 +93,7 @@ export interface PaymentHistoryEntry {
 
 export interface OnlinePaymentInfo {
   active: boolean;
+  link_status?: "active" | "expired";
   link?: string | null;
   token?: string | null;
   expired_at?: string | null;
@@ -138,6 +144,7 @@ export interface PaymentDetail {
   midtrans_order_id?: string | null;
   invoice: PaymentInvoiceSummary;
   status: PaymentStatus | string;
+  payment_record_status?: string | null;
   created_date?: string | null;
   paid_at?: string | null;
   payment_method?: string | null;
@@ -154,6 +161,8 @@ export interface PaymentDetail {
   activity_timeline: ActivityTimelineEntry[];
   actions: {
     can_pay_now: boolean;
+    can_sync_midtrans?: boolean;
+    can_submit_manual?: boolean;
   };
 }
 

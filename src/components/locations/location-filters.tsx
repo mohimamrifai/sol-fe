@@ -118,7 +118,7 @@ export function LocationFilters({ value, onChange }: Props) {
           <SelectValue placeholder={t("filters.type")} />
         </SelectTrigger>
         <SelectContent side="bottom">
-          <SelectItem value="all">All Types</SelectItem>
+          <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
           <SelectItem value="head_office">{t("type.head_office")}</SelectItem>
           <SelectItem value="branch_office">{t("type.branch_office")}</SelectItem>
           <SelectItem value="warehouse">{t("type.warehouse")}</SelectItem>
@@ -132,9 +132,9 @@ export function LocationFilters({ value, onChange }: Props) {
           <SelectValue placeholder={t("filters.status")} />
         </SelectTrigger>
         <SelectContent side="bottom">
-          <SelectItem value="all">All Status</SelectItem>
-          <SelectItem value="active">Active</SelectItem>
-          <SelectItem value="inactive">Inactive</SelectItem>
+          <SelectItem value="all">{t("filters.allStatus")}</SelectItem>
+          <SelectItem value="active">{t("status.active")}</SelectItem>
+          <SelectItem value="inactive">{t("status.inactive")}</SelectItem>
         </SelectContent>
       </Select>
       <div className="w-full sm:w-44">

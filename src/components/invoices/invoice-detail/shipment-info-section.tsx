@@ -1,7 +1,9 @@
 "use client";
 
+import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Link } from "@/i18n/routing";
 import type { CustomerInvoiceDetail } from "@/lib/invoice-types";
 
 interface Props {
@@ -12,13 +14,40 @@ export function ShipmentInfoSection({ invoice }: Props) {
   const t = useTranslations("Invoices.detail.section2");
   const s = invoice.shipment;
 
-  const fields: Array<[string, string | null | undefined]> = [
-    [t("shipmentNo"), s.shipment_no],
-    [t("bookingNo"), s.booking_no],
-    [t("cnNo"), s.cn_no],
-    [t("route"), s.route],
-    [t("serviceType"), s.service_type],
-    [t("shipmentCoverage"), s.shipment_coverage],
+  const fields: Array<[string, React.ReactNode]> = [
+    [
+      t("shipmentNo"),
+      s.id && s.shipment_no ? (
+        <Link
+          href={`/dashboard/shipments/${s.id}` as never}
+          className="font-medium text-sky-700 hover:text-sky-900 hover:underline"
+        >
+          {s.shipment_no}
+        </Link>
+      ) : (
+        (s.shipment_no && s.shipment_no !== "" ? s.shipment_no : "—")
+      ),
+    ],
+    [
+      t("bookingNo"),
+      s.booking_id && s.booking_no ? (
+        <Link
+          href={`/dashboard/booking/${s.booking_id}` as never}
+          className="font-medium text-sky-700 hover:text-sky-900 hover:underline"
+        >
+          {s.booking_no}
+        </Link>
+      ) : (
+        (s.booking_no && s.booking_no !== "" ? s.booking_no : "—")
+      ),
+    ],
+    [t("cnNo"), s.cn_no && s.cn_no !== "" ? s.cn_no : "—"],
+    [t("route"), s.route && s.route !== "" ? s.route : "—"],
+    [t("serviceType"), s.service_type && s.service_type !== "" ? s.service_type : "—"],
+    [
+      t("shipmentCoverage"),
+      s.shipment_coverage && s.shipment_coverage !== "" ? s.shipment_coverage : "—",
+    ],
   ];
 
   return (
@@ -35,7 +64,7 @@ export function ShipmentInfoSection({ invoice }: Props) {
               <dt className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
                 {label}
               </dt>
-              <dd className="text-sm text-zinc-900 break-words">{value && value !== "" ? value : "—"}</dd>
+              <dd className="text-sm text-zinc-900 break-words">{value}</dd>
             </div>
           ))}
         </dl>

@@ -18,9 +18,12 @@ import {
   fetchAdminVendorPaymentVoucher,
   recordAdminVendorPayment,
   rejectAdminVendorPayment,
+  uploadAdminVendorPaymentDocument,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { formatIdr, VENDOR_PAYMENT_METHOD_OPTIONS, vendorPaymentMethodLabel, vendorPaymentTermLabel, vendorTypesLabel } from "@/lib/vendor-fsd-options";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useAuthStore } from "@/lib/store";
 import { useVendorPaymentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { toast } from "sonner";
 
@@ -38,6 +41,10 @@ export default function AdminVendorPaymentDetailPage() {
   const router = useRouter();
   const id = Number(params?.id);
   const locale = String(params?.locale ?? "id");
+  const authHydrated = useAuthPersistHydrated();
+  const { user } = useAuthStore();
+  const roles = user?.roles ?? [];
+  const canManagePayment = authHydrated && (roles.includes("super_admin") || roles.includes("finance"));
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [companyBanks, setCompanyBanks] = useState<string[]>([]);
   const [approvalRemark, setApprovalRemark] = useState("");
@@ -49,6 +56,7 @@ export default function AdminVendorPaymentDetailPage() {
   const [paymentRemark, setPaymentRemark] = useState("");
   const [proof, setProof] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [docBusy, setDocBusy] = useState(false);
   const vendorPaymentStatusLabel = useVendorPaymentStatusLabel();
 
   const refresh = async () => {
@@ -127,6 +135,22 @@ export default function AdminVendorPaymentDetailPage() {
     }
   };
 
+  const uploadDocument = async (file: File, documentType: "other_document" | "tax_invoice") => {
+    setDocBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("document_type", documentType);
+      await uploadAdminVendorPaymentDocument(id, fd);
+      toast.success("Dokumen diunggah.");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Gagal mengunggah dokumen.");
+    } finally {
+      setDocBusy(false);
+    }
+  };
+
   if (!detail) return <p className="text-sm text-muted-foreground">Memuat…</p>;
   const status = String(detail.status);
   const invoiceId = detail.vendor_invoice_id;
@@ -182,12 +206,6 @@ export default function AdminVendorPaymentDetailPage() {
           <ReadonlyField label="Invoice Amount" value={formatIdr(detail.invoice_amount as string)} />
           <ReadonlyField label="Approved Amount" value={formatIdr(detail.approved_amount as string)} />
           <ReadonlyField label="Outstanding Amount" value={formatIdr(detail.outstanding_amount as string)} />
-          {detail.invoice_file ? (
-            <a className="text-sm text-primary underline" href={String(detail.invoice_file)} target="_blank" rel="noreferrer">View Invoice</a>
-          ) : null}
-          {detail.tax_invoice_url ? (
-            <a className="text-sm text-primary underline block" href={String(detail.tax_invoice_url)} target="_blank" rel="noreferrer">View Tax Invoice</a>
-          ) : null}
         </CardContent>
       </Card>
 
@@ -197,7 +215,7 @@ export default function AdminVendorPaymentDetailPage() {
           <ReadonlyField label="Approval Status" value={String(detail.approval_status ?? status)} />
           <ReadonlyField label="Approved By" value={String(detail.approved_by ?? "—")} />
           <ReadonlyField label="Approved Date" value={detail.approved_at ? new Date(String(detail.approved_at)).toLocaleString("id-ID") : "—"} />
-          {status === "waiting_approval" ? (
+          {status === "waiting_approval" && canManagePayment ? (
             <div className="space-y-2">
               <div>
                 <Label>Approval Remark</Label>
@@ -214,7 +232,7 @@ export default function AdminVendorPaymentDetailPage() {
         </CardContent>
       </Card>
 
-      {status === "ready_to_pay" ? (
+      {status === "ready_to_pay" && canManagePayment ? (
         <Card>
           <CardHeader><CardTitle className="text-base">Record Payment</CardTitle></CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
@@ -258,6 +276,74 @@ export default function AdminVendorPaymentDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Supporting Documents</CardTitle></CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
+            <span className="font-medium">Vendor Invoice</span>
+            {detail.invoice_file ? (
+              <a className="text-primary underline text-xs" href={String(detail.invoice_file)} target="_blank" rel="noreferrer">View</a>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
+            <span className="font-medium">Tax Invoice</span>
+            <div className="flex items-center gap-2">
+              {detail.tax_invoice_url ? (
+                <a className="text-primary underline text-xs" href={String(detail.tax_invoice_url)} target="_blank" rel="noreferrer">View</a>
+              ) : (
+                <span className="text-muted-foreground text-xs">Belum ada</span>
+              )}
+              {canManagePayment ? (
+                <Input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="max-w-48 h-8"
+                  disabled={docBusy}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadDocument(f, "tax_invoice");
+                    e.target.value = "";
+                  }}
+                />
+              ) : null}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-medium">Other Documents</span>
+              {canManagePayment ? (
+                <Input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="max-w-48 h-8"
+                  disabled={docBusy}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadDocument(f, "other_document");
+                    e.target.value = "";
+                  }}
+                />
+              ) : null}
+            </div>
+            <ul className="space-y-2">
+              {((detail.other_documents as Record<string, unknown>[]) ?? []).map((doc) => (
+                <li key={String(doc.id)} className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
+                  <span>{String(doc.original_name ?? "Document")}</span>
+                  {doc.url ? (
+                    <a className="text-primary underline text-xs" href={String(doc.url)} target="_blank" rel="noreferrer">Download</a>
+                  ) : null}
+                </li>
+              ))}
+              {((detail.other_documents as unknown[]) ?? []).length === 0 ? (
+                <li className="text-muted-foreground">Belum ada other document.</li>
+              ) : null}
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle className="text-base">Payment History</CardTitle></CardHeader>

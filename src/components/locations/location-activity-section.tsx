@@ -17,7 +17,6 @@ interface Entry {
   occurred_at?: string | null;
   title?: string;
   description?: string;
-  source?: string;
   actor_name?: string;
 }
 
@@ -33,13 +32,13 @@ function fmtDate(s?: string | null) {
 export function LocationActivitySection({ locationId }: Props) {
   const t = useTranslations("Locations");
   const [page, setPage] = React.useState(1);
+  const perPage = 15;
 
-  const { data, isLoading, isFetching } = useCustomerLocationActivities(locationId);
+  const { data, isLoading, isFetching } = useCustomerLocationActivities(locationId, { page, perPage });
 
   const entries: Entry[] = data?.data ?? [];
-  const meta = data ?? { last_page: 1, total: 0 };
-  const lastPage = meta.last_page ?? 1;
-  const total = meta.total ?? 0;
+  const lastPage = data?.last_page ?? 1;
+  const total = data?.total ?? 0;
 
   return (
     <Card>
@@ -48,7 +47,7 @@ export function LocationActivitySection({ locationId }: Props) {
           <History className="h-4 w-4 text-zinc-600" />
           {t("activities.title")}
         </CardTitle>
-        <CardDescription className="text-xs">All recorded activities for this location.</CardDescription>
+        <CardDescription className="text-xs">{t("activities.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -67,28 +66,39 @@ export function LocationActivitySection({ locationId }: Props) {
                   key={e.id ?? idx}
                   className="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3"
                 >
-                  <p className="text-sm font-medium text-zinc-900">{e.title ?? "—"}</p>
-                  {e.description ? <p className="text-xs text-zinc-600 mt-0.5">{e.description}</p> : null}
+                  <p className="text-sm font-medium text-zinc-900">{e.title ?? e.description ?? "—"}</p>
+                  {e.description && e.description !== e.title ? (
+                    <p className="mt-0.5 text-xs text-zinc-600">{e.description}</p>
+                  ) : null}
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
                     <time className="font-mono">{fmtDate(e.occurred_at)}</time>
                     {e.actor_name ? <span>· {t("activities.actor", { name: e.actor_name })}</span> : null}
-                    {e.source ? (
-                      <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] uppercase tracking-wider">
-                        {e.source}
-                      </span>
-                    ) : null}
                   </div>
                 </li>
               ))}
             </ol>
             {lastPage > 1 ? (
               <div className="mt-4 flex items-center justify-between border-t pt-3">
-                <p className="text-xs text-zinc-500">Page {page} of {lastPage} ({total})</p>
+                <p className="text-xs text-zinc-500">
+                  Page {page} of {lastPage} ({total})
+                </p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || isFetching} className="h-9">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1 || isFetching}
+                    className="h-9"
+                  >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={page >= lastPage || isFetching} className="h-9">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                    disabled={page >= lastPage || isFetching}
+                    className="h-9"
+                  >
                     {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />}
                   </Button>
                 </div>

@@ -10,22 +10,23 @@ import { fetchVendorDocument, getVendorDocumentDownloadUrl } from "@/lib/vendor/
 import { ArrowLeft, Download } from "lucide-react";
 
 export default function VendorDocumentDetailPage() {
-  useTranslations("Vendor.documents.title");
+  const t = useTranslations("Vendor.documents.detail");
   const tCommon = useTranslations("Vendor.common");
   const params = useParams<{ id: string }>();
-  const id = Number(params?.id ?? 0);
+  const documentId = decodeURIComponent(params?.id ?? "");
   const router = useRouter();
   const token = typeof window !== "undefined" ? sessionStorage.getItem("sol_token") : null;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["vendor", "documents", "detail", id],
-    queryFn: () => fetchVendorDocument(id),
-    enabled: !!id,
+    queryKey: ["vendor", "documents", "detail", documentId],
+    queryFn: () => fetchVendorDocument(documentId),
+    enabled: !!documentId,
   });
 
   const doc = data?.data;
   const isPdf = doc?.mime_type === "application/pdf";
   const isImage = doc?.mime_type?.startsWith("image/");
+  const downloadUrl = `${getVendorDocumentDownloadUrl(documentId)}${token ? `?token=${token}` : ""}`;
 
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6">
@@ -50,7 +51,7 @@ export default function VendorDocumentDetailPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">{doc.name}</CardTitle>
               <a
-                href={`${getVendorDocumentDownloadUrl(id)}?token=${token ?? ""}`}
+                href={downloadUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
@@ -61,10 +62,12 @@ export default function VendorDocumentDetailPage() {
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-2 gap-3 text-sm">
-                <div><dt className="text-zinc-500">Type</dt><dd>{doc.mime_type}</dd></div>
-                <div><dt className="text-zinc-500">Size</dt><dd>{Math.round((doc.size ?? 0) / 1024)} KB</dd></div>
-                <div><dt className="text-zinc-500">JO No.</dt><dd className="font-mono text-xs">{doc.jo_number}</dd></div>
-                <div><dt className="text-zinc-500">Customer</dt><dd>{doc.customer_name}</dd></div>
+                <div><dt className="text-zinc-500">{t("type")}</dt><dd>{doc.document_type_label ?? doc.type_label}</dd></div>
+                <div><dt className="text-zinc-500">{t("format")}</dt><dd>{doc.format ?? doc.mime_type}</dd></div>
+                <div><dt className="text-zinc-500">{t("size")}</dt><dd>{Math.round((doc.size ?? 0) / 1024)} KB</dd></div>
+                <div><dt className="text-zinc-500">{t("joNo")}</dt><dd className="font-mono text-xs">{doc.jo_number}</dd></div>
+                <div><dt className="text-zinc-500">{t("shipmentNo")}</dt><dd className="font-mono text-xs">{doc.shipment_number}</dd></div>
+                <div><dt className="text-zinc-500">{t("uploadedBy")}</dt><dd>{doc.uploaded_by}</dd></div>
               </dl>
             </CardContent>
           </Card>
@@ -73,24 +76,40 @@ export default function VendorDocumentDetailPage() {
             <CardContent className="p-0">
               {isPdf ? (
                 <iframe
-                  src={`${getVendorDocumentDownloadUrl(id)}?token=${token ?? ""}#toolbar=0`}
+                  src={`${downloadUrl}#toolbar=0`}
                   className="h-[600px] w-full rounded-b-lg"
                   title={doc.name}
                 />
-              ) : isImage ? (
+              ) : isImage && doc.file_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`${getVendorDocumentDownloadUrl(id)}?token=${token ?? ""}`}
-                  alt={doc.name}
-                  className="mx-auto max-h-[600px]"
-                />
+                <img src={doc.file_url} alt={doc.name} className="mx-auto max-h-[600px]" />
               ) : (
                 <div className="p-8 text-center text-sm text-zinc-500">
-                  Preview tidak tersedia. Silakan unduh file.
+                  {t("previewUnavailable")}
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {doc.activities && doc.activities.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("activityLog")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  {doc.activities.map((a) => (
+                    <li key={a.id} className="flex justify-between border-b border-zinc-100 pb-2 last:border-0">
+                      <span>{a.description}</span>
+                      <span className="text-xs text-zinc-500">
+                        {a.occurred_at ? new Date(a.occurred_at).toLocaleString("id-ID") : "—"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>

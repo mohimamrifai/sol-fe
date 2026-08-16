@@ -25,6 +25,11 @@ import {
 import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 import { VendorContactDialog } from "@/components/dashboard/admin/vendor/vendor-contact-dialog";
 import {
+  createAdminVendorContact,
+  deleteAdminVendorContact,
+  updateAdminVendorContact,
+} from "@/lib/admin-api";
+import {
   BUSINESS_ENTITY_OPTIONS,
   VENDOR_PAYMENT_METHOD_OPTIONS,
   VENDOR_PAYMENT_TERM_OPTIONS,
@@ -42,6 +47,7 @@ import {
   toSelectFieldValue,
 } from "@/lib/select-field";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export type VendorContactRow = {
   id?: number;
@@ -149,15 +155,22 @@ export function VendorFormSections({
   readonly = false,
   vendorCode,
   showContacts = true,
+  businessEntityReadonly = false,
+  contactCrud,
 }: {
   values: VendorFormValues;
   onChange: (patch: Partial<VendorFormValues>) => void;
   readonly?: boolean;
   vendorCode?: string;
   showContacts?: boolean;
+  businessEntityReadonly?: boolean;
+  contactCrud?: { vendorId: number; onRefresh: () => Promise<void> };
 }) {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactEditIndex, setContactEditIndex] = useState<number | null>(null);
+  const [contactBusy, setContactBusy] = useState(false);
+
+  const contactsReadonly = readonly && !contactCrud;
 
   const toggleVendorType = (type: string) => {
     const set = new Set(values.vendor_types);
@@ -166,7 +179,35 @@ export function VendorFormSections({
     onChange({ vendor_types: Array.from(set) });
   };
 
-  const saveContact = (row: VendorContactRow) => {
+  const saveContact = async (row: VendorContactRow) => {
+    if (contactCrud && readonly) {
+      setContactBusy(true);
+      try {
+        const payload = {
+          name: row.name,
+          position: row.position ?? null,
+          email: row.email ?? null,
+          mobile: row.mobile,
+          is_primary: row.is_primary ?? false,
+          is_active: row.is_active !== false,
+        };
+        if (row.id) {
+          await updateAdminVendorContact(contactCrud.vendorId, row.id, payload);
+        } else {
+          await createAdminVendorContact(contactCrud.vendorId, payload);
+        }
+        await contactCrud.onRefresh();
+        setContactDialogOpen(false);
+        setContactEditIndex(null);
+        toast.success(row.id ? "Contact diperbarui." : "Contact ditambahkan.");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Gagal menyimpan contact.");
+      } finally {
+        setContactBusy(false);
+      }
+      return;
+    }
+
     const next = [...values.contacts];
     if (contactEditIndex != null) {
       next[contactEditIndex] = row;
@@ -183,7 +224,21 @@ export function VendorFormSections({
     setContactEditIndex(null);
   };
 
-  const removeContact = (index: number) => {
+  const removeContact = async (index: number) => {
+    const contact = values.contacts[index];
+    if (contactCrud && readonly && contact?.id) {
+      setContactBusy(true);
+      try {
+        await deleteAdminVendorContact(contactCrud.vendorId, contact.id);
+        await contactCrud.onRefresh();
+        toast.success("Contact dihapus.");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Gagal menghapus contact.");
+      } finally {
+        setContactBusy(false);
+      }
+      return;
+    }
     onChange({ contacts: values.contacts.filter((_, i) => i !== index) });
   };
 
@@ -196,20 +251,24 @@ export function VendorFormSections({
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Business Entity</Label>
-            <Select
-              value={values.business_entity}
-              onValueChange={(v) => v && onChange({ business_entity: v })}
-              disabled={readonly}
-            >
-              <SelectTrigger>
-                <SelectValue>{businessEntityLabel(values.business_entity)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {BUSINESS_ENTITY_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {businessEntityReadonly ? (
+              <Input value={businessEntityLabel(values.business_entity)} readOnly disabled className="bg-muted" />
+            ) : (
+              <Select
+                value={values.business_entity}
+                onValueChange={(v) => v && onChange({ business_entity: v })}
+                disabled={readonly}
+              >
+                <SelectTrigger>
+                  <SelectValue>{businessEntityLabel(values.business_entity)}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {BUSINESS_ENTITY_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Vendor Name</Label>
@@ -321,11 +380,12 @@ export function VendorFormSections({
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold">Contact Person</h3>
-            {!readonly ? (
+            {!contactsReadonly ? (
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
+                disabled={contactBusy}
                 onClick={() => {
                   setContactEditIndex(null);
                   setContactDialogOpen(true);
@@ -345,7 +405,7 @@ export function VendorFormSections({
                   <TableHead>Mobile</TableHead>
                   <TableHead>Primary</TableHead>
                   <TableHead>Status</TableHead>
-                  {!readonly ? <TableHead className="w-20" /> : null}
+                  {!contactsReadonly ? <TableHead className="w-20" /> : null}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -361,13 +421,13 @@ export function VendorFormSections({
                         {c.is_active !== false ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    {!readonly ? (
+                    {!contactsReadonly ? (
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button type="button" size="icon-sm" variant="ghost" onClick={() => { setContactEditIndex(i); setContactDialogOpen(true); }}>
+                          <Button type="button" size="icon-sm" variant="ghost" disabled={contactBusy} onClick={() => { setContactEditIndex(i); setContactDialogOpen(true); }}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button type="button" size="icon-sm" variant="ghost" onClick={() => removeContact(i)}>
+                          <Button type="button" size="icon-sm" variant="ghost" disabled={contactBusy} onClick={() => void removeContact(i)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>

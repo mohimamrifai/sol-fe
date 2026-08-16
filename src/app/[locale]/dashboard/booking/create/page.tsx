@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,11 +16,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardList, CheckCircle, Loader2 } from "lucide-react";
-import { useRouter } from "@/i18n/routing";
 import { useBookingForm } from "@/hooks/use-booking-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
+import { useAuthStore } from "@/lib/store";
 
 // Section Components
 import { RouteServiceSection } from "@/components/dashboard/booking/create/route-service-section";
@@ -31,12 +32,25 @@ import { AttachmentSection } from "@/components/dashboard/booking/create/attachm
 export default function CreateBookingPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const canCreateBooking = ((user?.permissions as string[] | undefined) ?? []).includes("create_bookings")
+    || ((user?.permissions as string[] | undefined) ?? []).includes("manage_bookings");
   const t = useTranslations("Bookings.create");
   const tForm = useTranslations("Bookings.create.form");
   const tCommon = useTranslations("Bookings");
   const f = useBookingForm();
   const locale = useLocale();
   const [draftSubmitting, setDraftSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user && !canCreateBooking) {
+      router.replace("/dashboard/booking");
+    }
+  }, [user, canCreateBooking, router]);
+
+  if (user && !canCreateBooking) {
+    return null;
+  }
 
   if (f.loading) {
     return <p className="p-10 text-sm text-muted-foreground text-center">{t("loadingForm")}</p>;
@@ -171,9 +185,9 @@ export default function CreateBookingPage() {
           {/* Section 2: Parties */}
           <PartyInfoSection
             kind="shipper"
-            branches={f.branches}
-            branchId={f.shipperBranchId}
-            setBranchId={f.setShipperBranchId}
+            customerLocations={f.customerLocations}
+            locationId={f.shipperLocationId}
+            setLocationId={f.setShipperLocationId}
             company={f.shipperName}
             setCompany={f.setShipperName}
             picName={f.shipperPicName}
@@ -198,9 +212,9 @@ export default function CreateBookingPage() {
 
           <PartyInfoSection
             kind="consignee"
-            branches={f.branches}
-            branchId={f.consigneeBranchId}
-            setBranchId={f.setConsigneeBranchId}
+            customerLocations={f.customerLocations}
+            locationId={f.consigneeLocationId}
+            setLocationId={f.setConsigneeLocationId}
             destinationType={f.consigneeType}
             setDestinationType={f.setConsigneeType}
             showDeliveryNotes={showDeliveryNotes}

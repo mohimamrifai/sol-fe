@@ -44,6 +44,7 @@
       "companyName": "Company Name",
       "customerCode": "Customer Code",
       "customerCodeHint": "3 letters A–Z, unique globally. Locked after activation.",
+      "rejectionReason": "Registration rejection reason",
       "businessEntity": "Business Entity",
       "website": "Website",
       "companyEmail": "Company Email",

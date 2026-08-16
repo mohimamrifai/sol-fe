@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { useVendorUsers, useVendorUserStats } from "@/hooks/use-vendor-users";
 import { useAuthStore } from "@/lib/store";
+import { isVendorAdminUser } from "@/lib/auth-role";
 import { VendorUsersStatsCards } from "@/components/vendor/users/vendor-users-stats-cards";
 import { VendorUserFilters } from "@/components/vendor/users/vendor-user-filters";
 import { VendorUserFormDialog } from "@/components/vendor/users/dialogs/vendor-user-form-dialog";
@@ -28,6 +29,7 @@ export function VendorUsersList() {
   const tCommon = useTranslations("Vendor.common");
   const router = useRouter();
   const { user: currentUser } = useAuthStore();
+  const isAdmin = isVendorAdminUser(currentUser);
   const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
@@ -64,9 +66,11 @@ export function VendorUsersList() {
           </h1>
           <p className="text-sm text-zinc-500">Manage users in your vendor company.</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} className="h-10">
-          <Plus className="mr-2 h-4 w-4" /> Add User
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => setCreateOpen(true)} className="h-10">
+            <Plus className="mr-2 h-4 w-4" /> Add User
+          </Button>
+        )}
       </div>
 
       <VendorUsersStatsCards />
@@ -114,12 +118,16 @@ export function VendorUsersList() {
                         {u.last_login_at ? new Date(u.last_login_at).toLocaleString("id-ID") : "—"}
                       </td>
                       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        <RowActions
-                          user={u}
-                          onChangeRole={() => setRoleTarget(u)}
-                          onChangeStatus={() => setStatusTarget(u)}
-                          onResetPassword={() => setPwTarget(u)}
-                        />
+                        {isAdmin ? (
+                          <RowActions
+                            user={u}
+                            onChangeRole={() => setRoleTarget(u)}
+                            onChangeStatus={() => setStatusTarget(u)}
+                            onResetPassword={() => setPwTarget(u)}
+                          />
+                        ) : (
+                          <span className="text-xs text-zinc-400">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}

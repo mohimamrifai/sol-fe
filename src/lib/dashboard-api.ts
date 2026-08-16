@@ -190,6 +190,26 @@ export async function fetchCustomerDashboard() {
   });
 }
 
+export type CustomerNotificationsMeta = {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+};
+
+export async function fetchCustomerNotifications(page = 1, perPage = 15) {
+  const params = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+  });
+  return apiFetch<{
+    data: CustomerDashboardNotification[];
+    meta: CustomerNotificationsMeta;
+  }>(`/customer/dashboard/notifications?${params.toString()}`, {
+    method: "GET",
+  });
+}
+
 export function formatDashboardCurrency(value: number, locale = "id-ID"): string {
   return new Intl.NumberFormat(locale, {
     style: "currency",

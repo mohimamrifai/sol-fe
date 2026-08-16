@@ -34,6 +34,7 @@
       "company_admin": "Dashboard Perusahaan",
       "ops_pic": "Dashboard Ops PIC",
       "finance_pic": "Dashboard Finance PIC",
+      "viewer": "Dashboard Viewer",
       "vendor_company_admin": "Dashboard Vendor",
       "vendor_ops_pic": "Dashboard Vendor Ops",
       "vendor_finance_pic": "Dashboard Vendor Finance",
@@ -161,6 +162,14 @@
       "invoices": "Tidak ada invoice yang belum dibayar.",
       "payments": "Belum ada pembayaran.",
       "notifications": "Belum ada aktivitas terbaru."
+    },
+    "notificationsPage": {
+      "title": "Semua Notifikasi",
+      "description": "Riwayat aktivitas terbaru di akun perusahaan Anda.",
+      "back": "Kembali ke Dashboard",
+      "loading": "Memuat notifikasi…",
+      "empty": "Belum ada notifikasi.",
+      "page": "Halaman {page} dari {lastPage}"
     },
     "customer": {
       "settings": {

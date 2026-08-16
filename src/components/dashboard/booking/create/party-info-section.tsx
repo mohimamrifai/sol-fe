@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Branch } from "@/hooks/use-booking-form";
+import { CustomerLoc } from "@/hooks/use-booking-form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Combobox,
@@ -21,9 +21,9 @@ import { getAllProvinces, getCitiesForProvince, getDistrictsForCity } from "@/li
 
 interface PartyProps {
   kind: "shipper" | "consignee";
-  branches: Branch[];
-  branchId: string;
-  setBranchId: (v: string) => void;
+  customerLocations: CustomerLoc[];
+  locationId: string;
+  setLocationId: (v: string) => void;
   destinationType?: "customer_location" | "external";
   setDestinationType?: (v: "customer_location" | "external") => void;
   showDeliveryNotes?: boolean;
@@ -53,9 +53,9 @@ interface PartyProps {
 
 export function PartyInfoSection({
   kind,
-  branches,
-  branchId,
-  setBranchId,
+  customerLocations,
+  locationId,
+  setLocationId,
   destinationType,
   setDestinationType,
   showDeliveryNotes,
@@ -87,13 +87,13 @@ export function PartyInfoSection({
   const isShipper = kind === "shipper";
   const prefix = isShipper ? "shipper" : "consignee";
 
-  const branchOptions = useMemo(
+  const locationOptions = useMemo(
     () =>
-      branches.map((b) => ({
-        value: String(b.id),
-        label: b.name,
+      customerLocations.map((loc) => ({
+        value: String(loc.id),
+        label: loc.name,
       })),
-    [branches]
+    [customerLocations]
   );
 
   const [provinceOptions, setProvinceOptions] = useState<Array<{ value: string; label: string }>>([]);
@@ -145,27 +145,63 @@ export function PartyInfoSection({
   }, [cityId]);
 
   useEffect(() => {
-    if (!branchId) return;
-    const br = branches.find((b) => String(b.id) === branchId);
-    if (!br) return;
-    if (isShipper) {
-      setCompany(br.name);
-      if (br.address) setAddress(br.address);
-      if (br.phone) {
-        setPhone(br.phone);
-        setPicMobile(br.phone);
-      }
-      if (br.contact_person) setPicName(br.contact_person);
-    } else if (destinationType === "customer_location") {
-      setCompany(br.name);
-      if (br.address) setAddress(br.address);
-      if (br.phone) {
-        setPhone(br.phone);
-        setPicMobile(br.phone);
-      }
-      if (br.contact_person) setPicName(br.contact_person);
+    if (!locationId) return;
+    const loc = customerLocations.find((l) => String(l.id) === locationId);
+    if (!loc) return;
+
+    const shouldAutofill = isShipper || destinationType === "customer_location";
+    if (!shouldAutofill) return;
+
+    setCompany(loc.name);
+    if (loc.address) setAddress(loc.address);
+    const mobile = loc.pic_mobile || loc.phone || "";
+    if (mobile) {
+      setPhone(mobile);
+      setPicMobile(mobile);
     }
-  }, [branchId, branches, destinationType, isShipper, setAddress, setCompany, setPhone, setPicMobile, setPicName]);
+    if (loc.pic_name) setPicName(loc.pic_name);
+    if (loc.pic_email) setPicEmail(loc.pic_email);
+    if (loc.postal_code) setPostalCode(loc.postal_code);
+
+    let active = true;
+    (async () => {
+      if (!loc.province) return;
+      const provinces = await getAllProvinces();
+      const province = provinces.find((p) => p.name.toLowerCase() === loc.province!.toLowerCase());
+      if (!province || !active) return;
+      setProvinceId(String(province.id));
+
+      if (!loc.city) return;
+      const cities = await getCitiesForProvince(province.id);
+      const city = cities.find((c) => c.name.toLowerCase() === loc.city!.toLowerCase());
+      if (!city || !active) return;
+      setCityId(String(city.id));
+
+      if (!loc.district) return;
+      const districts = await getDistrictsForCity(city.id);
+      const district = districts.find((d) => d.name.toLowerCase() === loc.district!.toLowerCase());
+      if (district && active) setDistrictId(String(district.id));
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    locationId,
+    customerLocations,
+    destinationType,
+    isShipper,
+    setAddress,
+    setCompany,
+    setPhone,
+    setPicMobile,
+    setPicName,
+    setPicEmail,
+    setPostalCode,
+    setProvinceId,
+    setCityId,
+    setDistrictId,
+  ]);
 
   return (
     <Card>
@@ -202,12 +238,12 @@ export function PartyInfoSection({
               {tForm("customerLocationLabel")} <span className="text-red-500">*</span>
             </Label>
             <Combobox
-              items={branchOptions}
-              value={branchOptions.find((x) => x.value === branchId) ?? null}
-              onValueChange={(next) => setBranchId(next?.value ?? "")}
+              items={locationOptions}
+              value={locationOptions.find((x) => x.value === locationId) ?? null}
+              onValueChange={(next) => setLocationId(next?.value ?? "")}
             >
               <ComboboxInput
-                className={cn("w-full", renderFieldError(`${prefix}_branch_id`) && "[&_input]:border-red-500")}
+                className={cn("w-full", renderFieldError(`${prefix}_location_id`) && "[&_input]:border-red-500")}
                 placeholder={tForm("customerLocationPlaceholder")}
               />
               <ComboboxContent>
@@ -221,8 +257,8 @@ export function PartyInfoSection({
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
-            {renderFieldError(`${prefix}_branch_id`) && (
-              <p className="text-[11px] font-medium text-red-500">{renderFieldError(`${prefix}_branch_id`)}</p>
+            {renderFieldError(`${prefix}_location_id`) && (
+              <p className="text-[11px] font-medium text-red-500">{renderFieldError(`${prefix}_location_id`)}</p>
             )}
           </div>
         ) : null}

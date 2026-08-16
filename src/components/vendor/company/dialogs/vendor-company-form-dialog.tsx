@@ -9,6 +9,8 @@ import { useTranslations } from "next-intl";
 import { useUpdateVendorCompany, useVendorCompany } from "@/hooks/use-vendor-company";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
+import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 type Props = { open: boolean; onOpenChange: (open: boolean) => void };
@@ -116,42 +118,48 @@ export function VendorCompanyFormDialog({ open, onOpenChange }: Props) {
 
           <div>
             <h3 className="mb-2 text-sm font-semibold">{t("address")}</h3>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="md:col-span-2">
+            <div className="grid gap-3">
+              <ControlledAddressRegionFields
+                showCountry
+                showDistrict
+                showPostalCode
+                value={{
+                  country,
+                  province,
+                  city,
+                  district,
+                  postal_code: postalCode,
+                }}
+                onChange={(patch) => {
+                  if (patch.country !== undefined) setCountry(patch.country);
+                  if (patch.province !== undefined) setProvince(patch.province);
+                  if (patch.city !== undefined) setCity(patch.city);
+                  if (patch.district !== undefined) setDistrict(patch.district ?? "");
+                  if (patch.postal_code !== undefined) setPostalCode(patch.postal_code ?? "");
+                  setDirty(true);
+                }}
+              />
+              <div>
                 <Label className="text-xs">{tf("address")}</Label>
-                <Input value={address} onChange={(e) => { setAddress(e.target.value); setDirty(true); }} className="h-10" />
+                <Textarea
+                  value={address}
+                  onChange={(e) => { setAddress(e.target.value); setDirty(true); }}
+                  rows={2}
+                />
               </div>
-              <div>
-                <Label className="text-xs">{tf("city")}</Label>
-                <Input value={city} onChange={(e) => { setCity(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div>
-                <Label className="text-xs">{tf("province")}</Label>
-                <Input value={province} onChange={(e) => { setProvince(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div>
-                <Label className="text-xs">{tf("district")}</Label>
-                <Input value={district} onChange={(e) => { setDistrict(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div>
-                <Label className="text-xs">{tf("postalCode")}</Label>
-                <Input value={postalCode} onChange={(e) => { setPostalCode(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div>
-                <Label className="text-xs">{tf("country")}</Label>
-                <Input value={country} onChange={(e) => { setCountry(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div>
-                <Label className="text-xs">{tf("email")}</Label>
-                <Input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div>
-                <Label className="text-xs">{tf("phone")}</Label>
-                <Input value={phone} onChange={(e) => { setPhone(e.target.value); setDirty(true); }} className="h-10" />
-              </div>
-              <div className="md:col-span-2">
-                <Label className="text-xs">{tf("website")}</Label>
-                <Input value={website} onChange={(e) => { setWebsite(e.target.value); setDirty(true); }} className="h-10" />
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <Label className="text-xs">{tf("email")}</Label>
+                  <Input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setDirty(true); }} className="h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs">{tf("phone")}</Label>
+                  <Input value={phone} onChange={(e) => { setPhone(e.target.value); setDirty(true); }} className="h-10" />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-xs">{tf("website")}</Label>
+                  <Input value={website} onChange={(e) => { setWebsite(e.target.value); setDirty(true); }} className="h-10" />
+                </div>
               </div>
             </div>
           </div>

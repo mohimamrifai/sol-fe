@@ -1,11 +1,13 @@
 "use client";
 
+import * as React from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { shipmentStatusKey } from "@/lib/shipment-status";
 import { fetchCustomerShipment } from "@/lib/customer-api";
+import { Link } from "@/i18n/routing";
 import type { DocumentDetail } from "@/lib/document-types";
 
 interface Props {
@@ -22,7 +24,7 @@ interface ShipmentDetailShape {
   service_type?: { code?: string; name?: string } | null;
   origin_location?: { name?: string; code?: string } | null;
   destination_location?: { name?: string; code?: string } | null;
-  booking?: { booking_number?: string | null } | null;
+  booking?: { id?: number; booking_number?: string | null } | null;
 }
 
 export function DocumentRelatedShipmentSection({ document }: Props) {
@@ -69,11 +71,29 @@ export function DocumentRelatedShipmentSection({ document }: Props) {
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field
               label={t("shipmentNo")}
-              value={shipment.display_number ?? shipment.shipment_number ?? "—"}
+              value={
+                <Link
+                  href={`/dashboard/shipments/${shipment.id}` as never}
+                  className="font-medium text-sky-700 hover:text-sky-900 hover:underline"
+                >
+                  {shipment.display_number ?? shipment.shipment_number ?? "—"}
+                </Link>
+              }
             />
             <Field
               label={t("bookingNo")}
-              value={shipment.booking?.booking_number ?? document.booking_no ?? "—"}
+              value={
+                shipment.booking?.id && (shipment.booking?.booking_number ?? document.booking_no) ? (
+                  <Link
+                    href={`/dashboard/booking/${shipment.booking.id}` as never}
+                    className="font-medium text-sky-700 hover:text-sky-900 hover:underline"
+                  >
+                    {shipment.booking.booking_number ?? document.booking_no}
+                  </Link>
+                ) : (
+                  shipment.booking?.booking_number ?? document.booking_no ?? "—"
+                )
+              }
             />
             <Field
               label={t("route")}
@@ -104,7 +124,7 @@ export function DocumentRelatedShipmentSection({ document }: Props) {
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="space-y-1">
       <dt className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">

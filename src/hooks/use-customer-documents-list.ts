@@ -3,22 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchCustomerDocuments } from "@/lib/customer-api";
 import type { ListQueryParams } from "@/lib/list-query";
+import {
+  DOCUMENT_FILTER_DEFAULTS,
+  type DocumentFiltersValue,
+} from "@/components/documents/document-filters";
 
-export interface DocumentFiltersValue {
-  search: string;
-  type: string;
-  shipmentId: number | null;
-  dateFrom: string;
-  dateTo: string;
-}
-
-export const DOCUMENT_FILTER_DEFAULTS: DocumentFiltersValue = {
-  search: "",
-  type: "",
-  shipmentId: null,
-  dateFrom: "",
-  dateTo: "",
-};
+export { DOCUMENT_FILTER_DEFAULTS };
+export type { DocumentFiltersValue };
 
 export const DOCUMENTS_LIST_KEY = ["customer", "documents", "list"] as const;
 

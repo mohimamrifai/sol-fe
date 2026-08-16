@@ -19,6 +19,8 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { vendorTypesLabel } from "@/lib/vendor-fsd-options";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 
 export default function AdminVendorDetailPage() {
@@ -27,6 +29,10 @@ export default function AdminVendorDetailPage() {
   const locale = String(params?.locale ?? "id");
   const id = Number(params?.id);
   const listPath = `/${locale}/dashboard/admin/vendor/vendors`;
+  const authHydrated = useAuthPersistHydrated();
+  const { user } = useAuthStore();
+  const roles = user?.roles ?? [];
+  const canManageVendor = authHydrated && (roles.includes("super_admin") || roles.includes("sales"));
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,7 +63,9 @@ export default function AdminVendorDetailPage() {
     setSaving(true);
     setError(null);
     try {
-      await updateAdminVendor(id, vendorFormToPayload(values));
+      const payload = vendorFormToPayload(values);
+      delete payload.business_entity;
+      await updateAdminVendor(id, payload);
       toast.success("Vendor diperbarui.");
       setEditing(false);
       await refresh();
@@ -100,8 +108,10 @@ export default function AdminVendorDetailPage() {
             </Badge>
             {!editing ? (
               <>
-                <Button type="button" size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Button>
-                {detail.is_active !== false ? (
+                {canManageVendor ? (
+                  <Button type="button" size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Button>
+                ) : null}
+                {canManageVendor && detail.is_active !== false ? (
                   <Button type="button" size="sm" variant="outline" onClick={() => void deactivate()}>Inactive</Button>
                 ) : null}
               </>
@@ -121,6 +131,8 @@ export default function AdminVendorDetailPage() {
           onChange={onChange}
           readonly={!editing}
           vendorCode={String(detail.code ?? "")}
+          businessEntityReadonly
+          contactCrud={canManageVendor ? { vendorId: id, onRefresh: refresh } : undefined}
         />
         <Button type="button" variant="outline" onClick={() => router.push(listPath)}>Kembali</Button>
       </CardContent>

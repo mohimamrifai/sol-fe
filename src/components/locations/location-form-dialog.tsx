@@ -111,14 +111,18 @@ export function LocationFormDialog({ open, onOpenChange, row }: LocationFormDial
             <Building2 className="h-4 w-4" />
             {isEdit ? t("form.title.edit") : t("form.title.create")}
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            {t("form.addressSection")}
+          <DialogDescription className="sr-only">
+            {isEdit ? t("form.title.edit") : t("form.title.create")}
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...methods}>
           <form onSubmit={onSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                {t("form.infoSection")}
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label className={LABEL}>{t("form.type")} <span className="text-red-500">*</span></Label>
                 <Controller
@@ -151,6 +155,16 @@ export function LocationFormDialog({ open, onOpenChange, row }: LocationFormDial
                   )}
                 />
                 {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className={LABEL}>{t("form.code")}</Label>
+                <Input
+                  value={isEdit ? (row?.code ?? "—") : t("form.codeAutoGenerate")}
+                  readOnly
+                  disabled
+                  className="h-10 bg-zinc-50 font-mono text-zinc-500"
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -187,6 +201,7 @@ export function LocationFormDialog({ open, onOpenChange, row }: LocationFormDial
                     </Select>
                   )}
                 />
+              </div>
               </div>
             </div>
 

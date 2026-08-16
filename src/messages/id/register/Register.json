@@ -71,6 +71,8 @@
       "districtSubRegionPlaceholder": "cth: Manhattan",
       "postalCode": "Postal Code",
       "postalCodePlaceholder": "12130",
+      "postalCodeSearch": "Ketik kode pos...",
+      "postalCodeEmpty": "Ketik kode pos lalu Enter",
       "address": "Address",
       "addressPlaceholder": "Jl. Test No. 1, RT/RW, Kelurahan",
       "businessCategory": "Business Category",

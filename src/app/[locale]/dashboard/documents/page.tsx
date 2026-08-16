@@ -15,7 +15,8 @@ import { useCustomerDocumentStats } from "@/hooks/use-customer-documents-stats";
 import { useCustomerDocumentsList } from "@/hooks/use-customer-documents-list";
 import { useCustomerDocumentShipmentOptions } from "@/hooks/use-customer-document-shipment-options";
 import { Button } from "@/components/ui/button";
-import type { DocumentRow } from "@/lib/document-types";
+import type { DocumentRow, DocumentFilterTypeKey } from "@/lib/document-types";
+import { DOCUMENT_FILTER_TYPES } from "@/lib/document-types";
 
 const PER_PAGE = 15;
 
@@ -63,7 +64,9 @@ export default function CustomerDocumentsListPage() {
 
     const shipmentId = shipmentIdRaw ? Number(shipmentIdRaw) : null;
     const nextType =
-      typeRaw === "booking" || typeRaw === "shipment" || typeRaw === "billing" ? typeRaw : "";
+      typeRaw && (DOCUMENT_FILTER_TYPES as readonly string[]).includes(typeRaw)
+        ? (typeRaw as DocumentFilterTypeKey)
+        : "";
 
     const nextFilters: DocumentFiltersValue = {
       ...DOCUMENT_FILTER_DEFAULTS,

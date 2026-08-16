@@ -2,19 +2,18 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/routing";
 import { Eye, Inbox, Wallet } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
-import { usePathname } from "@/i18n/routing";
 import {
   paymentStatusBadgeClass,
   paymentStatusLabelFromApi,
 } from "@/lib/payment-status";
 import { paymentMethodKey } from "@/lib/payment-utils";
-import type { PaymentListItem, PaymentMethod, PaymentStatus } from "@/lib/payment-types";
+import type { PaymentListItem, PaymentMethod, PaymentStatusFilter } from "@/lib/payment-types";
 
 interface Props {
   rows: PaymentListItem[];
@@ -79,23 +78,19 @@ export function PaymentTable({ rows, page, perPage, total, onPageChange, loading
               </tr>
             ) : (
               rows.map((row) => {
-                const rawStatus = String(row.status ?? "").toLowerCase();
-                const badgeKey: PaymentStatus = (["unpaid", "pending", "success", "failed", "expired", "refunded"].includes(
-                  rawStatus
-                )
-                  ? rawStatus
-                  : "pending") as PaymentStatus;
+                const invoiceStatus = String(row.status ?? "unpaid").toLowerCase() as PaymentStatusFilter;
                 const methodKey = paymentMethodKey(row.payment_method) as PaymentMethod | null;
                 const methodLabel = methodKey ? tMethod(methodKey) : (row.payment_method || "—");
+                const paymentNo = row.payment_no && row.payment_no !== "" ? row.payment_no : "—";
 
                 return (
-                  <tr key={row.id} className="border-b border-zinc-100 last:border-0">
+                  <tr key={`${row.invoice_id}-${row.payment_id ?? "none"}`} className="border-b border-zinc-100 last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-600">
                           <Wallet className="h-3.5 w-3.5" />
                         </span>
-                        <span className="font-mono text-xs text-zinc-900">{row.payment_no}</span>
+                        <span className="font-mono text-xs text-zinc-900">{paymentNo}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-zinc-700">
@@ -112,15 +107,21 @@ export function PaymentTable({ rows, page, perPage, total, onPageChange, loading
                     </td>
                     <td className="px-4 py-3 text-zinc-700">{methodLabel}</td>
                     <td className="px-4 py-3">
-                      <Badge variant="outline" className={paymentStatusBadgeClass(rawStatus)}>
-                        {tStatus.has(badgeKey) ? tStatus(badgeKey) : paymentStatusLabelFromApi(rawStatus)}
+                      <Badge variant="outline" className={paymentStatusBadgeClass(invoiceStatus)}>
+                        {tStatus.has(invoiceStatus) ? tStatus(invoiceStatus) : paymentStatusLabelFromApi(invoiceStatus)}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => router.push(`${pathname}/${row.id}`)}
+                        onClick={() => {
+                          if (row.actions?.detail_invoice_only || !row.payment_id) {
+                            router.push(`/dashboard/invoices/${row.invoice_id}` as never);
+                            return;
+                          }
+                          router.push(`${pathname}/${row.payment_id}` as never);
+                        }}
                         className="h-7 gap-1 px-2 text-xs"
                       >
                         <Eye className="h-3 w-3" />

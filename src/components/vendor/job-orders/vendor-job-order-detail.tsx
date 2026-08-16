@@ -10,8 +10,10 @@ import { useRouter } from "next/navigation";
 import { useVendorJobOrder } from "@/hooks/use-vendor-job-orders";
 import { ArrowLeft, CheckCircle2, FileUp } from "lucide-react";
 import { VendorAcceptJobDialog } from "@/components/vendor/job-orders/dialogs/vendor-accept-job-dialog";
+import { VendorRejectJobDialog } from "@/components/vendor/job-orders/dialogs/vendor-reject-job-dialog";
 import { VendorSubmitProgressDialog } from "@/components/vendor/job-orders/dialogs/vendor-submit-progress-dialog";
 import { VendorSubmitCompletionDialog } from "@/components/vendor/job-orders/dialogs/vendor-submit-completion-dialog";
+import { XCircle } from "lucide-react";
 
 const STATUS_BADGE: Record<string, string> = {
   pending_acceptance: "bg-amber-100 text-amber-700 border-amber-200",
@@ -32,6 +34,7 @@ export function VendorJobOrderDetail({ id }: Props) {
   const router = useRouter();
   const { data, isLoading } = useVendorJobOrder(id);
   const [showAccept, setShowAccept] = useState(false);
+  const [showReject, setShowReject] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
 
@@ -78,24 +81,30 @@ export function VendorJobOrderDetail({ id }: Props) {
               {tHeader("assigned")}: {job.assigned_date} · {tHeader("due")}: {job.due_date}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {job.vendor_status === "pending_acceptance" && (
-              <Button onClick={() => setShowAccept(true)} className="h-10">
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                {t("accept")}
-              </Button>
-            )}
-            {(job.vendor_status === "accepted" || job.vendor_status === "in_progress") && (
               <>
-                <Button variant="outline" onClick={() => setShowProgress(true)} className="h-10">
-                  <FileUp className="mr-2 h-4 w-4" />
-                  {t("submitProgress")}
-                </Button>
-                <Button onClick={() => setShowCompletion(true)} className="h-10">
+                <Button onClick={() => setShowAccept(true)} className="h-10">
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  {t("submitCompletion")}
+                  {t("accept")}
+                </Button>
+                <Button variant="outline" onClick={() => setShowReject(true)} className="h-10">
+                  <XCircle className="mr-2 h-4 w-4" />
+                  {t("reject")}
                 </Button>
               </>
+            )}
+            {(job.vendor_status === "accepted" || job.vendor_status === "in_progress") && (
+              <Button variant="outline" onClick={() => setShowProgress(true)} className="h-10">
+                <FileUp className="mr-2 h-4 w-4" />
+                {t("submitProgress")}
+              </Button>
+            )}
+            {job.vendor_status === "in_progress" && (
+              <Button onClick={() => setShowCompletion(true)} className="h-10">
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                {t("submitCompletion")}
+              </Button>
             )}
           </div>
         </CardContent>
@@ -111,7 +120,10 @@ export function VendorJobOrderDetail({ id }: Props) {
               <div><dt className="text-zinc-500">Shipment No.</dt><dd className="text-zinc-900">{job.shipment_number}</dd></div>
               <div><dt className="text-zinc-500">Customer</dt><dd className="text-zinc-900">{job.customer?.name ?? "—"}</dd></div>
               <div><dt className="text-zinc-500">Service</dt><dd className="text-zinc-900">{job.service_type?.name ?? "—"}</dd></div>
+              <div><dt className="text-zinc-500">{t("priority")}</dt><dd className="text-zinc-900">{job.priority ?? "Normal"}</dd></div>
+              <div><dt className="text-zinc-500">{t("assignedBy")}</dt><dd className="text-zinc-900">{job.assigned_by ?? "—"}</dd></div>
               <div><dt className="text-zinc-500">Coverage</dt><dd className="text-zinc-900">{job.shipment_coverage}</dd></div>
+              <div className="col-span-2"><dt className="text-zinc-500">{t("jobDescription")}</dt><dd className="text-zinc-900">{job.job_description ?? job.notes ?? "—"}</dd></div>
             </dl>
           </CardContent>
         </Card>
@@ -124,8 +136,7 @@ export function VendorJobOrderDetail({ id }: Props) {
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <div><dt className="text-zinc-500">Origin</dt><dd className="text-zinc-900">{job.origin_location?.name ?? "—"}</dd></div>
               <div><dt className="text-zinc-500">Destination</dt><dd className="text-zinc-900">{job.destination_location?.name ?? "—"}</dd></div>
-              <div><dt className="text-zinc-500">Est. Departure</dt><dd className="text-zinc-900">{job.estimated_departure}</dd></div>
-              <div><dt className="text-zinc-500">Est. Arrival</dt><dd className="text-zinc-900">{job.estimated_arrival}</dd></div>
+              <div className="col-span-2"><dt className="text-zinc-500">{t("workLocation")}</dt><dd className="text-zinc-900">{job.work_location ?? "—"}</dd></div>
             </dl>
           </CardContent>
         </Card>
@@ -136,10 +147,12 @@ export function VendorJobOrderDetail({ id }: Props) {
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
-              <div><dt className="text-zinc-500">{t("transportMode")}</dt><dd className="text-zinc-900">{(job as { transport_mode?: { name: string } }).transport_mode?.name ?? "—"}</dd></div>
-              <div><dt className="text-zinc-500">{t("dangerousGoods")}</dt><dd className="text-zinc-900">{job.is_dangerous_goods ? t("yes") : t("no")}</dd></div>
-              <div><dt className="text-zinc-500">{t("temperature")}</dt><dd className="text-zinc-900">{job.temperature ?? "—"}</dd></div>
-              <div className="col-span-2 md:col-span-3"><dt className="text-zinc-500">{t("notes")}</dt><dd className="text-zinc-900">{job.notes ?? "—"}</dd></div>
+              <div><dt className="text-zinc-500">{t("containerNo")}</dt><dd className="text-zinc-900">{job.job_details?.containers?.[0]?.container_no ?? "—"}</dd></div>
+              <div><dt className="text-zinc-500">{t("containerType")}</dt><dd className="text-zinc-900">{job.job_details?.containers?.[0]?.container_type ?? "—"}</dd></div>
+              <div><dt className="text-zinc-500">{t("cargoDescription")}</dt><dd className="text-zinc-900">{job.job_details?.cargo_description ?? "—"}</dd></div>
+              <div><dt className="text-zinc-500">{t("pickupLocation")}</dt><dd className="text-zinc-900">{job.job_details?.pickup_location ?? "—"}</dd></div>
+              <div><dt className="text-zinc-500">{t("deliveryLocation")}</dt><dd className="text-zinc-900">{job.job_details?.delivery_location ?? "—"}</dd></div>
+              <div className="col-span-2 md:col-span-3"><dt className="text-zinc-500">{t("specialInstruction")}</dt><dd className="text-zinc-900">{job.job_details?.special_instruction ?? job.notes ?? "—"}</dd></div>
             </dl>
           </CardContent>
         </Card>
@@ -149,12 +162,17 @@ export function VendorJobOrderDetail({ id }: Props) {
             <CardTitle className="text-base">{tSections("supportingDocs")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {job.supporting_documents.length === 0 ? (
+            {(() => {
+              const allDocs = [
+                ...(job.internal_documents ?? []),
+                ...job.supporting_documents,
+              ];
+              return allDocs.length === 0 ? (
               <p className="text-sm text-zinc-500">{t("noDocuments")}</p>
             ) : (
               <ul className="space-y-2 text-sm">
-                {job.supporting_documents.map((d) => (
-                  <li key={d.id} className="flex items-center justify-between rounded-md border border-zinc-200 p-2">
+                {allDocs.map((d) => (
+                  <li key={`${d.id}-${d.name}`} className="flex items-center justify-between rounded-md border border-zinc-200 p-2">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-zinc-900">{d.name}</p>
                       <p className="text-xs text-zinc-500">{(d.size / 1024).toFixed(1)} KB · {d.uploaded_by ?? "—"}</p>
@@ -170,7 +188,8 @@ export function VendorJobOrderDetail({ id }: Props) {
                   </li>
                 ))}
               </ul>
-            )}
+            );
+            })()}
           </CardContent>
         </Card>
 
@@ -190,8 +209,9 @@ export function VendorJobOrderDetail({ id }: Props) {
                       {i < job.timeline.length - 1 && <div className="my-1 h-full w-px bg-zinc-200" />}
                     </div>
                     <div className="pb-3">
-                      <p className="text-sm text-zinc-900">{tl.description}</p>
+                      <p className="text-sm font-medium text-zinc-900">{tl.activity ?? tl.description}</p>
                       <p className="text-xs text-zinc-500">
+                        {tl.status_label ?? tl.status} · {tl.updated_by ?? "—"} ·{" "}
                         {tl.occurred_at ? new Date(tl.occurred_at).toLocaleString("id-ID") : "—"}
                       </p>
                     </div>
@@ -270,6 +290,7 @@ export function VendorJobOrderDetail({ id }: Props) {
       </div>
 
       <VendorAcceptJobDialog job={job} open={showAccept} onOpenChange={setShowAccept} />
+      <VendorRejectJobDialog jobOrderId={job.id} open={showReject} onOpenChange={setShowReject} />
       <VendorSubmitProgressDialog job={job} open={showProgress} onOpenChange={setShowProgress} />
       <VendorSubmitCompletionDialog job={job} open={showCompletion} onOpenChange={setShowCompletion} />
     </div>

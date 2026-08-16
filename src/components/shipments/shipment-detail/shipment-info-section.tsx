@@ -4,12 +4,14 @@ import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { shipmentStatusBadgeClass, shipmentStatusCardLabelKey } from "@/lib/shipment-status";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/routing";
 
 export interface ShipmentInfoData {
   company_name?: string;
   display_number?: string;
   shipment_number?: string;
   waybill_number?: string;
+  booking_id?: number | string;
   booking_number?: string;
   service_type_name?: string;
   shipment_coverage?: string;
@@ -47,7 +49,20 @@ export function ShipmentInfoSection({ data }: Props) {
   const rows: [string, string | React.ReactNode][] = [
     [t("customer"), data.company_name ?? "—"],
     [t("shipmentNo"), data.display_number ?? data.shipment_number ?? "—"],
-    [t("bookingNo"), data.booking_number ?? "—"],
+    [
+      t("bookingNo"),
+      data.booking_id && data.booking_number ? (
+        <Link
+          key="booking-link"
+          href={`/dashboard/booking/${data.booking_id}` as never}
+          className="font-medium text-sky-700 hover:text-sky-900 hover:underline"
+        >
+          {data.booking_number}
+        </Link>
+      ) : (
+        data.booking_number ?? "—"
+      ),
+    ],
     [t("consignmentNote"), data.waybill_number ?? "—"],
     [t("serviceType"), data.service_type_name ?? "—"],
     [t("shipmentCoverage"), data.shipment_coverage ? tCoverage(data.shipment_coverage) : "—"],

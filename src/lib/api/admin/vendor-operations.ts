@@ -1,4 +1,4 @@
-import { apiFetch } from "../../api-client";
+import { apiFetch, apiFetchBlob } from "../../api-client";
 import { buildListQuery, normalizeListParams, type ListQueryParams } from "../../list-query";
 import type { LaravelPaginated } from "../../types-api";
 
@@ -44,6 +44,10 @@ export async function verifyAdminVendorJobOrderCompletion(id: number) {
 
 export async function uploadAdminVendorJobOrderDocument(id: number, formData: FormData) {
   return apiFetch(`/admin/vendor-job-orders/${id}/documents`, { method: "POST", body: formData });
+}
+
+export async function fetchAdminVendorJobOrderPdf(id: number) {
+  return apiFetchBlob(`/admin/vendor-job-orders/${id}/pdf`, { method: "GET" });
 }
 
 // Invoices
@@ -114,6 +118,10 @@ export async function fetchAdminVendorPaymentCompanyBanks() {
 
 export async function fetchAdminVendorPaymentVoucher(id: number) {
   return apiFetch<{ data: { html: string; payment_number: string } }>(`/admin/vendor-payments/${id}/voucher`);
+}
+
+export async function uploadAdminVendorPaymentDocument(id: number, formData: FormData) {
+  return apiFetch(`/admin/vendor-payments/${id}/documents`, { method: "POST", body: formData });
 }
 
 // Reports

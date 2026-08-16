@@ -4,7 +4,7 @@
  * and quick actions — per the rule "Customer hanya dapat melihat data
  * sesuai hak akses user" in the project brief.
  */
-export type CustomerRole = "company_admin" | "ops_pic" | "finance_pic";
+export type CustomerRole = "company_admin" | "ops_pic" | "finance_pic" | "viewer";
 
 export interface RoleVisibility {
   /** Card keys (in `CustomerDashboardCards`) that are visible to the role. */
@@ -13,6 +13,8 @@ export interface RoleVisibility {
   sections: ReadonlyArray<DashboardSectionKey>;
   /** Quick-action keys the role can see. */
   quickActions: ReadonlyArray<QuickActionKey>;
+  /** Hide create/pay actions — used by Viewer (read-only). */
+  readOnly?: boolean;
 }
 
 export type DashboardSectionKey =
@@ -76,6 +78,19 @@ const VISIBILITY: Record<CustomerRole, RoleVisibility> = {
       "recentNotifications",
     ],
     quickActions: ["createBooking", "trackShipment", "viewInvoice", "payInvoice"],
+  },
+  // Viewer: read-only access to all dashboard data (FSD dashboard.md Rules).
+  viewer: {
+    cards: ORDERED_CARD_KEYS,
+    sections: [
+      "shipmentTracking",
+      "recentBooking",
+      "outstandingInvoice",
+      "recentPayment",
+      "recentNotifications",
+    ],
+    quickActions: ["trackShipment", "viewInvoice"],
+    readOnly: true,
   },
 };
 

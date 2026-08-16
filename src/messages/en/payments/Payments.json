@@ -117,6 +117,7 @@
         "active": "Active",
         "inactive": "Expired",
         "paymentGateway": "Payment Gateway",
+        "linkStatus": "Link Status",
         "transactionId": "Transaction ID",
         "paymentStatus": "Payment Status",
         "expiredAt": "Expired At",

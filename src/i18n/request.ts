@@ -48,6 +48,7 @@ const NAMESPACE_PATHS: Record<string, string> = {
   AdminPayments: "admin",
   AdminVendorPages: "admin",
   AdminFsdPages: "admin",
+  Terms: "legal",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

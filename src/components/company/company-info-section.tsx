@@ -5,16 +5,16 @@ import { useForm, Controller, FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Save, Loader2, CheckCircle2, Building2, Mail, Phone, Globe, Hash, MapPin, Briefcase, BarChart3 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { useUpdateCustomerCompany } from "@/hooks/use-update-customer-company";
 import { AddressFields } from "@/components/shared/address-fields";
+import { CompanyLogoField } from "@/components/company/company-logo-field";
 
 export interface CompanyData {
   id: number;
@@ -25,6 +25,7 @@ export interface CompanyData {
   email?: string;
   phone?: string;
   website?: string;
+  logo_url?: string | null;
   business_category?: string;
   monthly_shipment_estimate?: string;
   country?: string;
@@ -59,21 +60,12 @@ interface CompanyFormValues {
 }
 
 const labelCls = "text-xs font-semibold uppercase tracking-wider text-zinc-500";
+const readonlyInputCls = "h-10 bg-zinc-50 text-zinc-500";
 
 export function CompanyInfoSection({ company, onSaved }: Props) {
   const t = useTranslations("Company");
-  const tStatus = useTranslations("Company.companyStatus");
   const update = useUpdateCustomerCompany();
   const [saved, setSaved] = React.useState(false);
-
-  const statusLabel = (s?: string): string => {
-    if (!s) return "—";
-    try {
-      return tStatus.has(s as "active") ? tStatus(s as "active" | "inactive" | "pending") : s;
-    } catch {
-      return s;
-    }
-  };
 
   const defaultValues = React.useMemo<CompanyFormValues>(
     () => ({
@@ -152,39 +144,8 @@ export function CompanyInfoSection({ company, onSaved }: Props) {
                 {t("sections.companyInfo")}
               </CardTitle>
             </div>
-            <CardDescription className="text-xs">
-              {t("form.readonly")}
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {company.business_entity_type ? (
-                <Badge variant="secondary" className="gap-1 font-mono">
-                  <Building2 className="h-3 w-3" />
-                  {company.business_entity_type}
-                </Badge>
-              ) : null}
-              {company.company_code ? (
-                <Badge variant="secondary" className="gap-1 font-mono">
-                  <Hash className="h-3 w-3" />
-                  {company.company_code}
-                </Badge>
-              ) : null}
-              {company.status ? (
-                <Badge
-                  variant="outline"
-                  className={
-                    company.status === "active"
-                      ? "bg-emerald-50 text-emerald-700 ring-emerald-200/60"
-                      : "bg-zinc-50 text-zinc-700 ring-zinc-200/60"
-                  }
-                >
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                  {statusLabel(company.status)}
-                </Badge>
-              ) : null}
-            </div>
-
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label className={labelCls}>{t("form.businessEntity")}</Label>
@@ -192,10 +153,12 @@ export function CompanyInfoSection({ company, onSaved }: Props) {
                   value={company.business_entity_type ?? "—"}
                   readOnly
                   disabled
-                  className="h-10 bg-zinc-50 text-zinc-500"
+                  className={readonlyInputCls}
                 />
                 <p className="text-xs text-zinc-500">{t("form.readonlyHint")}</p>
               </div>
+
+              <CompanyLogoField logoUrl={company.logo_url} onUpdated={onSaved} />
 
               <div className="space-y-1.5">
                 <Label className={labelCls}>{t("form.name")} <span className="text-red-500">*</span></Label>
@@ -208,6 +171,20 @@ export function CompanyInfoSection({ company, onSaved }: Props) {
                   )}
                 />
                 {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className={labelCls}>
+                  <Hash className="mr-1 inline h-3 w-3" />
+                  {t("form.companyCode")}
+                </Label>
+                <Input
+                  value={company.company_code ?? "—"}
+                  readOnly
+                  disabled
+                  className={`${readonlyInputCls} font-mono`}
+                />
+                <p className="text-xs text-zinc-500">{t("form.readonlyHint")}</p>
               </div>
 
               <div className="space-y-1.5">
@@ -290,7 +267,7 @@ export function CompanyInfoSection({ company, onSaved }: Props) {
             </div>
           </CardHeader>
           <CardContent>
-            <AddressFields namePrefix="" required={true} />
+            <AddressFields namePrefix="" required />
           </CardContent>
         </Card>
 
@@ -299,7 +276,7 @@ export function CompanyInfoSection({ company, onSaved }: Props) {
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-zinc-600" />
               <CardTitle className="text-base font-semibold tracking-tight text-zinc-900">
-                {t("sections.operational")}
+                {t("sections.operationalInformation")}
               </CardTitle>
             </div>
           </CardHeader>

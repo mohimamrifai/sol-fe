@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useVendorDashboard } from "@/hooks/use-vendor-dashboard";
 import { ArrowRight } from "lucide-react";
@@ -60,25 +61,37 @@ export function VendorMyJobOrders() {
                   <th className="py-2 pr-4 font-medium">{t("columns.jo")}</th>
                   <th className="py-2 pr-4 font-medium">{t("columns.customer")}</th>
                   <th className="py-2 pr-4 font-medium">{t("columns.service")}</th>
+                  <th className="py-2 pr-4 font-medium">{t("columns.assigned")}</th>
                   <th className="py-2 pr-4 font-medium">{t("columns.due")}</th>
-                  <th className="py-2 font-medium">{t("columns.status")}</th>
+                  <th className="py-2 pr-4 font-medium">{t("columns.status")}</th>
+                  <th className="py-2 font-medium">{t("columns.action")}</th>
                 </tr>
               </thead>
               <tbody>
                 {jobs.map((j) => (
                   <tr
                     key={j.id}
-                    onClick={() => router.push(`/dashboard/vendor/job-orders/${j.id}`)}
-                    className="cursor-pointer border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
+                    className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
                   >
                     <td className="py-3 pr-4 font-mono text-xs text-zinc-700">{j.jo_number}</td>
                     <td className="py-3 pr-4 text-zinc-900">{j.customer_name}</td>
                     <td className="py-3 pr-4 text-zinc-600">{j.service}</td>
+                    <td className="py-3 pr-4 text-zinc-600">{j.assigned_date ?? "—"}</td>
                     <td className="py-3 pr-4 text-zinc-600">{j.due_date}</td>
-                    <td className="py-3">
+                    <td className="py-3 pr-4">
                       <Badge className={`${STATUS_BADGE[j.vendor_status as keyof typeof STATUS_BADGE] ?? ""} border text-xs`}>
                         {tStatus(j.vendor_status as never)}
                       </Badge>
+                    </td>
+                    <td className="py-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={() => router.push(`/dashboard/vendor/job-orders/${j.id}`)}
+                      >
+                        {t("columns.detail")}
+                      </Button>
                     </td>
                   </tr>
                 ))}

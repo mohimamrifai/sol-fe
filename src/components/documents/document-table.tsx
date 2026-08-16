@@ -120,17 +120,15 @@ export function DocumentTable({ rows, page, perPage, total, onPageChange, loadin
                   <td className="px-4 py-3 text-zinc-700">{row.uploaded_by ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="inline-flex items-center gap-1">
-                      {row.preview_supported ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`${pathname}/${encodeURIComponent(row.id)}`)}
-                          className="h-7 gap-1 px-2 text-xs"
-                        >
-                          <Eye className="h-3 w-3" />
-                          {t("view")}
-                        </Button>
-                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push(`${pathname}/${encodeURIComponent(row.id)}`)}
+                        className="h-7 gap-1 px-2 text-xs"
+                      >
+                        <Eye className="h-3 w-3" />
+                        {t("view")}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"

@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -107,8 +106,41 @@ export function CargoDetailSection({
   const [containerOpen, setContainerOpen] = useState(false);
   const [editingPackageIndex, setEditingPackageIndex] = useState<number | null>(null);
   const [editingContainerIndex, setEditingContainerIndex] = useState<number | null>(null);
-  const [draftPackage, setDraftPackage] = useState<PackageRow>(emptyPackageRow());
-  const [draftContainer, setDraftContainer] = useState<ContainerRow>(emptyContainerRow());
+  const [draftPackage, setDraftPackage] = useState<PackageRow>(() => ({
+    description: "",
+    package_type: "",
+    piece_count: 1,
+    weight_kg: 0,
+    length_cm: 0,
+    width_cm: 0,
+    height_cm: 0,
+    remark: "",
+    cargo_category_id: "",
+    is_dangerous_goods: false,
+    un_number: "",
+    dg_class_id: "",
+    packing_group: "",
+    proper_shipping_name: "",
+    flash_point_c: "",
+    dg_remark: "",
+    msds_file: null,
+  }));
+  const [draftContainer, setDraftContainer] = useState<ContainerRow>(() => ({
+    container_type_id: "",
+    quantity: 1,
+    gross_weight_kg: 0,
+    cargo_description: "",
+    remark: "",
+    cargo_category_id: "",
+    is_dangerous_goods: false,
+    un_number: "",
+    dg_class_id: "",
+    packing_group: "",
+    proper_shipping_name: "",
+    flash_point_c: "",
+    dg_remark: "",
+    msds_file: null,
+  }));
 
   const packagingTypes = useMemo(() => ["Carton", "Pallet", "Crate", "Drum", "Sack", "Roll", "Others"], []);
   const packingGroups = useMemo(() => ["I", "II", "III"], []);
@@ -225,7 +257,7 @@ export function CargoDetailSection({
                 className="h-10 bg-white"
                 onClick={() => {
                   setEditingPackageIndex(null);
-                  setDraftPackage(emptyPackageRow());
+                  setDraftPackage(emptyPackageRow(cargoCategories));
                   setPackageOpen(true);
                 }}
               >
@@ -349,7 +381,7 @@ export function CargoDetailSection({
                 className="h-10 bg-white"
                 onClick={() => {
                   setEditingContainerIndex(null);
-                  setDraftContainer(emptyContainerRow());
+                  setDraftContainer(emptyContainerRow(cargoCategories));
                   setContainerOpen(true);
                 }}
               >
@@ -368,6 +400,8 @@ export function CargoDetailSection({
                   <TableHead className="text-right">{t("qty")}</TableHead>
                   <TableHead className="text-right">{t("weightKg")}</TableHead>
                   <TableHead>{t("cargoDescription")}</TableHead>
+                  <TableHead>{t("cargoCategory")}</TableHead>
+                  <TableHead>{t("remark")}</TableHead>
                   <TableHead className="w-20 text-right">{t("action")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -382,6 +416,8 @@ export function CargoDetailSection({
                       <TableCell className="text-right tabular-nums">{c.quantity || 0}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatNumber(Number(c.gross_weight_kg) || 0)}</TableCell>
                       <TableCell className="max-w-[260px] truncate">{c.cargo_description || "—"}</TableCell>
+                      <TableCell>{cargoCategories.find((x) => String(x.id) === c.cargo_category_id)?.name ?? "—"}</TableCell>
+                      <TableCell className="max-w-[180px] truncate">{c.remark || "—"}</TableCell>
                       <TableCell className="text-right">
                         <div className="inline-flex gap-1">
                           <Button
@@ -410,7 +446,7 @@ export function CargoDetailSection({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={8} className="py-6 text-center text-sm text-muted-foreground">
                       {t("containersEmpty")}
                     </TableCell>
                   </TableRow>
@@ -464,6 +500,36 @@ export function CargoDetailSection({
             </div>
             <div className="space-y-1">
               <Label>
+                {t("cargoCategory")} <span className="text-red-500">*</span>
+              </Label>
+              <Combobox
+                items={cargoCategoryOptions}
+                value={cargoCategoryOptions.find((x) => x.value === draftPackage.cargo_category_id) ?? null}
+                onValueChange={(next) => {
+                  const categoryId = next?.value ?? "";
+                  const isDg = cargoCategories.find((c) => String(c.id) === categoryId)?.code === "DG";
+                  setDraftPackage((p) => ({
+                    ...p,
+                    cargo_category_id: categoryId,
+                    is_dangerous_goods: isDg,
+                  }));
+                }}
+              >
+                <ComboboxInput className="w-full" placeholder={t("cargoCategoryPlaceholder")} />
+                <ComboboxContent>
+                  <ComboboxEmpty>{t("comboboxEmpty")}</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item: ComboOption) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            </div>
+            <div className="space-y-1">
+              <Label>
                 {t("qty")} <span className="text-red-500">*</span>
               </Label>
               <Input type="number" min={1} value={String(draftPackage.piece_count ?? "")} onChange={(e) => setDraftPackage((p) => ({ ...p, piece_count: Number(e.target.value) }))} />
@@ -501,19 +567,6 @@ export function CargoDetailSection({
               <Textarea value={draftPackage.remark} onChange={(e) => setDraftPackage((p) => ({ ...p, remark: e.target.value }))} rows={3} />
             </div>
             <div className="sm:col-span-2 space-y-2 rounded-xl border bg-muted/20 p-4">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={draftPackage.is_dangerous_goods}
-                  onCheckedChange={(v) =>
-                    setDraftPackage((p) => ({
-                      ...p,
-                      is_dangerous_goods: v === true,
-                    }))
-                  }
-                />
-                <Label className="text-sm">{t("dangerousGoods")}</Label>
-              </div>
-
               {draftPackage.is_dangerous_goods ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1">
@@ -606,7 +659,7 @@ export function CargoDetailSection({
                 }
                 setPackageOpen(false);
               }}
-              disabled={!draftPackage.description || !draftPackage.piece_count}
+              disabled={!draftPackage.description || !draftPackage.piece_count || !draftPackage.cargo_category_id}
             >
               {t("save")}
             </Button>
@@ -649,13 +702,41 @@ export function CargoDetailSection({
               <Input type="number" min={1} value={String(draftContainer.quantity ?? "")} onChange={(e) => setDraftContainer((c) => ({ ...c, quantity: Number(e.target.value) }))} />
             </div>
             <div className="space-y-1">
+              <Label>
+                {t("cargoCategory")} <span className="text-red-500">*</span>
+              </Label>
+              <Combobox
+                items={cargoCategoryOptions}
+                value={cargoCategoryOptions.find((x) => x.value === draftContainer.cargo_category_id) ?? null}
+                onValueChange={(next) => {
+                  const categoryId = next?.value ?? "";
+                  const isDg = cargoCategories.find((c) => String(c.id) === categoryId)?.code === "DG";
+                  setDraftContainer((c) => ({
+                    ...c,
+                    cargo_category_id: categoryId,
+                    is_dangerous_goods: isDg,
+                  }));
+                }}
+              >
+                <ComboboxInput className="w-full" placeholder={t("cargoCategoryPlaceholder")} />
+                <ComboboxContent>
+                  <ComboboxEmpty>{t("comboboxEmpty")}</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item: ComboOption) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            </div>
+            <div className="space-y-1">
               <Label>{t("cargoWeightKg")}</Label>
               <Input type="number" value={String(draftContainer.gross_weight_kg ?? "")} onChange={(e) => setDraftContainer((c) => ({ ...c, gross_weight_kg: Number(e.target.value) }))} />
             </div>
             <div className="space-y-1">
-              <Label>
-                {t("cargoDescription")} <span className="text-red-500">*</span>
-              </Label>
+              <Label>{t("cargoDescription")}</Label>
               <Input value={draftContainer.cargo_description} onChange={(e) => setDraftContainer((c) => ({ ...c, cargo_description: e.target.value }))} />
             </div>
             <div className="space-y-1 sm:col-span-2">
@@ -663,19 +744,6 @@ export function CargoDetailSection({
               <Textarea value={draftContainer.remark} onChange={(e) => setDraftContainer((c) => ({ ...c, remark: e.target.value }))} rows={3} />
             </div>
             <div className="sm:col-span-2 space-y-2 rounded-xl border bg-muted/20 p-4">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={draftContainer.is_dangerous_goods}
-                  onCheckedChange={(v) =>
-                    setDraftContainer((c) => ({
-                      ...c,
-                      is_dangerous_goods: v === true,
-                    }))
-                  }
-                />
-                <Label className="text-sm">{t("dangerousGoods")}</Label>
-              </div>
-
               {draftContainer.is_dangerous_goods ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1">
@@ -768,7 +836,7 @@ export function CargoDetailSection({
                 }
                 setContainerOpen(false);
               }}
-              disabled={!draftContainer.container_type_id || !draftContainer.quantity || !draftContainer.cargo_description}
+              disabled={!draftContainer.container_type_id || !draftContainer.quantity || !draftContainer.cargo_category_id}
             >
               {t("save")}
             </Button>
@@ -779,7 +847,8 @@ export function CargoDetailSection({
   );
 }
 
-function emptyPackageRow(): PackageRow {
+function emptyPackageRow(cargoCategories: CC[]): PackageRow {
+  const gen = cargoCategories.find((c) => c.code === "GEN");
   return {
     description: "",
     package_type: "",
@@ -789,6 +858,7 @@ function emptyPackageRow(): PackageRow {
     width_cm: 0,
     height_cm: 0,
     remark: "",
+    cargo_category_id: gen ? String(gen.id) : "",
     is_dangerous_goods: false,
     un_number: "",
     dg_class_id: "",
@@ -800,13 +870,15 @@ function emptyPackageRow(): PackageRow {
   };
 }
 
-function emptyContainerRow(): ContainerRow {
+function emptyContainerRow(cargoCategories: CC[]): ContainerRow {
+  const gen = cargoCategories.find((c) => c.code === "GEN");
   return {
     container_type_id: "",
     quantity: 1,
     gross_weight_kg: 0,
     cargo_description: "",
     remark: "",
+    cargo_category_id: gen ? String(gen.id) : "",
     is_dangerous_goods: false,
     un_number: "",
     dg_class_id: "",

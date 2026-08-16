@@ -41,7 +41,7 @@ export function InvoiceStatsCards({ counts }: Props) {
   const t = useTranslations("Invoices");
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {KEYS.map((key) => {
         const Icon = ICONS[key];
         const value = counts[key] ?? 0;

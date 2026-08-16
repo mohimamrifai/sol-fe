@@ -26,12 +26,14 @@ import { getAllCountries, DEFAULT_COUNTRY } from "@/lib/countries";
 interface AddressFieldsProps {
   namePrefix?: string;
   required?: boolean;
+  readOnly?: boolean;
 }
 
 const labelCls = "text-xs font-semibold uppercase tracking-wider text-zinc-500";
 const fieldErrCls = "text-xs text-red-500";
+const readonlyInputCls = "h-10 bg-zinc-50 text-zinc-500";
 
-export function AddressFields({ namePrefix = "", required = true }: AddressFieldsProps) {
+export function AddressFields({ namePrefix = "", required = true, readOnly = false }: AddressFieldsProps) {
   const {
     control,
     setValue,
@@ -160,13 +162,15 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
   }, [isIndonesia, province, city]);
 
   React.useEffect(() => {
+    if (readOnly) return;
     setValue(cityField, "", { shouldValidate: false });
     setValue(districtField, "", { shouldValidate: false });
-  }, [country, setValue, cityField, districtField]);
+  }, [country, setValue, cityField, districtField, readOnly]);
   React.useEffect(() => {
+    if (readOnly) return;
     setValue(cityField, "", { shouldValidate: false });
     setValue(districtField, "", { shouldValidate: false });
-  }, [province, setValue, cityField, districtField]);
+  }, [province, setValue, cityField, districtField, readOnly]);
 
   return (
     <div className="space-y-4">
@@ -186,6 +190,7 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
                 placeholder="Select country"
                 searchPlaceholder="Search country"
                 invalid={!!countryErr}
+                disabled={readOnly}
               />
             )}
           />
@@ -209,7 +214,7 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
                 placeholder={country ? "Select province" : "Select country first"}
                 searchPlaceholder="Search province"
                 loading={loadingProvince}
-                disabled={!country || loadingProvince}
+                disabled={readOnly || !country || loadingProvince}
                 invalid={!!provinceErr}
               />
             )}
@@ -236,7 +241,7 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
                 placeholder={province ? "Select city" : "Select province first"}
                 searchPlaceholder="Search city"
                 loading={loadingCity}
-                disabled={!province || loadingCity}
+                disabled={readOnly || !province || loadingCity}
                 invalid={!!cityErr}
                 allowFreeInput
               />
@@ -260,7 +265,7 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
                   placeholder={city ? "Select district" : "Select city first"}
                   searchPlaceholder="Search district"
                   loading={loadingDistrict}
-                  disabled={!city || loadingDistrict}
+                  disabled={readOnly || !city || loadingDistrict}
                   allowFreeInput
                 />
               )}
@@ -278,6 +283,9 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   placeholder="District"
+                  readOnly={readOnly}
+                  disabled={readOnly}
+                  className={readOnly ? readonlyInputCls : undefined}
                 />
               )}
             />
@@ -289,12 +297,15 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
             control={control}
             name={postalField}
             render={({ field }) => (
-              <Input
+              <SearchableCombobox
                 value={field.value ?? ""}
                 onChange={field.onChange}
-                onBlur={field.onBlur}
+                options={[]}
                 placeholder="Postal code"
-                inputMode="numeric"
+                searchPlaceholder="Type postal code..."
+                emptyMessage="Type postal code and press Enter"
+                allowFreeInput
+                disabled={readOnly}
               />
             )}
           />
@@ -314,7 +325,9 @@ export function AddressFields({ namePrefix = "", required = true }: AddressField
               onChange={field.onChange}
               onBlur={field.onBlur}
               placeholder="Full address"
-              className="min-h-24 rounded-lg border-zinc-200 bg-zinc-50/50 px-3 shadow-sm focus-visible:bg-white"
+              readOnly={readOnly}
+              disabled={readOnly}
+              className={readOnly ? "min-h-24 bg-zinc-50 text-zinc-500" : "min-h-24 rounded-lg border-zinc-200 bg-zinc-50/50 px-3 shadow-sm focus-visible:bg-white"}
             />
           )}
         />

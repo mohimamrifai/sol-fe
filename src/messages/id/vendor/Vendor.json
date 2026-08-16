@@ -20,6 +20,9 @@
       "delete": "Hapus",
       "download": "Unduh",
       "preview": "Pratinjau",
+      "detail": "Detail",
+      "error": "Terjadi kesalahan.",
+      "cancel": "Batal",
       "actions": "Aksi",
       "status": "Status",
       "type": "Tipe"
@@ -65,8 +68,11 @@
           "jo": "No. JO",
           "customer": "Customer",
           "service": "Layanan",
+          "assigned": "Tgl Penugasan",
           "due": "Jatuh Tempo",
-          "status": "Status"
+          "status": "Status",
+          "action": "Aksi",
+          "detail": "Detail"
         }
       },
       "performance": {
@@ -127,8 +133,11 @@
         "action": "Aksi",
         "rows": {
           "vendor_invoice": "Invoice Vendor",
+          "proof_of_completion": "Proof of Completion",
           "pending_submission": "Belum Diajukan",
-          "create": "Buat"
+          "pending_upload": "Belum Diunggah",
+          "create": "Buat",
+          "upload": "Unggah"
         }
       }
     },
@@ -174,8 +183,27 @@
           "activityLog": "Activity Log"
         },
         "accept": "Terima Job",
+        "reject": "Tolak Job",
         "submitProgress": "Kirim Progress",
         "submitCompletion": "Kirim Penyelesaian",
+        "priority": "Prioritas",
+        "assignedBy": "Ditugaskan Oleh",
+        "jobDescription": "Deskripsi Job",
+        "workLocation": "Lokasi Kerja",
+        "containerNo": "No. Container",
+        "containerType": "Tipe Container",
+        "cargoDescription": "Deskripsi Kargo",
+        "pickupLocation": "Lokasi Pickup",
+        "deliveryLocation": "Lokasi Delivery",
+        "specialInstruction": "Instruksi Khusus",
+        "rejectDialog": {
+          "title": "Tolak Job Order",
+          "description": "Apakah Anda yakin ingin menolak job order ini?",
+          "reasonLabel": "Alasan Penolakan (opsional)",
+          "reasonPlaceholder": "Jelaskan alasan penolakan…",
+          "confirm": "Tolak Job Order",
+          "success": "Job order berhasil ditolak."
+        },
         "view": "Lihat",
         "noDocuments": "Belum ada dokumen pendukung.",
         "noTimeline": "Belum ada event timeline.",
@@ -198,13 +226,21 @@
         "consignment_note": "Consignment Note",
         "delivery_order": "Delivery Order",
         "proof_of_completion": "Proof of Completion",
+        "proof_of_delivery": "Proof of Delivery",
         "supporting": "Supporting"
       },
       "filters": {
         "search": "Cari No. JO / No. Shipment / Nama Dokumen",
         "documentType": "Tipe Dokumen",
         "serviceType": "Layanan",
-        "uploadDate": "Tgl Upload"
+        "uploadDate": "Tgl Upload",
+        "types": {
+          "jobOrder": "Job Order",
+          "consignmentNote": "Consignment Note (CN)",
+          "deliveryOrder": "Delivery Order (DO)",
+          "proofOfDelivery": "Proof of Delivery (POD)",
+          "supporting": "Dokumen Pendukung"
+        }
       },
       "table": {
         "name": "Nama Dokumen",
@@ -215,6 +251,14 @@
         "uploadDate": "Tgl Upload"
       },
       "detail": {
+        "type": "Tipe Dokumen",
+        "format": "Format File",
+        "size": "Ukuran File",
+        "joNo": "No. Job Order",
+        "shipmentNo": "No. Shipment",
+        "uploadedBy": "Diupload Oleh",
+        "previewUnavailable": "Pratinjau tidak tersedia untuk tipe file ini. Silakan unduh.",
+        "activityLog": "Activity Log",
         "sections": {
           "info": "Informasi Dokumen",
           "preview": "Pratinjau",

@@ -117,6 +117,7 @@
         "active": "Aktif",
         "inactive": "Kedaluwarsa",
         "paymentGateway": "Payment Gateway",
+        "linkStatus": "Status Link",
         "transactionId": "Transaction ID",
         "paymentStatus": "Status Pembayaran",
         "expiredAt": "Kedaluwarsa Pada",

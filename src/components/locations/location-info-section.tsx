@@ -2,20 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Hash, Building2, Phone, Power, Calendar } from "lucide-react";
+import { Building2, Phone, Power } from "lucide-react";
 import type { LocationRow } from "./location-table";
 
 interface Props {
   location: LocationRow;
-}
-
-function fmtDate(s?: string) {
-  if (!s) return "—";
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.toLocaleString("id-ID", {
-    year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit",
-  });
 }
 
 export function LocationInfoSection({ location }: Props) {
@@ -26,20 +17,15 @@ export function LocationInfoSection({ location }: Props) {
 
   const statusLabel = (s?: string): string => {
     if (!s) return "—";
-    try {
-      return tStatus.has(s as "active") ? tStatus(s as "active" | "inactive") : s;
-    } catch {
-      return s;
-    }
+    return tStatus.has(s as "active") ? tStatus(s as "active" | "inactive") : s;
   };
 
   const rows: Array<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = [
-    { icon: <Hash className="h-4 w-4 text-zinc-500" />, label: t("code"), value: <span className="font-mono">{location.code ?? "—"}</span> },
     { icon: <Building2 className="h-4 w-4 text-zinc-500" />, label: t("type"), value: location.type ? tType(location.type as `type.${string}`) : "—" },
     { icon: <Building2 className="h-4 w-4 text-zinc-500" />, label: t("name"), value: location.name ?? "—" },
+    { icon: <Building2 className="h-4 w-4 text-zinc-500" />, label: t("code"), value: <span className="font-mono">{location.code ?? "—"}</span> },
     { icon: <Phone className="h-4 w-4 text-zinc-500" />, label: t("phone"), value: location.phone ?? "—" },
     { icon: <Power className="h-4 w-4 text-zinc-500" />, label: t("status"), value: statusLabel(location.status) },
-    { icon: <Calendar className="h-4 w-4 text-zinc-500" />, label: t("createdAt"), value: fmtDate(location.created_at) },
   ];
 
   return (

@@ -8,11 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import type { DocumentBucketKey, DocumentShipmentOption } from "@/lib/document-types";
+import {
+  DOCUMENT_FILTER_TYPES,
+  type DocumentFilterTypeKey,
+  type DocumentShipmentOption,
+} from "@/lib/document-types";
 
 export interface DocumentFiltersValue {
   search: string;
-  type: DocumentBucketKey | "";
+  type: DocumentFilterTypeKey | "";
   shipmentId: number | null;
   dateFrom: string;
   dateTo: string;
@@ -26,8 +30,6 @@ export const DOCUMENT_FILTER_DEFAULTS: DocumentFiltersValue = {
   dateTo: "",
 };
 
-const BUCKETS: DocumentBucketKey[] = ["booking", "shipment", "billing"];
-
 interface Props {
   value: DocumentFiltersValue;
   onChange: (next: DocumentFiltersValue) => void;
@@ -36,7 +38,7 @@ interface Props {
 
 export function DocumentFilters({ value, onChange, shipmentOptions }: Props) {
   const t = useTranslations("Documents.filter");
-  const tBucket = useTranslations("Documents.bucket");
+  const tFilterType = useTranslations("Documents.filterType");
 
   const debouncedSearch = useDebouncedValue(value.search, 300);
   const lastAppliedSearch = React.useRef(debouncedSearch);
@@ -46,8 +48,7 @@ export function DocumentFilters({ value, onChange, shipmentOptions }: Props) {
       lastAppliedSearch.current = debouncedSearch;
       onChange({ ...value, search: debouncedSearch });
     }
-     
-  }, [debouncedSearch]);
+  }, [debouncedSearch, onChange, value]);
 
   const update = <K extends keyof DocumentFiltersValue>(
     key: K,
@@ -104,10 +105,13 @@ export function DocumentFilters({ value, onChange, shipmentOptions }: Props) {
           <Label className="text-xs text-zinc-600">{t("type")}</Label>
           <SearchableCombobox
             value={value.type}
-            onChange={(v) => update("type", v as DocumentBucketKey | "")}
+            onChange={(v) => update("type", v as DocumentFilterTypeKey | "")}
             options={[
               { value: "", label: t("allTypes") },
-              ...BUCKETS.map((b) => ({ value: b, label: tBucket(b) })),
+              ...DOCUMENT_FILTER_TYPES.map((key) => ({
+                value: key,
+                label: tFilterType(key),
+              })),
             ]}
             placeholder={t("allTypes")}
             emptyMessage={t("allTypes")}

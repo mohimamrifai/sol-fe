@@ -59,6 +59,7 @@ export function RoleDashboard({ role, data, loading }: Props) {
   const locale = useLocale();
 
   const visibility = getRoleVisibility(role);
+  const readOnly = visibility.readOnly === true;
   const cards = data?.cards;
   const recent = data?.recent;
   const notifications = data?.notifications ?? [];
@@ -120,6 +121,7 @@ export function RoleDashboard({ role, data, loading }: Props) {
                 viewAllLabelKey="sections.recentBooking.viewAll"
                 viewAllHref="/dashboard/booking"
                 headerActions={
+                  readOnly ? undefined : (
                   <Button
                     variant="outline"
                     size="sm"
@@ -135,6 +137,7 @@ export function RoleDashboard({ role, data, loading }: Props) {
                       </Link>
                     }
                   />
+                  )
                 }
               >
                 <BookingTable
@@ -157,6 +160,7 @@ export function RoleDashboard({ role, data, loading }: Props) {
                   rows={recent?.invoices ?? []}
                   locale={locale}
                   emptyText={tEmpty("invoices")}
+                  readOnly={readOnly}
                 />
               </SectionCard>
             );

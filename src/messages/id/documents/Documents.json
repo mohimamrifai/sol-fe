@@ -27,6 +27,15 @@
       "dateFrom": "Dari tanggal",
       "dateTo": "Sampai tanggal"
     },
+    "filterType": {
+      "booking": "Booking",
+      "shipment": "Shipment",
+      "invoice": "Invoice",
+      "tax_invoice": "Tax Invoice",
+      "pod": "POD",
+      "delivery_order": "Delivery Order",
+      "other": "Other"
+    },
     "bucket": {
       "booking": "Booking",
       "shipment": "Shipment",
@@ -40,7 +49,8 @@
       "invoice": "Invoice",
       "tax_invoice": "Tax Invoice",
       "payment_receipt": "Payment Receipt",
-      "other_supporting": "Dokumen Pendukung Lainnya"
+      "other_supporting": "Dokumen Pendukung Lainnya",
+      "msds_file": "MSDS / SDS"
     },
     "table": {
       "title": "Daftar Dokumen",
@@ -62,7 +72,11 @@
       "header": {
         "title": "Detail Dokumen",
         "backToList": "Kembali ke daftar dokumen",
-        "download": "Unduh"
+        "download": "Unduh",
+        "shipmentNo": "No Shipment",
+        "bookingNo": "No Booking",
+        "uploadDate": "Tanggal Upload",
+        "uploadedBy": "Diupload Oleh"
       },
       "loadError": "Gagal memuat detail dokumen.",
       "notFound": "Dokumen tidak ditemukan.",

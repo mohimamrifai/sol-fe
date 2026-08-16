@@ -317,15 +317,17 @@ export function StepCompanyAddress() {
             control={control}
             name="postal_code"
             render={({ field }) => (
-              <Input
-                id="postal_code"
-                inputMode="numeric"
-                maxLength={10}
-                placeholder={t("field.postalCodePlaceholder")}
+              <SearchableCombobox
                 value={field.value ?? ""}
                 onChange={field.onChange}
-                onBlur={field.onBlur}
-                className={fieldClass(!!errors.postal_code)}
+                options={[]}
+                placeholder={t("field.postalCodePlaceholder")}
+                searchPlaceholder={t("field.postalCodeSearch")}
+                loadingText={t("field.loading")}
+                emptyMessage={t("field.postalCodeEmpty")}
+                allowFreeInput
+                invalid={!!errors.postal_code}
+                aria-label={t("field.postalCode")}
               />
             )}
           />

@@ -1,0 +1,25 @@
+{
+  "Terms": {
+    "pageTitle": "Terms & Conditions",
+    "pageSubtitle": "Terms of use for SOL Logistics customer services.",
+    "sections": {
+      "general": {
+        "title": "1. General Terms",
+        "body": "By registering as a SOL Logistics customer, you agree to these terms. The information you provide must be accurate and legally accountable."
+      },
+      "review": {
+        "title": "2. Registration Review Process",
+        "body": "Registrations are reviewed by our internal team. Account status remains Pending Review until approved. Admin accounts become active only after approval."
+      },
+      "data": {
+        "title": "3. Data Usage",
+        "body": "Company data is used for logistics operations, billing, and service communications. We protect confidentiality according to company privacy policy."
+      },
+      "service": {
+        "title": "4. Services",
+        "body": "After activation, customers may use the portal for bookings, shipments, invoices, and payments according to the applicable billing scheme."
+      }
+    },
+    "backToRegister": "Back to registration"
+  }
+}

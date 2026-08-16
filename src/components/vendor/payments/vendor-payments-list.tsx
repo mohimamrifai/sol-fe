@@ -113,10 +113,12 @@ export function VendorPaymentsList() {
                   <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium text-zinc-500">
                     <th className="px-4 py-3 font-medium">{t("table.paymentNo")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.invoiceNo")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.jo")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.paymentDate")}</th>
                     <th className="px-4 py-3 font-medium">Method</th>
                     <th className="px-4 py-3 text-right font-medium">{t("table.amount")}</th>
                     <th className="px-4 py-3 font-medium">{t("table.status")}</th>
+                    <th className="px-4 py-3 font-medium">{t("table.action")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -128,7 +130,12 @@ export function VendorPaymentsList() {
                     >
                       <td className="px-4 py-3 font-mono text-xs text-zinc-700">{p.payment_number}</td>
                       <td className="px-4 py-3 font-mono text-xs text-zinc-700">
-                        {p.vendor_invoice?.invoice_number ?? "—"}
+                        {p.invoice?.invoice_number ?? p.vendor_invoice?.invoice_number ?? "—"}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+                        {(p.invoice as { jo_number?: string } | undefined)?.jo_number
+                          ?? p.vendor_invoice?.jo_number
+                          ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-zinc-600">{p.payment_date}</td>
                       <td className="px-4 py-3 text-zinc-600">{p.payment_method_label}</td>
@@ -137,6 +144,19 @@ export function VendorPaymentsList() {
                         <Badge className={`${STATUS_BADGE[p.status] ?? ""} border text-xs`}>
                           {p.status_label}
                         </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dashboard/vendor/payments/${p.id}`);
+                          }}
+                        >
+                          {tCommon("detail")}
+                        </Button>
                       </td>
                     </tr>
                   ))}

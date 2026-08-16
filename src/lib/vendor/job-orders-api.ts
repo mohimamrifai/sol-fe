@@ -84,6 +84,30 @@ export type JobOrderStats = {
 };
 
 export type JobOrderDetail = JobOrder & {
+  priority?: string;
+  assigned_by?: string | null;
+  job_description?: string | null;
+  work_location?: string | null;
+  job_details?: {
+    containers?: Array<{ container_no?: string; container_type?: string }>;
+    cargo_description?: string;
+    pickup_location?: string;
+    delivery_location?: string;
+    special_instruction?: string;
+    vehicle_type?: string;
+    vehicle_plate?: string;
+    driver_name?: string;
+  };
+  internal_documents?: Array<{
+    id: number;
+    name: string;
+    document_type: string;
+    mime_type: string;
+    size: number;
+    file_url: string;
+    uploaded_by: string | null;
+    uploaded_at: string;
+  }>;
   progress_updates: Array<{
     id: number;
     progress_notes: string | null;
@@ -110,7 +134,11 @@ export type JobOrderDetail = JobOrder & {
   }>;
   timeline: Array<{
     event: string;
+    activity?: string;
     description: string;
+    status?: string;
+    status_label?: string;
+    updated_by?: string;
     occurred_at: string;
   }>;
   activities: Array<{
@@ -142,6 +170,14 @@ export function fetchJobOrder(id: number) {
 export function acceptJobOrder(id: number) {
   return apiFetch<{ message: string; data: JobOrder }>(`/vendor/job-orders/${id}/accept`, {
     method: "POST",
+  });
+}
+
+export function rejectJobOrder(id: number, rejectionReason?: string) {
+  return apiFetch<{ message: string; data: JobOrder }>(`/vendor/job-orders/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ rejection_reason: rejectionReason ?? null }),
+    headers: { "Content-Type": "application/json" },
   });
 }
 

@@ -392,6 +392,12 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
             canApproveReject={caps.canApproveReject}
             onRefresh={refreshData}
           />
+          {companyStatus === "rejected" && detail?.rejection_reason ? (
+            <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
+              <p className="font-medium">{t("form.rejectionReason")}</p>
+              <p className="mt-1 whitespace-pre-wrap">{String(detail.rejection_reason)}</p>
+            </div>
+          ) : null}
           {formBody}
         </>
       )}

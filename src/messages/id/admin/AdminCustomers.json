@@ -44,6 +44,7 @@
       "companyName": "Nama perusahaan",
       "customerCode": "Customer Code",
       "customerCodeHint": "3 huruf A–Z, unik global. Terkunci setelah aktif.",
+      "rejectionReason": "Alasan penolakan registrasi",
       "businessEntity": "Business Entity",
       "website": "Website",
       "companyEmail": "Email Perusahaan",

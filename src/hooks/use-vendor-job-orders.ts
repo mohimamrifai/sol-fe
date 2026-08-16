@@ -5,6 +5,7 @@ import {
   fetchJobOrderActivities,
   fetchJobOrderStats,
   fetchJobOrders,
+  rejectJobOrder,
   submitCompletion,
   submitProgress,
   type JobOrderListResponse,
@@ -48,6 +49,19 @@ export function useAcceptJobOrder() {
   return useMutation({
     mutationFn: (id: number) => acceptJobOrder(id),
     onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: ["vendor", "job-orders"] });
+      qc.invalidateQueries({ queryKey: ["vendor", "dashboard"] });
+      qc.invalidateQueries({ queryKey: ["vendor", "job-orders", "detail", id] });
+    },
+  });
+}
+
+export function useRejectJobOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
+      rejectJobOrder(id, reason),
+    onSuccess: (_, { id }) => {
       qc.invalidateQueries({ queryKey: ["vendor", "job-orders"] });
       qc.invalidateQueries({ queryKey: ["vendor", "dashboard"] });
       qc.invalidateQueries({ queryKey: ["vendor", "job-orders", "detail", id] });

@@ -27,6 +27,15 @@
       "dateFrom": "From date",
       "dateTo": "To date"
     },
+    "filterType": {
+      "booking": "Booking",
+      "shipment": "Shipment",
+      "invoice": "Invoice",
+      "tax_invoice": "Tax Invoice",
+      "pod": "POD",
+      "delivery_order": "Delivery Order",
+      "other": "Other"
+    },
     "bucket": {
       "booking": "Booking",
       "shipment": "Shipment",
@@ -40,7 +49,8 @@
       "invoice": "Invoice",
       "tax_invoice": "Tax Invoice",
       "payment_receipt": "Payment Receipt",
-      "other_supporting": "Other Supporting Document"
+      "other_supporting": "Other Supporting Document",
+      "msds_file": "MSDS / SDS"
     },
     "table": {
       "title": "Document List",
@@ -62,7 +72,11 @@
       "header": {
         "title": "Document Detail",
         "backToList": "Back to document list",
-        "download": "Download"
+        "download": "Download",
+        "shipmentNo": "Shipment No",
+        "bookingNo": "Booking No",
+        "uploadDate": "Upload Date",
+        "uploadedBy": "Uploaded By"
       },
       "loadError": "Failed to load document detail.",
       "notFound": "Document not found.",

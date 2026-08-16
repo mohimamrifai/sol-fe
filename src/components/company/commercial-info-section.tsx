@@ -76,11 +76,17 @@ export function CommercialInfoSection() {
       label: t("commercialFields.pricingType"),
       value: translate("pricingType", commercial.pricing_type),
     },
-    {
+  ];
+
+  if (commercial.pricing_type === "discount") {
+    rows.push({
       icon: <TrendingUp className="h-4 w-4 text-zinc-500" />,
       label: t("commercialFields.discountPercent"),
       value: fmtPercent(commercial.discount_percent),
-    },
+    });
+  }
+
+  rows.push(
     {
       icon: <FileText className="h-4 w-4 text-zinc-500" />,
       label: t("commercialFields.billingCycle"),
@@ -105,8 +111,8 @@ export function CommercialInfoSection() {
       icon: <Wallet className="h-4 w-4 text-zinc-500" />,
       label: t("commercialFields.outstandingBalance"),
       value: fmtMoney(commercial.outstanding_balance),
-    },
-  ];
+    }
+  );
 
   return (
     <Card>

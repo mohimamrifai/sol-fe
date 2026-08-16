@@ -46,6 +46,8 @@ export interface CustomerInvoiceDetail {
   payment_terms: string | null;
   remark: string | null;
   shipment: {
+    id?: number | null;
+    booking_id?: number | null;
     shipment_no: string | null;
     booking_no: string | null;
     cn_no: string | null;

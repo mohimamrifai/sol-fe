@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/vendor/date-range-picker";
 
 type FiltersState = {
   search: string;
@@ -43,8 +44,8 @@ export function VendorJobOrdersFilters({ onChange, serviceTypes }: Props) {
 
   return (
     <Card>
-      <CardContent className="grid gap-3 p-4 md:grid-cols-5">
-        <div className="relative md:col-span-2">
+      <CardContent className="grid gap-3 p-4 md:grid-cols-2 lg:grid-cols-6">
+        <div className="relative lg:col-span-2">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <Input
             value={filters.search}
@@ -82,7 +83,12 @@ export function VendorJobOrdersFilters({ onChange, serviceTypes }: Props) {
             ))}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={handleReset} className="h-10">
+        <DateRangePicker
+          from={filters.from}
+          to={filters.to}
+          onChange={({ from, to }) => setFilters((p) => ({ ...p, from, to }))}
+        />
+        <Button variant="outline" onClick={handleReset} className="h-10 lg:col-span-2">
           <X className="mr-2 h-4 w-4" /> {tc("reset")}
         </Button>
       </CardContent>

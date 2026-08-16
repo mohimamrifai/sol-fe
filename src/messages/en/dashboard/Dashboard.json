@@ -34,6 +34,7 @@
       "company_admin": "Company Dashboard",
       "ops_pic": "Ops PIC Dashboard",
       "finance_pic": "Finance PIC Dashboard",
+      "viewer": "Viewer Dashboard",
       "vendor_company_admin": "Vendor Dashboard",
       "vendor_ops_pic": "Vendor Ops Dashboard",
       "vendor_finance_pic": "Vendor Finance Dashboard",
@@ -161,6 +162,14 @@
       "invoices": "No outstanding invoices.",
       "payments": "No payments yet.",
       "notifications": "No recent activity."
+    },
+    "notificationsPage": {
+      "title": "All Notifications",
+      "description": "Recent activity across your company account.",
+      "back": "Back to Dashboard",
+      "loading": "Loading notifications…",
+      "empty": "No notifications yet.",
+      "page": "Page {page} of {lastPage}"
     },
     "customer": {
       "settings": {

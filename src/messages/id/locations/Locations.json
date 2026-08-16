@@ -3,32 +3,37 @@
     "title": "Locations",
     "subtitle": "Kelola lokasi perusahaan Anda — Head Office, Branch Office, dan Warehouse.",
     "stats": {
-      "total": "Total Lokasi",
+      "total": "Total Locations",
       "headOffice": "Head Office",
       "branchOffice": "Branch Office",
       "warehouse": "Warehouse",
-      "active": "Aktif"
+      "active": "Active"
     },
     "filters": {
-      "search": "Cari berdasarkan nama atau kode",
-      "type": "Tipe",
+      "search": "Cari nama atau kode location",
+      "type": "Location Type",
       "status": "Status",
-      "province": "Provinsi",
-      "city": "Kota",
+      "province": "Province",
+      "city": "City",
+      "allTypes": "Semua Tipe",
+      "allStatus": "Semua Status",
       "loading": "Memuat…",
       "searchProvince": "Cari provinsi",
       "searchCity": "Cari kota",
       "selectProvinceFirst": "Pilih provinsi dulu"
     },
-    "add": "Tambah Location",
+    "add": "Add Location",
     "table": {
-      "code": "Kode",
-      "name": "Nama",
-      "type": "Tipe",
-      "city": "Kota",
+      "type": "Location Type",
+      "name": "Location Name",
+      "code": "Location Code",
+      "city": "City",
       "pic": "PIC",
       "status": "Status",
-      "actions": "Aksi"
+      "actions": "Action",
+      "detail": "Detail",
+      "edit": "Edit",
+      "empty": "Tidak ada location ditemukan."
     },
     "type": {
       "head_office": "Head Office",
@@ -36,30 +41,33 @@
       "warehouse": "Warehouse"
     },
     "status": {
-      "active": "Aktif",
-      "inactive": "Tidak Aktif"
+      "active": "Active",
+      "inactive": "Inactive"
     },
     "form": {
       "title": {
-        "create": "Tambah Location",
+        "create": "Add Location",
         "edit": "Edit Location"
       },
-      "type": "Tipe Location",
-      "name": "Nama Location",
-      "phone": "Telepon",
-      "status": "Status",
-      "addressSection": "Informasi Alamat",
-      "country": "Negara",
-      "province": "Provinsi",
-      "city": "Kota",
-      "district": "Kecamatan",
-      "postalCode": "Kode Pos",
-      "address": "Alamat",
-      "picSection": "Penanggung Jawab",
-      "picName": "Nama PIC",
-      "picEmail": "Email PIC",
-      "picMobile": "Mobile PIC",
-      "save": "Simpan",
+      "infoSection": "Location Information",
+      "type": "Location Type",
+      "name": "Location Name",
+      "code": "Location Code",
+      "codeAutoGenerate": "Auto Generate",
+      "phone": "Location Telephone Number",
+      "status": "Location Status",
+      "addressSection": "Address Information",
+      "country": "Country",
+      "province": "Province",
+      "city": "City",
+      "district": "District",
+      "postalCode": "Postal Code",
+      "address": "Address",
+      "picSection": "PIC Information",
+      "picName": "PIC Name",
+      "picEmail": "PIC Email",
+      "picMobile": "PIC Mobile Number",
+      "save": "Save",
       "saving": "Menyimpan…",
       "errors": {
         "headOfficeExists": "Maksimal 1 Head Office per perusahaan.",
@@ -69,36 +77,35 @@
     "detail": {
       "headerTitle": "Detail Location",
       "sections": {
-        "info": "Informasi Location",
-        "address": "Informasi Alamat",
-        "pic": "Penanggung Jawab",
-        "activities": "Log Aktivitas"
+        "info": "Location Information",
+        "address": "Address Information",
+        "pic": "PIC Information",
+        "activities": "Activity Log"
       },
       "fields": {
-        "code": "Kode",
-        "type": "Tipe",
-        "name": "Nama",
-        "phone": "Telepon",
-        "status": "Status",
-        "createdAt": "Dibuat Pada",
-        "country": "Negara",
-        "province": "Provinsi",
-        "city": "Kota",
-        "district": "Kecamatan",
-        "postalCode": "Kode Pos",
-        "address": "Alamat",
-        "picName": "Nama",
-        "picEmail": "Email",
-        "picMobile": "Mobile"
+        "type": "Location Type",
+        "name": "Location Name",
+        "code": "Location Code",
+        "phone": "Location Telephone Number",
+        "status": "Location Status",
+        "country": "Country",
+        "province": "Province",
+        "city": "City",
+        "district": "District",
+        "postalCode": "Postal Code",
+        "address": "Address",
+        "picName": "PIC Name",
+        "picEmail": "PIC Email",
+        "picMobile": "PIC Mobile Number"
       },
       "actions": {
         "edit": "Edit",
-        "changeStatus": "Ubah Status",
         "back": "Kembali ke Locations"
       }
     },
     "activities": {
-      "title": "Log Aktivitas",
+      "title": "Activity Log",
+      "description": "Perubahan terbaru pada location ini.",
       "empty": "Belum ada aktivitas tercatat.",
       "actor": "oleh {name}"
     },
@@ -108,7 +115,7 @@
       "back": "Kembali ke locations"
     },
     "common": {
-      "cancel": "Batal",
+      "cancel": "Cancel",
       "loading": "Memuat…",
       "error": "Gagal memuat data."
     }

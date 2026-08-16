@@ -38,12 +38,15 @@ import {
   X,
 } from "lucide-react";
 import type { LaravelPaginated } from "@/lib/types-api";
+import { useAuthStore } from "@/lib/store";
 
 type BookingRow = {
   id: number;
   booking_number: string;
   booking_date?: string | null;
   created_at?: string | null;
+  origin_location?: { name?: string; code?: string } | string | null;
+  destination_location?: { name?: string; code?: string } | string | null;
   origin?: { name?: string; code?: string } | string | null;
   destination?: { name?: string; code?: string } | string | null;
   origin_name?: string | null;
@@ -62,6 +65,9 @@ export default function CustomerBookingsListPage() {
   const search = useNextSearchParams();
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "id";
+  const { user } = useAuthStore();
+  const canCreateBooking = ((user?.permissions as string[] | undefined) ?? []).includes("create_bookings")
+    || ((user?.permissions as string[] | undefined) ?? []).includes("manage_bookings");
 
   const searchTerm = search.get("search") ?? "";
   const statusFilter = search.get("status") ?? "";
@@ -184,14 +190,16 @@ export default function CustomerBookingsListPage() {
             <p className="mt-1 text-sm text-balance text-muted-foreground">{t("subtitle")}</p>
           </div>
         </div>
-        <Button
-          type="button"
-          onClick={() => router.push("/dashboard/booking/create")}
-          className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-md"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("createButton")}
-        </Button>
+        {canCreateBooking ? (
+          <Button
+            type="button"
+            onClick={() => router.push("/dashboard/booking/create")}
+            className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-md"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t("createButton")}
+          </Button>
+        ) : null}
       </div>
 
       {/* Stat cards */}
@@ -330,8 +338,8 @@ export default function CustomerBookingsListPage() {
             </TableRow>
           ) : (
             rows.map((row) => {
-              const originName = readLocationName(row.origin) ?? row.origin_name ?? "—";
-              const destName = readLocationName(row.destination) ?? row.destination_name ?? "—";
+              const originName = readLocationName(row.origin_location ?? row.origin) ?? row.origin_name ?? "—";
+              const destName = readLocationName(row.destination_location ?? row.destination) ?? row.destination_name ?? "—";
               const serviceLabel = row.service_type?.name ?? "—";
               const coverage = row.shipment_coverage ? SHIPMENT_COVERAGE_LABELS[row.shipment_coverage] ?? "—" : "—";
               const bookingDate = row.booking_date ?? row.created_at ?? null;

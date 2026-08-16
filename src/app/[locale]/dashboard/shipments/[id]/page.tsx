@@ -89,7 +89,7 @@ export default function CustomerShipmentDetailPage({ params }: PageProps) {
   };
   const documents = (data.documents as DocumentItem[] | undefined) ?? [];
   const cargo = data.cargo as CargoData | undefined;
-  const trackings = (data.trackings as TrackingEntry[] | undefined) ?? [];
+  const trackings = (data.tracking_timeline as TrackingEntry[] | undefined) ?? [];
   const activity = (data.activity_log as ActivityEntry[] | undefined) ?? [];
 
   const booking = (data.booking as Record<string, unknown> | undefined) ?? {};
@@ -112,6 +112,7 @@ export default function CustomerShipmentDetailPage({ params }: PageProps) {
           display_number: data.display_number as string | undefined,
           shipment_number: data.shipment_number as string | undefined,
           waybill_number: data.waybill_number as string | undefined,
+          booking_id: booking.id as number | string | undefined,
           booking_number: booking.booking_number as string | undefined,
           service_type_name: serviceType?.name ?? serviceType?.code,
           shipment_coverage: data.shipment_coverage as string | undefined,
