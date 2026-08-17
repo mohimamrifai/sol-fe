@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { MasterTableShell } from "@/components/shared/master-table-shell";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { useMasterPageActions } from "@/components/shared/master-page-actions";
 import { MasterRowActions } from "@/components/shared/master-row-actions";
 import { actionsCellClass, actionsHeadClass } from "@/components/shared/master-table-classes";
@@ -35,6 +36,8 @@ import { Ban, CalendarClock, CheckCircle2, Clock, Plus, Train } from "lucide-rea
 import { useTranslations } from "next-intl";
 
 const PER_PAGE = 10;
+const BUSINESS_ENTITY_KEYS = BUSINESS_ENTITY_OPTIONS.map((o) => o.value);
+const STATUS_KEYS = TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => s.value);
 
 function statusBadgeClass(status: string): string {
   switch (status) {
@@ -85,14 +88,58 @@ export default function MasterTrainSchedulePage() {
     remark: "",
   });
 
+  const statusLabel = useCallback(
+    (value: string) => {
+      const key = value as (typeof STATUS_KEYS)[number];
+      if (t.has(`statuses.${key}`)) return t(`statuses.${key}` as "statuses.upcoming");
+      return value;
+    },
+    [t]
+  );
+
+  const businessEntityFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allBusinessEntity") },
+      ...BUSINESS_ENTITY_KEYS.map((key) => ({
+        value: key,
+        label: t(`businessEntities.${key}` as "businessEntities.company"),
+      })),
+    ],
+    [t]
+  );
+
   const routeFilterOptions = useMemo(
     () => [{ value: "all", label: t("filters.allRoutes") }, ...routes.map((r) => ({ value: String(r.id), label: r.label }))],
     [routes, t]
   );
 
   const statusFilterOptions = useMemo(
-    () => [{ value: "all", label: tc("filters.allStatus") }, ...TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))],
-    [tc]
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      ...STATUS_KEYS.map((key) => ({
+        value: key,
+        label: t(`statuses.${key}` as "statuses.upcoming"),
+      })),
+    ],
+    [t, tc]
+  );
+
+  const businessEntityFormOptions = useMemo(
+    () =>
+      BUSINESS_ENTITY_KEYS.map((key) => ({
+        value: key,
+        label: t(`businessEntities.${key}` as "businessEntities.company"),
+      })),
+    [t]
+  );
+
+  const statusFormOptions = useMemo(
+    () =>
+      STATUS_KEYS.map((key) => ({
+        value: key,
+        label: t(`statuses.${key}` as "statuses.upcoming"),
+      })),
+    [t]
   );
 
   useEffect(() => {
@@ -203,97 +250,114 @@ export default function MasterTrainSchedulePage() {
         ]}
       />
 
-      <MasterTableShell
-        title={t("listTitle")}
-        description={t("search")}
-        loading={loading}
-        toolbar={
-          <div className="flex flex-col gap-3">
-            <TableToolbar
-              searchPlaceholder={t("search")}
-              searchValue={search}
-              onSearchChange={setSearch}
-              filterLabel={t("filters.businessEntity")}
-              filterValue={businessEntityFilter}
-              onFilterChange={setBusinessEntityFilter}
-              filterOptions={[{ value: "all", label: tc("filters.allStatus") }, ...BUSINESS_ENTITY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))]}
-              filter2Label={t("filters.route")}
-              filter2Value={routeFilter}
-              onFilter2Change={setRouteFilter}
-              filter2Options={routeFilterOptions}
-            />
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">{tc("filters.status")}</Label>
-                <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-                  <SelectTrigger className="h-9 w-[160px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusFilterOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">{t("filters.departureFrom")}</Label>
-                <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px]" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">{t("filters.departureTo")}</Label>
-                <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px]" />
-              </div>
-            </div>
-          </div>
-        }
-      >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-14">{tc("table.no")}</TableHead>
-              <TableHead>{t("columns.trainNo")}</TableHead>
-              <TableHead>{t("columns.route")}</TableHead>
-              <TableHead>{t("columns.departure")}</TableHead>
-              <TableHead>{t("columns.eta")}</TableHead>
-              <TableHead>{tc("table.status")}</TableHead>
-              <TableHead>{t("columns.assignedShipments")}</TableHead>
-              <TableHead className={actionsHeadClass}>
-                <span className="max-md:sr-only">{tc("table.actions")}</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((r, i) => {
-              const status = String(r.status ?? "upcoming");
-              return (
-                <TableRow key={String(r.id)}>
-                  <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
-                  <TableCell className="font-mono text-xs">{String(r.train_number ?? "—")}</TableCell>
-                  <TableCell>{String(r.route ?? "—")}</TableCell>
-                  <TableCell>{String(r.departure_at ?? r.departure ?? "—")}</TableCell>
-                  <TableCell>{String(r.estimated_arrival_at ?? r.eta ?? "—")}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusBadgeClass(status)}>
-                      {TRAIN_SCHEDULE_STATUS_OPTIONS.find((s) => s.value === status)?.label ?? status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="tabular-nums">{String(r.assigned_shipments_count ?? r.assigned_shipments ?? 0)}</TableCell>
-                  <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
-                    <MasterRowActions entityLabel="train schedule" canManage onView={() => goDetail(Number(r.id))} />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-          {rows.length === 0 ? <TableCaption className="text-xs">{tc("table.empty")}</TableCaption> : null}
-        </Table>
-        {meta ? (
-          <PaginationBar currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} from={meta.from} to={meta.to} onPageChange={setPage} />
-        ) : null}
-      </MasterTableShell>
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableToolbar searchPlaceholder={t("search")} searchValue={search} onSearchChange={setSearch} />
+          <AdminListFilters
+            selects={[
+              {
+                id: "ts-business-entity",
+                label: t("filters.businessEntity"),
+                value: businessEntityFilter,
+                onChange: setBusinessEntityFilter,
+                options: businessEntityFilterOptions,
+              },
+              {
+                id: "ts-route",
+                label: t("filters.route"),
+                value: routeFilter,
+                onChange: setRouteFilter,
+                options: routeFilterOptions,
+              },
+              {
+                id: "ts-status",
+                label: tc("table.status"),
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statusFilterOptions,
+              },
+            ]}
+            dates={[
+              {
+                id: "ts-departure-from",
+                label: `${t("filters.departureDate")} (${tc("filters.from")})`,
+                value: dateFrom,
+                onChange: setDateFrom,
+              },
+              {
+                id: "ts-departure-to",
+                label: `${t("filters.departureDate")} (${tc("filters.to")})`,
+                value: dateTo,
+                onChange: setDateTo,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1">
+          <CardTitle>{t("listTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {loading ? (
+            <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-14">{tc("table.no")}</TableHead>
+                    <TableHead>{t("columns.trainNo")}</TableHead>
+                    <TableHead>{t("columns.route")}</TableHead>
+                    <TableHead>{t("columns.departure")}</TableHead>
+                    <TableHead>{t("columns.eta")}</TableHead>
+                    <TableHead>{tc("table.status")}</TableHead>
+                    <TableHead>{t("columns.assignedShipments")}</TableHead>
+                    <TableHead className={actionsHeadClass}>
+                      <span className="max-md:sr-only">{tc("table.actions")}</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((r, i) => {
+                    const status = String(r.status ?? "upcoming");
+                    return (
+                      <TableRow key={String(r.id)}>
+                        <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
+                        <TableCell className="font-mono text-xs">{String(r.train_number ?? "—")}</TableCell>
+                        <TableCell>{String(r.route ?? "—")}</TableCell>
+                        <TableCell>{String(r.departure_at ?? r.departure ?? "—")}</TableCell>
+                        <TableCell>{String(r.estimated_arrival_at ?? r.eta ?? "—")}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusBadgeClass(status)}>
+                            {statusLabel(status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="tabular-nums">{String(r.assigned_shipments_count ?? r.assigned_shipments ?? 0)}</TableCell>
+                        <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
+                          <MasterRowActions entityLabel={t("entityLabel")} canManage onView={() => goDetail(Number(r.id))} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+                {rows.length === 0 ? (
+                  <TableCaption className="text-xs">{tc("table.empty")}</TableCaption>
+                ) : (
+                  <TableCaption className="text-xs">{tc("table.rowsOnPage")}</TableCaption>
+                )}
+              </Table>
+              {meta ? (
+                <PaginationBar currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} from={meta.from} to={meta.to} onPageChange={setPage} />
+              ) : null}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -308,7 +372,7 @@ export default function MasterTrainSchedulePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {BUSINESS_ENTITY_OPTIONS.map((o) => (
+                  {businessEntityFormOptions.map((o) => (
                     <SelectItem key={o.value} value={o.value}>
                       {o.label}
                     </SelectItem>
@@ -358,7 +422,7 @@ export default function MasterTrainSchedulePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => (
+                  {statusFormOptions.map((s) => (
                     <SelectItem key={s.value} value={s.value}>
                       {s.label}
                     </SelectItem>

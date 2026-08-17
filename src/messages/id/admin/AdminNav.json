@@ -35,7 +35,7 @@
       "route": "Route",
       "station": "Station",
       "yard": "Yard",
-      "trainSchedule": "Train Schedule",
+      "trainSchedule": "Jadwal Kereta",
       "containerType": "Container Type",
       "cargoCategory": "Cargo Category",
       "serviceType": "Service Type",

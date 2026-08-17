@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ import {
   fetchAdminTrainSchedule,
   updateAdminTrainSchedule,
 } from "@/lib/admin-api";
-import { BUSINESS_ENTITY_OPTIONS, TRAIN_SCHEDULE_STATUS_OPTIONS, trainScheduleStatusLabel } from "@/lib/admin-fsd-options";
+import { BUSINESS_ENTITY_OPTIONS, TRAIN_SCHEDULE_STATUS_OPTIONS } from "@/lib/admin-fsd-options";
 import { ApiError } from "@/lib/api-client";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { Train } from "lucide-react";
@@ -43,6 +43,27 @@ export default function TrainScheduleDetailPage() {
   const basePath = `/${locale}/dashboard/admin/master/train-schedule`;
   const t = useTranslations("AdminFsdMaster.trainSchedule");
   const tc = useTranslations("AdminCommon");
+
+  const statusLabel = (value: string) => {
+    const key = value as (typeof TRAIN_SCHEDULE_STATUS_OPTIONS)[number]["value"];
+    if (t.has(`statuses.${key}`)) return t(`statuses.${key}` as "statuses.upcoming");
+    return value;
+  };
+
+  const businessEntityLabel = (value: string) => {
+    const key = value as (typeof BUSINESS_ENTITY_OPTIONS)[number]["value"];
+    if (t.has(`businessEntities.${key}`)) return t(`businessEntities.${key}` as "businessEntities.company");
+    return value;
+  };
+
+  const statusFormOptions = useMemo(
+    () =>
+      TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => ({
+        value: s.value,
+        label: t(`statuses.${s.value}` as "statuses.upcoming"),
+      })),
+    [t]
+  );
 
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [routes, setRoutes] = useState<{ id: number; label: string }[]>([]);
@@ -144,7 +165,7 @@ export default function TrainScheduleDetailPage() {
       />
 
       <Badge variant="outline" className="w-fit">
-        {trainScheduleStatusLabel(status)}
+        {statusLabel(status)}
       </Badge>
 
       <Card>
@@ -156,7 +177,7 @@ export default function TrainScheduleDetailPage() {
             <>
               <ReadonlyField
                 label={t("fields.businessEntity")}
-                value={BUSINESS_ENTITY_OPTIONS.find((o) => o.value === String(detail.business_entity ?? ""))?.label ?? String(detail.business_entity ?? "—")}
+                value={businessEntityLabel(String(detail.business_entity ?? "")) || "—"}
               />
               <ReadonlyField label={t("fields.trainNumber")} value={String(detail.train_number ?? "—")} />
               <ReadonlyField label={t("fields.route")} value={String(detail.route ?? "—")} />
@@ -205,7 +226,7 @@ export default function TrainScheduleDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {TRAIN_SCHEDULE_STATUS_OPTIONS.map((s) => (
+                    {statusFormOptions.map((s) => (
                       <SelectItem key={s.value} value={s.value}>
                         {s.label}
                       </SelectItem>

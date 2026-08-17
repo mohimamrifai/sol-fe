@@ -72,131 +72,144 @@
     }
   },
   "AdminFsdOperations": {
-    "listTitle": "Daftar Task Operasi",
+    "listTitle": "Daftar Tugas Operasi",
+    "filterTitle": "Filter",
     "searchPlaceholder": "Cari shipment, booking, customer…",
-    "empty": "Tidak ada task operasi.",
+    "empty": "Tidak ada tugas operasi.",
     "stats": {
-      "waiting": "Waiting",
-      "inProgress": "In Progress",
-      "completedToday": "Completed Today",
-      "overdue": "Overdue",
-      "cancelled": "Cancelled"
+      "waiting": "Menunggu",
+      "inProgress": "Dalam Proses",
+      "completedToday": "Selesai Hari Ini",
+      "overdue": "Terlambat",
+      "cancelled": "Dibatalkan"
+    },
+    "statuses": {
+      "waiting": "Menunggu",
+      "in_progress": "Dalam Proses",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
     },
     "filters": {
       "allVendor": "Semua Vendor",
-      "allOrigin": "Semua Origin"
+      "allOrigin": "Semua Asal",
+      "origin": "Asal",
+      "plannedDate": "Tanggal Rencana"
     },
     "columns": {
       "shipment": "Shipment",
       "booking": "Booking",
       "customer": "Customer",
-      "plannedDate": "Planned Date",
+      "plannedDate": "Tanggal Rencana",
       "vendor": "Vendor"
     },
     "actions": {
-      "start": "Start",
-      "complete": "Complete",
+      "start": "Mulai",
+      "complete": "Selesai",
       "started": "Operasi dimulai.",
       "completed": "Operasi selesai.",
-      "remarkSaved": "Remark disimpan.",
-      "uploadDocument": "Upload Dokumen",
+      "remarkSaved": "Catatan disimpan.",
+      "uploadDocument": "Unggah Dokumen",
       "documentUploaded": "Dokumen diunggah."
     },
     "detail": {
-      "taskInfo": "Informasi Task",
+      "taskInfo": "Informasi Tugas",
       "shipmentInfo": "Informasi Shipment",
       "pickupInfo": "Informasi Pickup/Delivery",
-      "cargoInfo": "Informasi Cargo",
+      "cargoInfo": "Informasi Kargo",
       "checklist": "Checklist",
-      "vendorJobOrder": "Vendor Job Order",
-      "remark": "Remark",
+      "vendorJobOrder": "Job Order Vendor",
+      "remark": "Catatan",
       "documents": "Dokumen",
       "noDocuments": "Belum ada dokumen.",
-      "actualAt": "Actual At"
+      "actualAt": "Waktu Aktual"
     },
     "pages": {
-      "pickup": "Pick Up",
-      "pickupDesc": "Task pick up barang dari customer.",
+      "pickup": "Pickup",
+      "pickupDesc": "Tugas pengambilan barang dari customer.",
       "gateInOrigin": "Gate In Origin",
-      "gateInOriginDesc": "Task gate in di origin yard/station.",
+      "gateInOriginDesc": "Tugas gate in di yard/stasiun asal.",
       "loading": "Loading",
-      "loadingDesc": "Task loading container ke kereta.",
-      "trainDeparture": "Train Departure",
-      "trainDepartureDesc": "Task keberangkatan kereta.",
-      "trainArrival": "Train Arrival",
-      "trainArrivalDesc": "Task kedatangan kereta.",
+      "loadingDesc": "Tugas loading kontainer ke kereta.",
+      "trainDeparture": "Keberangkatan Kereta",
+      "trainDepartureDesc": "Tugas keberangkatan kereta.",
+      "trainArrival": "Kedatangan Kereta",
+      "trainArrivalDesc": "Tugas kedatangan kereta.",
       "gateOutDestination": "Gate Out Destination",
-      "gateOutDestinationDesc": "Task gate out di destination.",
+      "gateOutDestinationDesc": "Tugas gate out di tujuan.",
       "delivery": "Delivery",
-      "deliveryDesc": "Task delivery ke customer.",
+      "deliveryDesc": "Tugas pengiriman ke customer.",
       "proofOfDelivery": "Proof of Delivery",
-      "proofOfDeliveryDesc": "Task konfirmasi POD."
+      "proofOfDeliveryDesc": "Tugas konfirmasi POD."
     },
     "pod": {
       "title": "Proof of Delivery",
       "description": "Kelola POD shipment door-to-door.",
-      "search": "Cari Shipment No, Customer, POD No…",
+      "listTitle": "Daftar POD",
+      "filterTitle": "Filter",
+      "search": "Cari no. shipment, customer, POD…",
+      "empty": "Tidak ada data POD.",
       "signedPodRequired": "Signed POD wajib diunggah.",
       "submitted": "POD berhasil disubmit.",
       "verified": "POD berhasil diverifikasi.",
       "rejected": "POD ditolak.",
       "stats": {
-        "waiting": "Waiting POD",
-        "received": "POD Received",
-        "verified": "POD Verified",
-        "rejected": "Rejected"
+        "waiting": "Menunggu POD",
+        "received": "POD Diterima",
+        "verified": "POD Diverifikasi",
+        "rejected": "Ditolak"
       },
       "filters": {
-        "podDateFrom": "POD Date From",
-        "podDateTo": "POD Date To"
+        "podDate": "Tanggal POD",
+        "podDateFrom": "Tanggal POD Dari",
+        "podDateTo": "Tanggal POD Sampai"
       },
       "columns": {
-        "shipmentNo": "Shipment No",
+        "shipmentNo": "No. Shipment",
         "customer": "Customer",
-        "deliveryDate": "Delivery Date",
-        "podDate": "POD Date"
+        "deliveryDate": "Tanggal Delivery",
+        "podDate": "Tanggal POD"
       },
       "status": {
-        "waiting_pod": "Waiting POD",
-        "received": "Received",
-        "verified": "Verified",
-        "rejected": "Rejected"
+        "waiting_pod": "Menunggu POD",
+        "received": "Diterima",
+        "verified": "Diverifikasi",
+        "rejected": "Ditolak"
       },
       "sections": {
-        "shipment": "Shipment Information",
-        "podInfo": "Proof of Delivery Information",
-        "verification": "Verification",
-        "activityLog": "Activity Log"
+        "shipment": "Informasi Shipment",
+        "podInfo": "Informasi Proof of Delivery",
+        "verification": "Verifikasi",
+        "activityLog": "Log Aktivitas"
       },
       "fields": {
-        "podNumber": "POD Number",
-        "serviceType": "Service Type",
-        "coverage": "Shipment Coverage",
-        "origin": "Origin",
-        "destination": "Destination",
-        "receiverName": "Receiver Name",
-        "receiverPosition": "Receiver Position",
-        "receivedAt": "Receive Date & Time",
-        "remark": "Remark",
+        "podNumber": "No. POD",
+        "serviceType": "Tipe Layanan",
+        "coverage": "Cakupan Shipment",
+        "origin": "Asal",
+        "destination": "Tujuan",
+        "receiverName": "Nama Penerima",
+        "receiverPosition": "Jabatan Penerima",
+        "receivedAt": "Tanggal & Waktu Terima",
+        "remark": "Catatan",
         "signedPod": "Signed POD",
-        "deliveryPhoto": "Delivery Photo",
+        "deliveryPhoto": "Foto Delivery",
         "viewSignedPod": "Lihat Signed POD",
-        "verificationStatus": "Verification Status",
-        "verifiedBy": "Verified By",
-        "verifiedAt": "Verified Date",
-        "verificationNotes": "Verification Notes"
+        "verificationStatus": "Status Verifikasi",
+        "verifiedBy": "Diverifikasi Oleh",
+        "verifiedAt": "Tanggal Verifikasi",
+        "verificationNotes": "Catatan Verifikasi"
       },
       "actions": {
         "submit": "Submit POD",
-        "verify": "Verify POD",
-        "reject": "Reject"
+        "verify": "Verifikasi POD",
+        "reject": "Tolak"
       }
     }
   },
   "AdminFsdMaster": {
     "route": {
       "listTitle": "Daftar Route",
-      "search": "Cari route…",
+      "search": "",
       "add": "Tambah Route",
       "edit": "Edit Route",
       "saved": "Route disimpan.",
@@ -205,7 +218,7 @@
     },
     "station": {
       "listTitle": "Daftar Station",
-      "search": "Cari station…",
+      "search": "",
       "add": "Tambah Station",
       "edit": "Edit Station",
       "saved": "Station disimpan.",
@@ -214,7 +227,7 @@
     },
     "yard": {
       "listTitle": "Daftar Yard",
-      "search": "Cari yard…",
+      "search": "",
       "add": "Tambah Yard",
       "edit": "Edit Yard",
       "saved": "Yard disimpan.",
@@ -223,7 +236,7 @@
     },
     "additionalCharge": {
       "listTitle": "Additional Charges",
-      "search": "Cari charge…",
+      "search": "",
       "add": "Tambah Charge",
       "edit": "Edit Charge",
       "saved": "Additional charge disimpan.",
@@ -258,7 +271,7 @@
     },
     "customerPricing": {
       "listTitle": "Customer Pricing",
-      "search": "Cari customer atau rute…",
+      "search": "",
       "add": "Tambah Pricing",
       "edit": "Edit Pricing",
       "saved": "Customer pricing disimpan.",
@@ -273,58 +286,73 @@
       "chargeAmount": "Amount"
     },
     "trainSchedule": {
-      "listTitle": "Daftar Train Schedule",
+      "listTitle": "Daftar Jadwal Kereta",
+      "subtitle": "Kelola jadwal keberangkatan kereta cargo.",
+      "filterTitle": "Filter",
       "search": "Cari nomor kereta…",
-      "add": "Tambah Train Schedule",
-      "edit": "Edit Train Schedule",
-      "saved": "Train schedule disimpan.",
-      "cancelled": "Train schedule dibatalkan.",
-      "cancelSchedule": "Batalkan Schedule",
+      "entityLabel": "jadwal kereta",
+      "add": "Tambah Jadwal Kereta",
+      "edit": "Edit Jadwal Kereta",
+      "saved": "Jadwal kereta disimpan.",
+      "cancelled": "Jadwal kereta dibatalkan.",
+      "cancelSchedule": "Batalkan Jadwal",
       "stats": {
-        "total": "Total Schedule",
-        "upcoming": "Upcoming",
-        "departed": "Departed",
-        "completed": "Completed",
-        "cancelled": "Cancelled"
+        "total": "Total Jadwal",
+        "upcoming": "Akan Berangkat",
+        "departed": "Berangkat",
+        "completed": "Selesai",
+        "cancelled": "Dibatalkan"
+      },
+      "statuses": {
+        "upcoming": "Akan Berangkat",
+        "departed": "Berangkat",
+        "completed": "Selesai",
+        "cancelled": "Dibatalkan"
+      },
+      "businessEntities": {
+        "company": "Perusahaan",
+        "individual": "Individu"
       },
       "filters": {
-        "businessEntity": "Business Entity",
-        "route": "Route",
-        "allRoutes": "Semua Route",
-        "departureFrom": "Departure From",
-        "departureTo": "Departure To"
+        "businessEntity": "Entitas Bisnis",
+        "allBusinessEntity": "Semua Entitas",
+        "route": "Rute",
+        "allRoutes": "Semua Rute",
+        "departureDate": "Tanggal Keberangkatan",
+        "departureFrom": "Keberangkatan Dari",
+        "departureTo": "Keberangkatan Sampai"
       },
       "columns": {
-        "trainNo": "Train No",
-        "route": "Route",
-        "departure": "Departure",
-        "eta": "ETA",
-        "assignedShipments": "Assigned Shipment"
+        "trainNo": "No. Kereta",
+        "route": "Rute",
+        "departure": "Keberangkatan",
+        "eta": "Perkiraan Tiba",
+        "assignedShipments": "Shipment Terassign"
       },
       "fields": {
-        "businessEntity": "Business Entity",
-        "trainNumber": "Train Number",
-        "route": "Route",
-        "departure": "Departure Date & Time",
-        "eta": "Estimated Arrival",
-        "maxContainers": "Maximum Container",
-        "remark": "Remark"
+        "businessEntity": "Entitas Bisnis",
+        "trainNumber": "Nomor Kereta",
+        "route": "Rute",
+        "departure": "Tanggal & Waktu Keberangkatan",
+        "eta": "Perkiraan Tiba",
+        "maxContainers": "Maks. Kontainer",
+        "remark": "Catatan"
       },
       "detail": {
-        "general": "General Information",
-        "shipments": "Assigned Shipment",
-        "containers": "Assigned Container",
-        "shipmentNo": "Shipment No",
+        "general": "Informasi Umum",
+        "shipments": "Shipment Terassign",
+        "containers": "Kontainer Terassign",
+        "shipmentNo": "No. Shipment",
         "customer": "Customer",
-        "service": "Service",
-        "container": "Container",
-        "containerNo": "Container No",
-        "type": "Type"
+        "service": "Layanan",
+        "container": "Kontainer",
+        "containerNo": "No. Kontainer",
+        "type": "Tipe"
       }
     },
     "containerType": {
       "listTitle": "Daftar Container Type",
-      "search": "Cari kode atau nama…",
+      "search": "",
       "add": "Tambah Container Type",
       "deleted": "Container type dihapus.",
       "deleteTitle": "Hapus container type?",
@@ -342,7 +370,7 @@
     },
     "serviceType": {
       "listTitle": "Daftar Service Type",
-      "search": "Cari kode atau nama…",
+      "search": "",
       "add": "Tambah Service Type",
       "deleted": "Service type dihapus.",
       "deleteTitle": "Hapus service type?",

@@ -73,6 +73,7 @@
   },
   "AdminFsdOperations": {
     "listTitle": "Operation Task List",
+    "filterTitle": "Filters",
     "searchPlaceholder": "Search shipment, booking, customer…",
     "empty": "No operation tasks.",
     "stats": {
@@ -82,9 +83,17 @@
       "overdue": "Overdue",
       "cancelled": "Cancelled"
     },
+    "statuses": {
+      "waiting": "Waiting",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
     "filters": {
       "allVendor": "All Vendors",
-      "allOrigin": "All Origins"
+      "allOrigin": "All Origins",
+      "origin": "Origin",
+      "plannedDate": "Planned Date"
     },
     "columns": {
       "shipment": "Shipment",
@@ -135,7 +144,10 @@
     "pod": {
       "title": "Proof of Delivery",
       "description": "Manage door-to-door shipment POD workflow.",
+      "listTitle": "POD List",
+      "filterTitle": "Filters",
       "search": "Search Shipment No, Customer, POD No…",
+      "empty": "No POD records yet.",
       "signedPodRequired": "Signed POD is required.",
       "submitted": "POD submitted successfully.",
       "verified": "POD verified successfully.",
@@ -147,6 +159,7 @@
         "rejected": "Rejected"
       },
       "filters": {
+        "podDate": "POD Date",
         "podDateFrom": "POD Date From",
         "podDateTo": "POD Date To"
       },
@@ -274,7 +287,10 @@
     },
     "trainSchedule": {
       "listTitle": "Train Schedule List",
+      "subtitle": "Manage cargo train departure schedules.",
+      "filterTitle": "Filters",
       "search": "Search train number…",
+      "entityLabel": "train schedule",
       "add": "Add Train Schedule",
       "edit": "Edit Train Schedule",
       "saved": "Train schedule saved.",
@@ -287,10 +303,22 @@
         "completed": "Completed",
         "cancelled": "Cancelled"
       },
+      "statuses": {
+        "upcoming": "Upcoming",
+        "departed": "Departed",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "businessEntities": {
+        "company": "Company",
+        "individual": "Individual"
+      },
       "filters": {
         "businessEntity": "Business Entity",
+        "allBusinessEntity": "All Entities",
         "route": "Route",
         "allRoutes": "All Routes",
+        "departureDate": "Departure Date",
         "departureFrom": "Departure From",
         "departureTo": "Departure To"
       },

@@ -1,17 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
+import { AdminListFilters } from "@/components/data-table/admin-list-filters";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { actionsCellClass, actionsHeadClass, ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
@@ -62,6 +60,42 @@ export function OperationTaskListPage({ operationType, title, description, baseP
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const statusLabel = useCallback(
+    (value: string) => {
+      const key = value.toLowerCase().replace(/\s+/g, "_") as (typeof STATUS_OPTIONS)[number];
+      if (t.has(`statuses.${key}`)) return t(`statuses.${key}` as "statuses.waiting");
+      return value;
+    },
+    [t]
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      ...STATUS_OPTIONS.map((key) => ({
+        value: key,
+        label: t(`statuses.${key}` as "statuses.waiting"),
+      })),
+    ],
+    [t, tc]
+  );
+
+  const vendorFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allVendor") },
+      ...vendors.map((v) => ({ value: String(v.id), label: v.label })),
+    ],
+    [t, vendors]
+  );
+
+  const originFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allOrigin") },
+      ...locations.map((l) => ({ value: String(l.id), label: l.label })),
+    ],
+    [t, locations]
+  );
 
   useEffect(() => {
     setPage(1);
@@ -129,57 +163,58 @@ export function OperationTaskListPage({ operationType, title, description, baseP
       <AdminStatsCards className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" cards={statCards} />
 
       <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="space-y-1 pb-3">
+          <CardTitle className="text-base">{t("filterTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
+          <AdminListFilters
+            selects={[
+              {
+                id: "op-status",
+                label: tc("table.status"),
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statusFilterOptions,
+              },
+              {
+                id: "op-vendor",
+                label: t("columns.vendor"),
+                value: vendorFilter,
+                onChange: setVendorFilter,
+                options: vendorFilterOptions,
+              },
+              {
+                id: "op-origin",
+                label: t("filters.origin"),
+                value: originFilter,
+                onChange: setOriginFilter,
+                options: originFilterOptions,
+              },
+            ]}
+            dates={[
+              {
+                id: "op-date-from",
+                label: `${t("filters.plannedDate")} (${tc("filters.from")})`,
+                value: dateFrom,
+                onChange: setDateFrom,
+              },
+              {
+                id: "op-date-to",
+                label: `${t("filters.plannedDate")} (${tc("filters.to")})`,
+                value: dateTo,
+                onChange: setDateTo,
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="space-y-1">
           <CardTitle>{t("listTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
-          <div className="flex flex-wrap gap-3">
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-40">
-                <SelectValue placeholder={tc("table.status")}>
-                  {statusFilter === "all" ? tc("filters.allStatus") : statusFilter}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tc("filters.allStatus")}</SelectItem>
-                {STATUS_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Vendor">
-                  {vendorFilter === "all" ? t("filters.allVendor") : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allVendor")}</SelectItem>
-                {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={originFilter} onValueChange={(v) => v && setOriginFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Origin">
-                  {originFilter === "all" ? t("filters.allOrigin") : locations.find((l) => String(l.id) === originFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allOrigin")}</SelectItem>
-                {locations.map((l) => <SelectItem key={l.id} value={String(l.id)}>{l.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">{tc("filters.from")}</Label>
-                <Input className="h-9 w-36" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">{tc("filters.to")}</Label>
-                <Input className="h-9 w-36" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-              </div>
-            </div>
-          </div>
-
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -208,7 +243,11 @@ export function OperationTaskListPage({ operationType, title, description, baseP
                       <TableCell className="font-medium">{String(r.customer ?? "—")}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{String(r.planned_date ?? "—")}</TableCell>
                       <TableCell>{String(r.vendor ?? "—")}</TableCell>
-                      <TableCell><Badge variant="outline">{String(r.status_label ?? r.status ?? "—")}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {r.status ? statusLabel(String(r.status)) : String(r.status_label ?? "—")}
+                        </Badge>
+                      </TableCell>
                       <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                         <div className="flex justify-end">
                           <DropdownMenu>
