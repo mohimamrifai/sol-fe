@@ -149,8 +149,7 @@ export function InvoiceEditDialog({
           <DialogTitle>Edit invoice</DialogTitle>
           <DialogDescription>
             Data shipment, perusahaan, tanggal terbit, dan item baris bersifat tetap setelah invoice dibuat. Yang
-            dapat diubah: <strong>jatuh tempo</strong>, <strong>status</strong>, dan <strong>catatan</strong> (sesuai
-            API admin).
+            dapat diubah: <strong>jatuh tempo</strong>, <strong>status</strong>, dan <strong>catatan.</strong>
           </DialogDescription>
         </DialogHeader>
         {error ? (

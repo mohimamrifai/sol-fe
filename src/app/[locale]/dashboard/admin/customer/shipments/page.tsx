@@ -214,6 +214,7 @@ export default function AdminShipmentsPage() {
             filterOptions={shipmentStatusFilters}
           />
           <AdminListFilters
+            defaultSearchPlaceholder={t("searchPlaceholder")}
             selects={[
               {
                 id: "shipment-company",
@@ -221,6 +222,7 @@ export default function AdminShipmentsPage() {
                 value: companyFilter,
                 onChange: setCompanyFilter,
                 options: masterSelectOptions(masters.companies, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "shipment-service",
@@ -228,6 +230,7 @@ export default function AdminShipmentsPage() {
                 value: serviceTypeFilter,
                 onChange: setServiceTypeFilter,
                 options: masterSelectOptions(masters.serviceTypes, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "shipment-coverage",
@@ -242,6 +245,7 @@ export default function AdminShipmentsPage() {
                 value: originFilter,
                 onChange: setOriginFilter,
                 options: masterSelectOptions(masters.locations, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "shipment-destination",
@@ -249,6 +253,7 @@ export default function AdminShipmentsPage() {
                 value: destinationFilter,
                 onChange: setDestinationFilter,
                 options: masterSelectOptions(masters.locations, tc("filters.all")),
+                searchable: true,
               },
             ]}
             dates={[

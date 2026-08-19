@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
+import { resolvePaymentMethodLabel } from "@/lib/payment-utils";
 import { cn } from "@/lib/utils";
 import { useInvoiceStatusLabel, usePaymentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
@@ -53,6 +54,7 @@ function rowLabel(label: string, value: ReactNode, className?: string) {
 
 export function InvoiceDetailView({ data }: { data: Inv | null }) {
   const t = useTranslations("AdminInvoices");
+  const tMethod = useTranslations("Payments.paymentMethod");
   const invoiceStatusLabel = useInvoiceStatusLabel();
   const paymentStatusLabel = usePaymentStatusLabel();
 
@@ -212,14 +214,20 @@ export function InvoiceDetailView({ data }: { data: Inv | null }) {
                       : `pay-${idx}`;
                 const paidAt = p.paid_at ? fmtDate(p.paid_at) : "—";
                 const paySt = String(p.status ?? "");
+                const methodLabel = resolvePaymentMethodLabel(
+                  {
+                    method: p.method as string | null | undefined,
+                    payment_method: p.payment_method as string | null | undefined,
+                    payment_type: p.payment_type as string | null | undefined,
+                  },
+                  (key) => tMethod(key)
+                );
                 return (
                   <li
                     key={pid}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm"
                   >
-                    <span className="text-muted-foreground">
-                      {String(p.payment_type ?? (paySt ? paymentStatusLabel(paySt) : t("detail.payments")))}
-                    </span>
+                    <span className="text-muted-foreground">{methodLabel}</span>
                     <span className="font-medium tabular-nums">{fmtIdr(p.amount)}</span>
                     <span className="w-full text-xs text-muted-foreground sm:w-auto sm:text-right">
                       {paidAt} · {paySt ? paymentStatusLabel(paySt) : "—"}

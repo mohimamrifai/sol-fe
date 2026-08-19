@@ -236,6 +236,7 @@ export default function AdminPaymentsPage() {
             filterOptions={paymentStatusFilters}
           />
           <AdminListFilters
+            defaultSearchPlaceholder={t("searchPlaceholder")}
             selects={[
               {
                 id: "payment-company",
@@ -243,6 +244,7 @@ export default function AdminPaymentsPage() {
                 value: companyFilter,
                 onChange: setCompanyFilter,
                 options: masterSelectOptions(masters.companies, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "payment-method",

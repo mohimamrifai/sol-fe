@@ -29,11 +29,25 @@ import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-
 import { AttachmentSection } from "@/components/dashboard/booking/create/attachment-section";
 import { AddOnServiceSection } from "@/components/dashboard/admin/bookings/create/add-on-service-section";
 import { useAdminBookingForm } from "@/hooks/use-admin-booking-form";
+import { useTranslations } from "next-intl";
+
+const SHIPMENT_COVERAGE_VALUES = [
+  "door_to_door",
+  "door_to_port",
+  "port_to_door",
+  "port_to_port",
+] as const;
 
 export default function AdminCreateBookingPage() {
   const router = useRouter();
+  const t = useTranslations("AdminBookings");
   
   const form = useAdminBookingForm();
+
+  const coverageLabel = (value: string) =>
+    (SHIPMENT_COVERAGE_VALUES as readonly string[]).includes(value)
+      ? t(`coverageOptions.${value}` as Parameters<typeof t>[0])
+      : value.replace(/_/g, " ");
 
   const buildPayload = (asDraft: boolean) => {
     const pkgRows = form.packages.map((p) => ({
@@ -345,12 +359,15 @@ export default function AdminCreateBookingPage() {
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Shipment Coverage</Label>
               <Select value={form.shipmentCoverage} onValueChange={(v) => v && form.setShipmentCoverage(v)}>
-                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue>{coverageLabel(form.shipmentCoverage)}</SelectValue>
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="door_to_door">Door to Door</SelectItem>
-                  <SelectItem value="door_to_port">Door to Port</SelectItem>
-                  <SelectItem value="port_to_door">Port to Door</SelectItem>
-                  <SelectItem value="port_to_port">Port to Port</SelectItem>
+                  {SHIPMENT_COVERAGE_VALUES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {coverageLabel(value)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

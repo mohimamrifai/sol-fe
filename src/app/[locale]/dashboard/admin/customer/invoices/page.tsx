@@ -462,6 +462,7 @@ export default function AdminInvoicesPage() {
             filterOptions={invoiceStatusFilters}
           />
           <AdminListFilters
+            defaultSearchPlaceholder={t("searchPlaceholder")}
             selects={[
               {
                 id: "invoice-company",
@@ -469,6 +470,7 @@ export default function AdminInvoicesPage() {
                 value: companyFilter,
                 onChange: setCompanyFilter,
                 options: masterSelectOptions(masters.companies, tc("filters.all")),
+                searchable: true,
               },
             ]}
             dates={[

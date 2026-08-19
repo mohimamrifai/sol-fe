@@ -12,6 +12,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { invoiceStatusBadgeClass } from "@/lib/invoice-status";
+import { paymentTermLabel } from "@/lib/billing-cycle-labels";
+import { resolvePaymentMethodLabel } from "@/lib/payment-utils";
 import { paymentStatusBadgeClass } from "@/lib/payment-status";
 import { cn } from "@/lib/utils";
 import { useInvoiceStatusLabel, usePaymentStatusLabel } from "@/hooks/use-admin-status-labels";
@@ -66,6 +68,7 @@ type Props = {
 export function PaymentDetailView({ data, locale = "id" }: Props) {
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
+  const tMethod = useTranslations("Payments.paymentMethod");
   const paymentStatusLabel = usePaymentStatusLabel();
   const invoiceStatusLabel = useInvoiceStatusLabel();
 
@@ -112,7 +115,7 @@ export function PaymentDetailView({ data, locale = "id" }: Props) {
         {sectionTitle(t("detail.sectionCustomer"))}
         {fieldRow(t("detail.customerCode"), String(customerInfo.customer_code ?? "—"))}
         {fieldRow(t("detail.customerName"), String(customerInfo.customer_name ?? "—"))}
-        {fieldRow(t("detail.paymentTerms"), String(customerInfo.payment_terms ?? "—"))}
+        {fieldRow(t("detail.paymentTerms"), paymentTermLabel(String(customerInfo.payment_terms ?? "")))}
       </div>
 
       <div className="space-y-3 rounded-lg border p-4">
@@ -127,7 +130,16 @@ export function PaymentDetailView({ data, locale = "id" }: Props) {
 
       <div className="space-y-3 rounded-lg border p-4">
         {sectionTitle(t("detail.sectionPayment"))}
-        {fieldRow(t("detail.method"), String(paymentInfo.payment_method ?? data.method ?? "—"))}
+        {fieldRow(
+          t("detail.method"),
+          resolvePaymentMethodLabel(
+            {
+              method: paymentInfo.payment_method as string | null | undefined,
+              payment_type: data.method as string | null | undefined,
+            },
+            (key) => tMethod(key)
+          )
+        )}
         {paymentInfo.company_bank ? fieldRow(t("recordDialog.companyBank"), String(paymentInfo.company_bank)) : null}
         {paymentInfo.account ? fieldRow(t("recordDialog.account"), String(paymentInfo.account)) : null}
         {fieldRow(t("detail.paidAt"), fmtDate(paymentInfo.payment_date ?? data.paid_at))}
@@ -155,7 +167,12 @@ export function PaymentDetailView({ data, locale = "id" }: Props) {
                   <TableRow key={String(p.id ?? i)}>
                     <TableCell>{fmtDate(p.payment_date)}</TableCell>
                     <TableCell className="text-right tabular-nums">{fmtIdr(p.amount)}</TableCell>
-                    <TableCell>{String(p.payment_method ?? "—")}</TableCell>
+                    <TableCell>
+                      {resolvePaymentMethodLabel(
+                        { payment_method: p.payment_method as string | null | undefined },
+                        (key) => tMethod(key)
+                      )}
+                    </TableCell>
                     <TableCell className="font-mono text-xs">{String(p.reference_no ?? "—")}</TableCell>
                     <TableCell>{String(p.recorded_by ?? "—")}</TableCell>
                   </TableRow>
