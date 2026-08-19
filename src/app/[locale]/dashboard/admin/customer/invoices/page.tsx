@@ -64,7 +64,7 @@ import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRouter } from "@/i18n/routing";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   AdminListFilters,
   dateParamFromFilter,
@@ -236,9 +236,7 @@ function AdminInvoiceActionsMenu({
 
 export default function AdminInvoicesPage() {
   const router = useRouter();
-  const params = useParams();
   const searchParams = useSearchParams();
-  const locale = String(params?.locale ?? "id");
   const t = useTranslations("AdminInvoices");
   const tc = useTranslations("AdminCommon");
   const invoiceStatusLabel = useInvoiceStatusLabel();
@@ -352,7 +350,7 @@ export default function AdminInvoicesPage() {
   const countCancelled = invoiceStats?.cancelled ?? 0;
 
   const openInvoiceDetail = (id: number) => {
-    router.push(`/${locale}/dashboard/admin/customer/invoices/${id}`);
+    router.push(`/dashboard/admin/customer/invoices/${id}`);
   };
 
   const handleDeleteInvoice = async () => {

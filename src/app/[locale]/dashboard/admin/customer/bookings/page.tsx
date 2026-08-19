@@ -40,7 +40,7 @@ import {
   ClipboardList,
   Plus,
 } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -84,9 +84,7 @@ type BookingRow = {
 
 export default function AdminBookingsPage() {
   const router = useRouter();
-  const params = useParams();
   const searchParams = useSearchParams();
-  const locale = String(params?.locale ?? "id");
   const masters = useAdminListMasters();
   const t = useTranslations("AdminBookings");
   const tc = useTranslations("AdminCommon");
@@ -248,8 +246,8 @@ export default function AdminBookingsPage() {
   }, [rejectId, reloadAll]);
 
   const openBookingDetail = useCallback((bookingId: number) => {
-    router.push(`/${locale}/dashboard/admin/customer/bookings/${bookingId}`);
-  }, [router, locale]);
+    router.push(`/dashboard/admin/customer/bookings/${bookingId}`);
+  }, [router]);
 
   const openBookingEdit = useCallback(async (id: number) => {
     setEditOpen(true);
@@ -411,6 +409,7 @@ export default function AdminBookingsPage() {
             filterOptions={bookingStatusFilters}
           />
           <AdminListFilters
+            defaultSearchPlaceholder={t("searchPlaceholder")}
             selects={[
               {
                 id: "booking-company",
@@ -418,6 +417,7 @@ export default function AdminBookingsPage() {
                 value: companyFilter,
                 onChange: setCompanyFilter,
                 options: masterSelectOptions(masters.companies, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "booking-service",
@@ -425,6 +425,7 @@ export default function AdminBookingsPage() {
                 value: serviceTypeFilter,
                 onChange: setServiceTypeFilter,
                 options: masterSelectOptions(masters.serviceTypes, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "booking-coverage",
@@ -439,6 +440,7 @@ export default function AdminBookingsPage() {
                 value: originFilter,
                 onChange: setOriginFilter,
                 options: masterSelectOptions(masters.locations, tc("filters.all")),
+                searchable: true,
               },
               {
                 id: "booking-destination",
@@ -446,6 +448,7 @@ export default function AdminBookingsPage() {
                 value: destinationFilter,
                 onChange: setDestinationFilter,
                 options: masterSelectOptions(masters.locations, tc("filters.all")),
+                searchable: true,
               },
             ]}
             dates={[

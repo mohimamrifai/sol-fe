@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchAdminCompany, updateAdminCompany } from "@/lib/admin-api";
-import { BILLING_CYCLE_OPTIONS, FSD_BILLING_CYCLE_OPTIONS, FSD_PAYMENT_TERM_OPTIONS, billingCycleLabel } from "@/lib/billing-cycle-labels";
+import { BILLING_CYCLE_OPTIONS, FSD_BILLING_CYCLE_OPTIONS, FSD_PAYMENT_TERM_OPTIONS, billingCycleLabel, paymentTermLabel } from "@/lib/billing-cycle-labels";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
@@ -280,7 +280,9 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
           <div className="space-y-2">
             <Label>{t("form.paymentTerm")}</Label>
             <Select value={paymentTerm} onValueChange={(v) => v && setPaymentTerm(v)}>
-              <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue>{paymentTermLabel(paymentTerm)}</SelectValue>
+              </SelectTrigger>
               <SelectContent>
                 {FSD_PAYMENT_TERM_OPTIONS.map((p) => (
                   <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>

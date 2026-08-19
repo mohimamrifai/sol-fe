@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { cn } from "@/lib/utils";
 import type { ListMasterOption } from "@/hooks/use-admin-list-masters";
 
@@ -19,6 +20,8 @@ export type FilterSelectField = {
   onChange: (v: string) => void;
   options: Array<{ value: string; label: string }>;
   className?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
 };
 
 export type FilterDateField = {
@@ -33,9 +36,15 @@ type AdminListFiltersProps = {
   selects?: FilterSelectField[];
   dates?: FilterDateField[];
   className?: string;
+  defaultSearchPlaceholder?: string;
 };
 
-export function AdminListFilters({ selects = [], dates = [], className }: AdminListFiltersProps) {
+export function AdminListFilters({
+  selects = [],
+  dates = [],
+  className,
+  defaultSearchPlaceholder = "Cari…",
+}: AdminListFiltersProps) {
   if (selects.length === 0 && dates.length === 0) return null;
 
   return (
@@ -45,18 +54,30 @@ export function AdminListFilters({ selects = [], dates = [], className }: AdminL
           <Label htmlFor={field.id} className="text-xs text-muted-foreground">
             {field.label}
           </Label>
-          <Select value={field.value} onValueChange={(v) => v != null && field.onChange(v)}>
-            <SelectTrigger id={field.id} className="h-9 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {field.options.map((o) => (
-                <SelectItem key={o.value || "all"} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {field.searchable ? (
+            <SearchableCombobox
+              value={field.value}
+              onChange={field.onChange}
+              options={field.options}
+              placeholder={field.options.find((o) => o.value === field.value)?.label ?? field.label}
+              searchPlaceholder={field.searchPlaceholder ?? defaultSearchPlaceholder}
+              className="h-9"
+              aria-label={field.label}
+            />
+          ) : (
+            <Select value={field.value} onValueChange={(v) => v != null && field.onChange(v)}>
+              <SelectTrigger id={field.id} className="h-9 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options.map((o) => (
+                  <SelectItem key={o.value || "all"} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       ))}
       {dates.map((field) => (

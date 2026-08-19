@@ -40,7 +40,6 @@ import { PaymentDetailView } from "@/components/dashboard/admin/payment-detail-v
 import { PayRow } from "./types";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
-import { useParams } from "next/navigation";
 
 interface PaymentActionsMenuProps {
   payment: PayRow;
@@ -58,8 +57,6 @@ export function PaymentActionsMenu({
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
   const router = useRouter();
-  const params = useParams();
-  const locale = String(params?.locale ?? "id");
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<PayRow | null>(null);
@@ -188,10 +185,10 @@ export function PaymentActionsMenu({
             className="cursor-pointer"
             onClick={() => {
               if (isArOnly && Number.isFinite(invoiceId)) {
-                router.push(`/${locale}/dashboard/admin/customer/invoices/${invoiceId}`);
+                router.push(`/dashboard/admin/customer/invoices/${invoiceId}`);
                 return;
               }
-              router.push(`/${locale}/dashboard/admin/customer/payments/${paymentId}`);
+              router.push(`/dashboard/admin/customer/payments/${paymentId}`);
             }}
           >
             <Eye className="h-4 w-4" />

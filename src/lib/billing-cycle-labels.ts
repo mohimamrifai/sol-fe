@@ -22,8 +22,12 @@ export const BILLING_CYCLE_OPTIONS = [
   { value: "end_of_month", label: "Akhir bulan" },
 ] as const;
 
-const MAP: Record<string, string> = Object.fromEntries(
+const BILLING_CYCLE_MAP: Record<string, string> = Object.fromEntries(
   BILLING_CYCLE_OPTIONS.map((o) => [o.value, o.label])
+);
+
+const PAYMENT_TERM_MAP: Record<string, string> = Object.fromEntries(
+  FSD_PAYMENT_TERM_OPTIONS.map((o) => [o.value, o.label])
 );
 
 function humanizeSnake(code: string): string {
@@ -38,5 +42,12 @@ function humanizeSnake(code: string): string {
 export function billingCycleLabel(code: string | null | undefined): string {
   const c = String(code ?? "").trim();
   if (!c || c === "—") return "—";
-  return MAP[c] ?? (c.includes("_") ? humanizeSnake(c) : c);
+  return BILLING_CYCLE_MAP[c] ?? (c.includes("_") ? humanizeSnake(c) : c);
+}
+
+/** Label tampilan untuk kode payment_term dari API; tidak menampilkan snake_case mentah. */
+export function paymentTermLabel(code: string | null | undefined): string {
+  const c = String(code ?? "").trim();
+  if (!c || c === "—") return "—";
+  return PAYMENT_TERM_MAP[c] ?? (c.includes("_") ? humanizeSnake(c) : c);
 }

@@ -58,10 +58,10 @@ export function CustomerOperationalFields({
         </Select>
       </div>
       {businessCategory === "others" ? (
-        <div className="space-y-2 md:col-span-2">
+        <div className="space-y-2">
           <Label>{t("form.businessCategory")} (Lainnya)</Label>
           <Input
-            className="h-9"
+            className="h-9 max-w-md"
             value={businessCategoryOther}
             onChange={(e) => onBusinessCategoryOtherChange(e.target.value)}
             disabled={disabled}
