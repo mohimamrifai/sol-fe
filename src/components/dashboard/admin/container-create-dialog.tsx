@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { createAdminContainer, fetchAdminContainerTypes, fetchAdminYards } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import type { LaravelPaginated } from "@/lib/types-api";
@@ -38,6 +38,19 @@ export function ContainerCreateDialog({ open, onOpenChange, onCreated }: Props) 
   const [types, setTypes] = useState<{ id: number; label: string }[]>([]);
   const [yards, setYards] = useState<{ id: number; label: string }[]>([]);
   const [saving, setSaving] = useState(false);
+
+  const typeOptions = useMemo(
+    () => types.map((x) => ({ value: String(x.id), label: x.label })),
+    [types]
+  );
+
+  const yardOptions = useMemo(
+    () => [
+      { value: "", label: tc("filters.all") },
+      ...yards.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [tc, yards]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -103,18 +116,14 @@ export function ContainerCreateDialog({ open, onOpenChange, onCreated }: Props) 
           </div>
           <div className="space-y-2">
             <Label>{t("columns.type")}</Label>
-            <Select value={containerTypeId} onValueChange={(v) => v && setContainerTypeId(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("columns.type")}>
-                  {containerTypeId ? types.find((x) => String(x.id) === containerTypeId)?.label ?? "—" : t("columns.type")}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {types.map((x) => (
-                  <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableCombobox
+              options={typeOptions}
+              value={containerTypeId}
+              onChange={setContainerTypeId}
+              placeholder={t("columns.type")}
+              searchPlaceholder={t("searchPlaceholder")}
+              aria-label={t("columns.type")}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -123,19 +132,14 @@ export function ContainerCreateDialog({ open, onOpenChange, onCreated }: Props) 
             </div>
             <div className="space-y-2">
               <Label>{t("fields.currentYard")}</Label>
-              <Select value={currentYardId || "none"} onValueChange={(v) => setCurrentYardId(!v || v === "none" ? "" : v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("fields.currentYard")}>
-                    {!currentYardId ? tc("filters.all") : yards.find((x) => String(x.id) === currentYardId)?.label ?? "—"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{tc("filters.all")}</SelectItem>
-                  {yards.map((x) => (
-                    <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCombobox
+                options={yardOptions}
+                value={currentYardId}
+                onChange={setCurrentYardId}
+                placeholder={t("fields.currentYard")}
+                searchPlaceholder={t("searchPlaceholder")}
+                aria-label={t("fields.currentYard")}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">

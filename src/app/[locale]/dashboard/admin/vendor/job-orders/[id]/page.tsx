@@ -21,6 +21,7 @@ import { ApiError } from "@/lib/api-client";
 import { downloadBlob } from "@/lib/download-blob";
 import { formatIdr, vehicleTypeLabel } from "@/lib/vendor-fsd-options";
 import { useVendorJobOrderStatusLabel } from "@/hooks/use-admin-status-labels";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 function toDatetimeLocal(value: string | null | undefined): string {
@@ -51,6 +52,7 @@ export default function AdminVendorJobOrderDetailPage() {
   const router = useRouter();
   const id = Number(params?.id);
   const locale = String(params?.locale ?? "id");
+  const t = useTranslations("AdminVendorJobOrders");
   const vendorJobOrderStatusLabel = useVendorJobOrderStatusLabel();
 
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
@@ -248,7 +250,11 @@ export default function AdminVendorJobOrderDetailPage() {
           <ReadonlyField label="Customer" value={String(detail.customer ?? "—")} />
           <ReadonlyField label="Origin" value={String(detail.origin ?? "—")} />
           <ReadonlyField label="Destination" value={String(detail.destination ?? "—")} />
-          <ReadonlyField label="Shipment Coverage" value={String(detail.shipment_coverage ?? "—")} />
+          <ReadonlyField label="Shipment Coverage" value={
+            detail.shipment_coverage
+              ? t(`coverageOptions.${String(detail.shipment_coverage)}` as Parameters<typeof t>[0])
+              : "—"
+          } />
           <ReadonlyField label="Service" value={String(detail.service_label ?? "—")} />
         </CardContent>
       </Card>

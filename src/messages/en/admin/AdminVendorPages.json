@@ -126,6 +126,12 @@
       "delivery": "Delivery",
       "rail": "Rail"
     },
+    "coverageOptions": {
+      "port_to_port": "Port to Port",
+      "door_to_port": "Door to Port",
+      "port_to_door": "Port to Door",
+      "door_to_door": "Door to Door"
+    },
     "toasts": {
       "loadFailed": "Failed to load job orders",
       "loadFailedDescription": "Please try again later."

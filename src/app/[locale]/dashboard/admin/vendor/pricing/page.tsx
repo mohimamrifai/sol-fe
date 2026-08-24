@@ -275,6 +275,7 @@ export default function AdminVendorPricingPage() {
             onSearchChange={setSearchInput}
           />
           <AdminListFilters
+            defaultSearchPlaceholder={t("searchPlaceholder")}
             selects={[
               {
                 id: "pricing-vendor",
@@ -282,6 +283,7 @@ export default function AdminVendorPricingPage() {
                 value: vendorFilter,
                 onChange: setVendorFilter,
                 options: vendorFilterOptions,
+                searchable: true,
               },
               {
                 id: "pricing-service",

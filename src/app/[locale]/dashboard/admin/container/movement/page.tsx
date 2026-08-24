@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
@@ -34,6 +35,22 @@ export default function AdminContainerMovementPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const containerFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allContainer") },
+      ...containers.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [t, containers]
+  );
+
+  const yardFilterOptions = useMemo(
+    () => [
+      { value: "all", label: t("filters.allYard") },
+      ...yards.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [t, yards]
+  );
 
   useEffect(() => {
     setPage(1);
@@ -88,29 +105,31 @@ export default function AdminContainerMovementPage() {
       <Card className="min-w-0 overflow-hidden">
         <CardHeader><CardTitle>{t("movementListTitle")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            <Select value={containerFilter} onValueChange={(v) => v && setContainerFilter(v)}>
-              <SelectTrigger className="h-9 w-44">
-                <SelectValue placeholder={t("columns.containerNo")}>
-                  {containerFilter === "all" ? t("filters.allContainer") : containers.find((x) => String(x.id) === containerFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allContainer")}</SelectItem>
-                {containers.map((x) => <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={yardFilter} onValueChange={(v) => v && setYardFilter(v)}>
-              <SelectTrigger className="h-9 w-44">
-                <SelectValue placeholder={t("columns.yard")}>
-                  {yardFilter === "all" ? t("filters.allYard") : yards.find((x) => String(x.id) === yardFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allYard")}</SelectItem>
-                {yards.map((x) => <SelectItem key={x.id} value={String(x.id)}>{x.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex w-52 flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">{t("columns.containerNo")}</Label>
+              <SearchableCombobox
+                value={containerFilter}
+                onChange={setContainerFilter}
+                options={containerFilterOptions}
+                placeholder={t("filters.allContainer")}
+                searchPlaceholder={t("searchPlaceholder")}
+                className="h-9"
+                aria-label={t("columns.containerNo")}
+              />
+            </div>
+            <div className="flex w-52 flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">{t("columns.yard")}</Label>
+              <SearchableCombobox
+                value={yardFilter}
+                onChange={setYardFilter}
+                options={yardFilterOptions}
+                placeholder={t("filters.allYard")}
+                searchPlaceholder={t("searchPlaceholder")}
+                className="h-9"
+                aria-label={t("columns.yard")}
+              />
+            </div>
             <Select value={activityFilter} onValueChange={(v) => v && setActivityFilter(v)}>
               <SelectTrigger className="h-9 w-44">
                 <SelectValue placeholder="Activity">

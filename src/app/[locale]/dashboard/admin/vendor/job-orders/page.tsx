@@ -226,6 +226,7 @@ export default function AdminVendorJobOrdersPage() {
         <CardContent className="space-y-4">
           <TableToolbar searchPlaceholder={t("searchPlaceholder")} searchValue={search} onSearchChange={setSearch} />
           <AdminListFilters
+            defaultSearchPlaceholder={t("searchPlaceholder")}
             selects={[
               {
                 id: "jo-vendor",
@@ -233,6 +234,7 @@ export default function AdminVendorJobOrdersPage() {
                 value: vendorFilter,
                 onChange: setVendorFilter,
                 options: vendorFilterOptions,
+                searchable: true,
               },
               {
                 id: "jo-service",
@@ -254,6 +256,7 @@ export default function AdminVendorJobOrdersPage() {
                 value: originFilter,
                 onChange: setOriginFilter,
                 options: originFilterOptions,
+                searchable: true,
               },
               {
                 id: "jo-destination",
@@ -261,6 +264,7 @@ export default function AdminVendorJobOrdersPage() {
                 value: destinationFilter,
                 onChange: setDestinationFilter,
                 options: destinationFilterOptions,
+                searchable: true,
               },
             ]}
             dates={[

@@ -140,6 +140,7 @@ export default function AdminContainersPage() {
         value: typeFilter,
         onChange: setTypeFilter,
         options: typeFilterOptions,
+        searchable: true,
       },
       {
         id: "ct-yard",
@@ -147,6 +148,7 @@ export default function AdminContainersPage() {
         value: yardFilter,
         onChange: setYardFilter,
         options: yardFilterOptions,
+        searchable: true,
       },
     ];
 

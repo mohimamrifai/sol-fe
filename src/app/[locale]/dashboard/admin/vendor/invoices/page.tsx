@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
 import { AdminListFilters } from "@/components/data-table/admin-list-filters";
@@ -130,6 +130,11 @@ export default function AdminVendorInvoicesPage() {
       })),
     ],
     [t]
+  );
+
+  const activeVendorOptions = useMemo(
+    () => activeVendors.map((v) => ({ value: String(v.id), label: v.label })),
+    [activeVendors]
   );
 
   useEffect(() => {
@@ -271,6 +276,7 @@ export default function AdminVendorInvoicesPage() {
                 value: vendorFilter,
                 onChange: setVendorFilter,
                 options: vendorFilterOptions,
+                searchable: true,
               },
               {
                 id: "vi-status",
@@ -379,31 +385,59 @@ export default function AdminVendorInvoicesPage() {
       <Dialog open={receiveOpen} onOpenChange={setReceiveOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader><DialogTitle>{t("receiveDialog.title")}</DialogTitle></DialogHeader>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <Label>{t("receiveDialog.vendor")}</Label>
-              <Select value={vendorId} onValueChange={(v) => v && setVendorId(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("receiveDialog.selectVendor")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeVendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label>{t("receiveDialog.vendor")}</Label>
+                <SearchableCombobox
+                  options={activeVendorOptions}
+                  value={vendorId}
+                  onChange={setVendorId}
+                  placeholder={t("receiveDialog.selectVendor")}
+                  searchPlaceholder={t("receiveDialog.selectVendor")}
+                  aria-label={t("receiveDialog.vendor")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.vendorInvoiceNumber")}</Label>
+                <Input value={externalNo} onChange={(e) => setExternalNo(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.invoiceDate")}</Label>
+                <Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.receiveDate")}</Label>
+                <Input type="date" value={receiveDateToday} readOnly disabled />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.currency")}</Label>
+                <Input value="IDR" readOnly disabled />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.invoiceAmount")}</Label>
+                <Input inputMode="decimal" value={invoiceAmount} onChange={(e) => setInvoiceAmount(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.taxAmount")}</Label>
+                <Input inputMode="decimal" value={taxAmount} onChange={(e) => setTaxAmount(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("receiveDialog.totalInvoice")}</Label>
+                <Input readOnly value={formatIdr(totalInvoice)} disabled />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>{t("receiveDialog.uploadInvoice")}</Label>
+                <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>{t("receiveDialog.remark")}</Label>
+                <Textarea value={remark} onChange={(e) => setRemark(e.target.value)} rows={2} />
+              </div>
             </div>
-            <div><Label>{t("receiveDialog.vendorInvoiceNumber")}</Label><Input value={externalNo} onChange={(e) => setExternalNo(e.target.value)} /></div>
-            <div><Label>{t("receiveDialog.invoiceDate")}</Label><Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} /></div>
-            <div><Label>{t("receiveDialog.receiveDate")}</Label><Input type="date" value={receiveDateToday} readOnly disabled /></div>
-            <div><Label>{t("receiveDialog.currency")}</Label><Input value="IDR" readOnly disabled /></div>
-            <div><Label>{t("receiveDialog.invoiceAmount")}</Label><Input inputMode="decimal" value={invoiceAmount} onChange={(e) => setInvoiceAmount(e.target.value)} /></div>
-            <div><Label>{t("receiveDialog.taxAmount")}</Label><Input inputMode="decimal" value={taxAmount} onChange={(e) => setTaxAmount(e.target.value)} /></div>
-            <div><Label>{t("receiveDialog.totalInvoice")}</Label><Input readOnly value={formatIdr(totalInvoice)} disabled /></div>
-            <div className="md:col-span-2"><Label>{t("receiveDialog.uploadInvoice")}</Label><Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></div>
-            <div className="md:col-span-2"><Label>{t("receiveDialog.remark")}</Label><Textarea value={remark} onChange={(e) => setRemark(e.target.value)} rows={2} /></div>
-          </div>
-          <div className="space-y-2">
-            <Label>{t("receiveDialog.jobOrderMatching")}</Label>
-            <Table>
+            <div className="space-y-3">
+              <Label>{t("receiveDialog.jobOrderMatching")}</Label>
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead />
@@ -440,6 +474,7 @@ export default function AdminVendorInvoicesPage() {
                 difference: formatIdr(totalInvoice - selectedJoTotal),
               })}
             </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setReceiveOpen(false)}>{tc("actions.cancel")}</Button>

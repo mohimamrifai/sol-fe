@@ -126,6 +126,12 @@
       "delivery": "Delivery",
       "rail": "Kereta Api"
     },
+    "coverageOptions": {
+      "port_to_port": "Port ke Port",
+      "door_to_port": "Door ke Port",
+      "port_to_door": "Port ke Door",
+      "door_to_door": "Door ke Door"
+    },
     "toasts": {
       "loadFailed": "Gagal memuat job order.",
       "loadFailedDescription": "Silakan coba lagi nanti."

@@ -52,6 +52,7 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
   const router = useRouter();
   const tc = useTranslations("AdminCommon");
   const t = useTranslations("AdminFsdOperations");
+  const tBookings = useTranslations("AdminBookings");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
@@ -82,6 +83,11 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
   const items = (shipment?.items as Record<string, unknown>[] | undefined) ?? [];
   const containers = (shipment?.containers as Record<string, unknown>[] | undefined) ?? [];
   const isFcl = Boolean(shipment?.is_fcl);
+  const showContainers = isFcl && containers.length > 0;
+  const coverageRaw = shipment?.shipment_coverage ? String(shipment.shipment_coverage) : "";
+  const coverageLabel = coverageRaw
+    ? tBookings(`coverageOptions.${coverageRaw}` as Parameters<typeof tBookings>[0])
+    : "—";
 
   const runAction = async (action: "start" | "complete") => {
     setBusy(true);
@@ -154,7 +160,7 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
             <ReadonlyField label="Booking" value={String(shipment?.booking_number ?? "—")} />
             <ReadonlyField label={t("columns.customer")} value={String(shipment?.customer ?? detail.customer ?? "—")} />
             <ReadonlyField label="Service" value={String(shipment?.service_type ?? "—")} />
-            <ReadonlyField label="Coverage" value={String(shipment?.shipment_coverage ?? "—")} />
+            <ReadonlyField label="Coverage" value={coverageLabel} />
             <ReadonlyField label="Route" value={`${String(shipment?.origin ?? "—")} → ${String(shipment?.destination ?? "—")}`} />
           </CardContent>
         </Card>
@@ -174,7 +180,7 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle>{t("detail.cargoInfo")}</CardTitle></CardHeader>
           <CardContent>
-            {isFcl ? (
+            {showContainers ? (
               <div className="space-y-3">
                 {containers.map((c, i) => (
                   <div key={i} className="grid gap-2 sm:grid-cols-3 text-sm">
@@ -184,7 +190,7 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : items.length > 0 ? (
               <>
                 <Table>
                   <TableHeader>
@@ -198,7 +204,7 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
                   <TableBody>
                     {items.map((item, i) => (
                       <TableRow key={i}>
-                        <TableCell>{String(item.description ?? "—")}</TableCell>
+                        <TableCell>{String(item.description ?? item.name ?? "—")}</TableCell>
                         <TableCell className="text-right tabular-nums">{String(item.quantity ?? "—")}</TableCell>
                         <TableCell className="text-right tabular-nums">{String(item.gross_weight ?? "—")}</TableCell>
                         <TableCell className="text-right tabular-nums">{String(item.cbm ?? "—")}</TableCell>
@@ -211,6 +217,8 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
                   <ReadonlyField label="Total Volume" value={String(shipment?.total_volume ?? 0)} />
                 </div>
               </>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("detail.noCargo")}</p>
             )}
           </CardContent>
         </Card>

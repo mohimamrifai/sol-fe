@@ -121,6 +121,7 @@
       "remark": "Remark",
       "documents": "Documents",
       "noDocuments": "No documents yet.",
+      "noCargo": "No cargo data for this shipment.",
       "actualAt": "Actual At"
     },
     "pages": {

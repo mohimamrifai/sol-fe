@@ -174,6 +174,7 @@ export default function AdminVendorPaymentsPage() {
                 id: "vp-vendor",
                 label: t("columns.vendor"),
                 value: vendorFilter,
+                searchable: true,
                 onChange: setVendorFilter,
                 options: vendorFilterOptions,
               },

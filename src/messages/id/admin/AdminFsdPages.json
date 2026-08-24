@@ -121,6 +121,7 @@
       "remark": "Catatan",
       "documents": "Dokumen",
       "noDocuments": "Belum ada dokumen.",
+      "noCargo": "Tidak ada data kargo untuk shipment ini.",
       "actualAt": "Waktu Aktual"
     },
     "pages": {

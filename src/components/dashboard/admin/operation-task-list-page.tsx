@@ -183,6 +183,7 @@ export function OperationTaskListPage({ operationType, title, description, baseP
                 value: vendorFilter,
                 onChange: setVendorFilter,
                 options: vendorFilterOptions,
+                searchable: true,
               },
               {
                 id: "op-origin",
@@ -190,6 +191,7 @@ export function OperationTaskListPage({ operationType, title, description, baseP
                 value: originFilter,
                 onChange: setOriginFilter,
                 options: originFilterOptions,
+                searchable: true,
               },
             ]}
             dates={[
