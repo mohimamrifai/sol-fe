@@ -22,6 +22,7 @@ import {
 } from "@/lib/admin-api";
 import { BUSINESS_ENTITY_OPTIONS, TRAIN_SCHEDULE_STATUS_OPTIONS } from "@/lib/admin-fsd-options";
 import { ApiError } from "@/lib/api-client";
+import { formatDateTimeId } from "@/lib/format";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { Train } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -87,7 +88,7 @@ export default function TrainScheduleDetailPage() {
       train_number: String(d.train_number ?? ""),
       route_id: String(d.route_id ?? ""),
       departure_at: String(d.departure_at ?? "").slice(0, 16),
-      estimated_arrival_at: String(d.estimated_arrival_at ?? "").slice(0, 16),
+      estimated_arrival_at: String(d.eta_at ?? d.estimated_arrival_at ?? "").slice(0, 16),
       max_containers: d.max_containers != null ? String(d.max_containers) : "",
       status: String(d.status ?? "upcoming"),
       remark: String(d.remark ?? ""),
@@ -108,9 +109,13 @@ export default function TrainScheduleDetailPage() {
     setSaving(true);
     try {
       await updateAdminTrainSchedule(id, {
-        ...form,
+        train_number: form.train_number,
         route_id: Number(form.route_id),
+        departure_at: form.departure_at,
+        eta_at: form.estimated_arrival_at,
         max_containers: form.max_containers ? Number(form.max_containers) : undefined,
+        status: form.status,
+        remark: form.remark || undefined,
       });
       toast.success(t("saved"));
       setEditing(false);
@@ -181,8 +186,8 @@ export default function TrainScheduleDetailPage() {
               />
               <ReadonlyField label={t("fields.trainNumber")} value={String(detail.train_number ?? "—")} />
               <ReadonlyField label={t("fields.route")} value={String(detail.route ?? "—")} />
-              <ReadonlyField label={t("fields.departure")} value={String(detail.departure_at ?? "—")} />
-              <ReadonlyField label={t("fields.eta")} value={String(detail.estimated_arrival_at ?? "—")} />
+              <ReadonlyField label={t("fields.departure")} value={formatDateTimeId(String(detail.departure_at ?? ""))} />
+              <ReadonlyField label={t("fields.eta")} value={formatDateTimeId(String(detail.eta_at ?? detail.estimated_arrival_at ?? ""))} />
               <ReadonlyField label={t("fields.maxContainers")} value={String(detail.max_containers ?? "—")} />
               <ReadonlyField label={t("fields.remark")} value={String(detail.remark ?? "—")} />
             </>

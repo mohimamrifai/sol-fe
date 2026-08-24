@@ -36,6 +36,8 @@ export default function MasterYardDetailPage() {
   const t = useTranslations("AdminFsdMaster.yard");
   const tc = useTranslations("AdminCommon");
 
+  const yardTypeLabel = (value: string) => t(`yardTypes.${value}` as "yardTypes.origin_yard");
+
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [stations, setStations] = useState<{ id: number; label: string }[]>([]);
   const [editing, setEditing] = useState(false);
@@ -121,7 +123,7 @@ export default function MasterYardDetailPage() {
               <ReadonlyField label={t("columns.code")} value={String(detail.code ?? "—")} />
               <ReadonlyField label={t("columns.name")} value={String(detail.name ?? "—")} />
               <ReadonlyField label="Station" value={String(station?.name ?? "—")} />
-              <ReadonlyField label={t("columns.type")} value={String(detail.yard_type ?? "—")} />
+              <ReadonlyField label={t("columns.type")} value={yardTypeLabel(String(detail.yard_type ?? ""))} />
               <ReadonlyField label={tc("table.status")} value={<MasterActiveBadge active={detail.status === "active"} />} />
               <ReadonlyField label="Remark" value={String(detail.remark ?? "—")} />
             </>
@@ -153,9 +155,9 @@ export default function MasterYardDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="origin_yard">origin_yard</SelectItem>
-                    <SelectItem value="destination_yard">destination_yard</SelectItem>
-                    <SelectItem value="hub_yard">hub_yard</SelectItem>
+                    <SelectItem value="origin_yard">{t("yardTypes.origin_yard")}</SelectItem>
+                    <SelectItem value="destination_yard">{t("yardTypes.destination_yard")}</SelectItem>
+                    <SelectItem value="hub_yard">{t("yardTypes.hub_yard")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

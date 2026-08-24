@@ -22,6 +22,16 @@ export const CONTAINER_CATEGORY_OPTIONS = [
   { value: "other", label: "Other" },
 ] as const;
 
+export const YARD_TYPE_OPTIONS = [
+  { value: "origin_yard", label: "Origin Yard" },
+  { value: "destination_yard", label: "Destination Yard" },
+  { value: "hub_yard", label: "Hub Yard" },
+] as const;
+
+export function yardTypeLabel(value: string): string {
+  return YARD_TYPE_OPTIONS.find((o) => o.value === value)?.label ?? humanizeSnakeCase(value);
+}
+
 export const CONTAINER_SIZE_OPTIONS = [
   { value: "20 ft", label: "20 ft" },
   { value: "40 ft", label: "40 ft" },

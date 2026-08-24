@@ -233,7 +233,13 @@
       "edit": "Edit Yard",
       "saved": "Yard disimpan.",
       "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
-      "columns": { "code": "Kode", "name": "Nama", "type": "Tipe Yard" }
+      "columns": { "code": "Kode", "name": "Nama", "type": "Tipe Yard" },
+      "fields": { "station": "Station" },
+      "yardTypes": {
+        "origin_yard": "Yard Asal",
+        "destination_yard": "Yard Tujuan",
+        "hub_yard": "Yard Hub"
+      }
     },
     "additionalCharge": {
       "listTitle": "Additional Charges",

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
@@ -37,6 +38,7 @@ export default function MasterYardPage() {
   const locale = String(params?.locale ?? "id");
   const authHydrated = useAuthPersistHydrated();
   const t = useTranslations("AdminFsdMaster");
+  const ty = useTranslations("AdminFsdMaster.yard");
   const tc = useTranslations("AdminCommon");
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [meta, setMeta] = useState<LaravelPaginated<Record<string, unknown>> | null>(null);
@@ -51,6 +53,16 @@ export default function MasterYardPage() {
   const [dialogRow, setDialogRow] = useState<Record<string, unknown> | null>(null);
   const [form, setForm] = useState({ name: "", code: "", business_entity: "company", station_id: "", yard_type: "origin_yard", status: "active", remark: "", city: "", province: "", address: "" });
   const [saving, setSaving] = useState(false);
+
+  const yardTypeLabel = useCallback(
+    (value: string) => ty(`yardTypes.${value}` as "yardTypes.origin_yard"),
+    [ty]
+  );
+
+  const stationOptions = useMemo(
+    () => stations.map((s) => ({ value: String(s.id), label: s.label })),
+    [stations]
+  );
 
   const load = useCallback(async () => {
     if (!authHydrated) return;
@@ -134,7 +146,7 @@ export default function MasterYardPage() {
                 <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
                 <TableCell className="font-mono text-xs">{String(r.code ?? "—")}</TableCell>
                 <TableCell className="font-medium">{String(r.name ?? "—")}</TableCell>
-                <TableCell>{String(r.yard_type ?? "—")}</TableCell>
+                <TableCell>{yardTypeLabel(String(r.yard_type ?? ""))}</TableCell>
                 <TableCell><MasterActiveBadge active={r.status === "active"} /></TableCell>
                 <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                   <MasterRowActions entityLabel="yard" canManage onView={() => router.push(`/${locale}/dashboard/admin/master/yard/${r.id}`)} onEdit={() => openEdit(r)} onDelete={r.status === "active" ? () => void deactivateAdminYard(Number(r.id)).then(load) : undefined} />
@@ -152,20 +164,28 @@ export default function MasterYardPage() {
           <div className="grid gap-3">
             <div className="space-y-2"><Label>{t("yard.columns.name")}</Label><Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
             <div className="space-y-2">
-              <Label>Station</Label>
-              <Select value={form.station_id} onValueChange={(v) => v && setForm((f) => ({ ...f, station_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Station">{form.station_id ? stations.find((s) => String(s.id) === form.station_id)?.label ?? "—" : "Station"}</SelectValue></SelectTrigger>
-                <SelectContent>{stations.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.label}</SelectItem>)}</SelectContent>
-              </Select>
+              <Label>{ty("fields.station")}</Label>
+              <SearchableCombobox
+                value={form.station_id}
+                onChange={(v) => setForm((f) => ({ ...f, station_id: v }))}
+                options={stationOptions}
+                placeholder={ty("fields.station")}
+                searchPlaceholder={t("station.search") || ty("search")}
+                aria-label={ty("fields.station")}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t("yard.columns.type")}</Label>
               <Select value={form.yard_type} onValueChange={(v) => v && setForm((f) => ({ ...f, yard_type: v }))}>
-                <SelectTrigger><SelectValue placeholder={t("yard.columns.type")}>{form.yard_type}</SelectValue></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("yard.columns.type")}>
+                    {form.yard_type ? yardTypeLabel(form.yard_type) : t("yard.columns.type")}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="origin_yard">origin_yard</SelectItem>
-                  <SelectItem value="destination_yard">destination_yard</SelectItem>
-                  <SelectItem value="hub_yard">hub_yard</SelectItem>
+                  <SelectItem value="origin_yard">{ty("yardTypes.origin_yard")}</SelectItem>
+                  <SelectItem value="destination_yard">{ty("yardTypes.destination_yard")}</SelectItem>
+                  <SelectItem value="hub_yard">{ty("yardTypes.hub_yard")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

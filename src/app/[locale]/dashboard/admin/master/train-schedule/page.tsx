@@ -32,6 +32,7 @@ import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { cn } from "@/lib/utils";
+import { formatDateTimeId } from "@/lib/format";
 import { Ban, CalendarClock, CheckCircle2, Clock, Plus, Train } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -158,8 +159,8 @@ export default function MasterTrainSchedulePage() {
           business_entity: businessEntityFilter === "all" ? undefined : businessEntityFilter,
           route_id: routeFilter === "all" ? undefined : routeFilter,
           status: statusFilter === "all" ? undefined : statusFilter,
-          departure_date_from: dateFrom || undefined,
-          departure_date_to: dateTo || undefined,
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
         }),
         fetchAdminTrainScheduleStats(),
       ]);
@@ -219,9 +220,14 @@ export default function MasterTrainSchedulePage() {
     setSaving(true);
     try {
       await createAdminTrainSchedule({
-        ...form,
+        business_entity: form.business_entity,
+        train_number: form.train_number,
         route_id: Number(form.route_id),
+        departure_at: form.departure_at,
+        eta_at: form.estimated_arrival_at,
         max_containers: form.max_containers ? Number(form.max_containers) : undefined,
+        status: form.status,
+        remark: form.remark || undefined,
       });
       toast.success(t("saved"));
       setDialogOpen(false);
@@ -330,14 +336,16 @@ export default function MasterTrainSchedulePage() {
                         <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
                         <TableCell className="font-mono text-xs">{String(r.train_number ?? "—")}</TableCell>
                         <TableCell>{String(r.route ?? "—")}</TableCell>
-                        <TableCell>{String(r.departure_at ?? r.departure ?? "—")}</TableCell>
-                        <TableCell>{String(r.estimated_arrival_at ?? r.eta ?? "—")}</TableCell>
+                        <TableCell>{formatDateTimeId(String(r.departure_at ?? ""))}</TableCell>
+                        <TableCell>{formatDateTimeId(String(r.eta_at ?? r.estimated_arrival_at ?? ""))}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={statusBadgeClass(status)}>
                             {statusLabel(status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="tabular-nums">{String(r.assigned_shipments_count ?? r.assigned_shipments ?? 0)}</TableCell>
+                        <TableCell className="tabular-nums">
+                          {Number(r.assigned_shipments_count ?? r.assigned_shipments ?? 0)}
+                        </TableCell>
                         <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                           <MasterRowActions entityLabel={t("entityLabel")} canManage onView={() => goDetail(Number(r.id))} />
                         </TableCell>

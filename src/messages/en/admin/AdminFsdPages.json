@@ -233,7 +233,13 @@
       "edit": "Edit Yard",
       "saved": "Yard saved.",
       "stats": { "total": "Total", "active": "Active", "inactive": "Inactive" },
-      "columns": { "code": "Code", "name": "Name", "type": "Yard Type" }
+      "columns": { "code": "Code", "name": "Name", "type": "Yard Type" },
+      "fields": { "station": "Station" },
+      "yardTypes": {
+        "origin_yard": "Origin Yard",
+        "destination_yard": "Destination Yard",
+        "hub_yard": "Hub Yard"
+      }
     },
     "additionalCharge": {
       "listTitle": "Additional Charges",
