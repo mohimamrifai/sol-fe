@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
@@ -10,13 +11,13 @@ import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
-import { adminContainerReportExportUrl, fetchAdminContainerReport, fetchAdminVendors } from "@/lib/admin-api";
+import { ADMIN_REPORT_PER_PAGE, adminContainerReportExportUrl, fetchAdminContainerReport, fetchAdminVendors } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-const PER_PAGE = 20;
+const PER_PAGE = ADMIN_REPORT_PER_PAGE;
 
 export default function AdminContainerReportPage() {
   const authHydrated = useAuthPersistHydrated();
@@ -62,18 +63,51 @@ export default function AdminContainerReportPage() {
       } />
       <Card><CardHeader><CardTitle>{t("reportData")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-wrap gap-3">
-          <Select value={ownershipFilter} onValueChange={(v) => v && setOwnershipFilter(v)}>
-            <SelectTrigger className="h-9 w-40"><SelectValue placeholder="Ownership">{ownershipFilter === "all" ? t("allOwnership") : ownershipFilter}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("allOwnership")}</SelectItem><SelectItem value="company">company</SelectItem><SelectItem value="vendor">vendor</SelectItem></SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-            <SelectTrigger className="h-9 w-40"><SelectValue placeholder={tc("table.status")}>{statusFilter === "all" ? tc("filters.allStatus") : statusFilter}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{tc("filters.allStatus")}</SelectItem><SelectItem value="available">available</SelectItem><SelectItem value="in_transit">in_transit</SelectItem><SelectItem value="maintenance">maintenance</SelectItem></SelectContent>
-          </Select>
-          <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-            <SelectTrigger className="h-9 w-48"><SelectValue placeholder="Vendor">{vendorFilter === "all" ? t("allVendor") : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("allVendor")}</SelectItem>{vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}</SelectContent>
-          </Select>
+          <div className="w-40 space-y-1">
+            <Label className="text-xs text-muted-foreground">{t("container.columns.ownership")}</Label>
+            <Select value={ownershipFilter} onValueChange={(v) => v && setOwnershipFilter(v)}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder={t("allOwnership")}>
+                  {ownershipFilter === "all" ? t("allOwnership") : ownershipFilter}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("allOwnership")}</SelectItem>
+                <SelectItem value="company">company</SelectItem>
+                <SelectItem value="vendor">vendor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-40 space-y-1">
+            <Label className="text-xs text-muted-foreground">{tc("table.status")}</Label>
+            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder={tc("filters.allStatus")}>
+                  {statusFilter === "all" ? tc("filters.allStatus") : statusFilter}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tc("filters.allStatus")}</SelectItem>
+                <SelectItem value="available">available</SelectItem>
+                <SelectItem value="in_transit">in_transit</SelectItem>
+                <SelectItem value="maintenance">maintenance</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-48 space-y-1">
+            <Label className="text-xs text-muted-foreground">Vendor</Label>
+            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder={t("allVendor")}>
+                  {vendorFilter === "all" ? t("allVendor") : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("allVendor")}</SelectItem>
+                {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         {loading ? <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p> : (
           <>

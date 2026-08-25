@@ -1,24 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
-import { adminBookingReportExportUrl, fetchAdminBookingReport, fetchAdminCompanies } from "@/lib/admin-api";
+import { ADMIN_REPORT_PER_PAGE, adminBookingReportExportUrl, fetchAdminBookingReport, fetchAdminCompanies } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-const PER_PAGE = 20;
+const PER_PAGE = ADMIN_REPORT_PER_PAGE;
 
 export default function AdminBookingReportPage() {
   const authHydrated = useAuthPersistHydrated();
@@ -54,6 +55,11 @@ export default function AdminBookingReportPage() {
     void fetchAdminCompanies({ perPage: 500 }).then((res) => setCompanies(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) }))));
   }, [authHydrated]);
 
+  const companyOptions = useMemo(
+    () => [{ value: "all", label: t("allCustomer") }, ...companies.map((c) => ({ value: String(c.id), label: c.label }))],
+    [companies, t]
+  );
+
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
       <AdminPageHeader icon={BarChart3} title={t("booking.title")} description={t("booking.subtitle")} actions={
@@ -61,15 +67,35 @@ export default function AdminBookingReportPage() {
       } />
       <Card><CardHeader><CardTitle>{t("reportData")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-wrap gap-3">
-          <Select value={companyFilter} onValueChange={(v) => v && setCompanyFilter(v)}>
-            <SelectTrigger className="h-9 w-48"><SelectValue placeholder={tc("table.customer")}>{companyFilter === "all" ? t("allCustomer") : companies.find((c) => String(c.id) === companyFilter)?.label ?? "—"}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("allCustomer")}</SelectItem>{companies.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-            <SelectTrigger className="h-9 w-40"><SelectValue placeholder={tc("table.status")}>{statusFilter === "all" ? tc("filters.allStatus") : statusFilter}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{tc("filters.allStatus")}</SelectItem><SelectItem value="draft">draft</SelectItem><SelectItem value="confirmed">confirmed</SelectItem><SelectItem value="cancelled">cancelled</SelectItem></SelectContent>
-          </Select>
-          <div className="flex items-end gap-2">
+          <div className="w-48 space-y-1">
+            <Label className="text-xs text-muted-foreground">{tc("table.customer")}</Label>
+            <SearchableCombobox
+              value={companyFilter}
+              onChange={setCompanyFilter}
+              options={companyOptions}
+              placeholder={t("allCustomer")}
+              searchPlaceholder="Cari customer…"
+              className="h-9"
+              aria-label={tc("table.customer")}
+            />
+          </div>
+          <div className="w-40 space-y-1">
+            <Label className="text-xs text-muted-foreground">{tc("table.status")}</Label>
+            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder={tc("filters.allStatus")}>
+                  {statusFilter === "all" ? tc("filters.allStatus") : statusFilter}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tc("filters.allStatus")}</SelectItem>
+                <SelectItem value="draft">draft</SelectItem>
+                <SelectItem value="confirmed">confirmed</SelectItem>
+                <SelectItem value="cancelled">cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
             <div className="space-y-1"><Label className="text-xs text-muted-foreground">{tc("filters.from")}</Label><Input className="h-9 w-36" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} /></div>
             <div className="space-y-1"><Label className="text-xs text-muted-foreground">{tc("filters.to")}</Label><Input className="h-9 w-36" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} /></div>
           </div>

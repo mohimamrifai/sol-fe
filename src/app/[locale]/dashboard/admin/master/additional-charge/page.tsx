@@ -59,6 +59,11 @@ export default function MasterAdditionalChargePage() {
   const [form, setForm] = useState({ name: "", charge_category: "other", pricing_basis: "per_shipment", description: "", is_active: true });
   const [saving, setSaving] = useState(false);
 
+  const categoryFilterLabel =
+    categoryFilter === "all" ? tc("filters.all") : t(`categories.${categoryFilter}` as "categories.other");
+  const formCategoryLabel = t(`categories.${form.charge_category}` as "categories.other");
+  const formPricingBasisLabel = t(`pricingBasis.${form.pricing_basis}` as "pricingBasis.per_shipment");
+
   const load = useCallback(async () => {
     if (!authHydrated) return;
     setLoading(true);
@@ -118,7 +123,9 @@ export default function MasterAdditionalChargePage() {
           <div className="max-w-xs space-y-1">
             <Label className="text-xs">{t("filters.category")}</Label>
             <Select value={categoryFilter} onValueChange={(v) => v && setCategoryFilter(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue>{categoryFilterLabel}</SelectValue>
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{tc("filters.all")}</SelectItem>
                 {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{t(`categories.${c}` as "categories.other")}</SelectItem>)}
@@ -164,14 +171,18 @@ export default function MasterAdditionalChargePage() {
             <div className="space-y-2">
               <Label>{t("columns.category")}</Label>
               <Select value={form.charge_category} onValueChange={(v) => v && setForm((f) => ({ ...f, charge_category: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue>{formCategoryLabel}</SelectValue>
+                </SelectTrigger>
                 <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{t(`categories.${c}` as "categories.other")}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>{t("columns.pricingBasis")}</Label>
               <Select value={form.pricing_basis} onValueChange={(v) => v && setForm((f) => ({ ...f, pricing_basis: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue>{formPricingBasisLabel}</SelectValue>
+                </SelectTrigger>
                 <SelectContent>{PRICING_BASES.map((p) => <SelectItem key={p} value={p}>{t(`pricingBasis.${p}` as "pricingBasis.per_shipment")}</SelectItem>)}</SelectContent>
               </Select>
             </div>

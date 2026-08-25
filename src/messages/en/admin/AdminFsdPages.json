@@ -516,14 +516,25 @@
       "loadError": "Failed to load roles.",
       "saveError": "Failed to save role.",
       "created": "Role created successfully.",
+      "updated": "Role updated successfully.",
+      "deactivated": "Role deactivated successfully.",
       "permissionsSaved": "Role permissions updated.",
+      "deactivate": "Deactivate",
+      "deactivateConfirm": "The role will be deactivated if it is not assigned to any user.",
+      "generalInfo": "General Information",
+      "assignedUsers": "Assigned Users",
+      "noDescription": "—",
+      "noAssignedUsers": "No users assigned to this role yet.",
       "statusActive": "Active",
       "statusInactive": "Inactive",
       "stats": { "total": "Total Roles", "active": "Active Roles", "inactive": "Inactive Roles" },
       "columns": {
         "name": "Role Name",
         "description": "Description",
-        "totalUsers": "Total Users"
+        "totalUsers": "Total Users",
+        "userName": "Full Name",
+        "userEmail": "Email",
+        "userStatus": "Status"
       },
       "fields": {
         "name": "Role Name",

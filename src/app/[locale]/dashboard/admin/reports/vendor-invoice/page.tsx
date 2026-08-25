@@ -14,6 +14,7 @@ import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useVendorInvoiceStatusLabel } from "@/hooks/use-admin-status-labels";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
 import {
+  ADMIN_REPORT_PER_PAGE,
   adminVendorInvoiceReportExportUrl,
   fetchAdminVendorInvoiceReport,
   fetchAdminVendors,
@@ -24,11 +25,12 @@ import { formatIdr } from "@/lib/vendor-fsd-options";
 import { BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-const PER_PAGE = 20;
+const PER_PAGE = ADMIN_REPORT_PER_PAGE;
 const STATUS = ["received", "under_verification", "ready_for_payment", "paid", "rejected"] as const;
 
 export default function AdminVendorInvoiceReportPage() {
   const authHydrated = useAuthPersistHydrated();
+  const t = useTranslations("AdminFsdReports");
   const tc = useTranslations("AdminCommon");
   const vendorInvoiceStatusLabel = useVendorInvoiceStatusLabel();
 
@@ -92,35 +94,41 @@ export default function AdminVendorInvoiceReportPage() {
         <CardHeader><CardTitle>Report Data</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
-            <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Vendor">
-                  {vendorFilter === "all" ? "All Vendor" : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Vendor</SelectItem>
-                {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-              <SelectTrigger className="h-9 w-48">
-                <SelectValue placeholder="Status">
-                  {statusFilter === "all" ? "All Status" : vendorInvoiceStatusLabel(statusFilter)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                {STATUS.map((s) => <SelectItem key={s} value={s}>{vendorInvoiceStatusLabel(s)}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex items-end gap-2">
+            <div className="w-48 space-y-1">
+              <Label className="text-xs text-muted-foreground">Vendor</Label>
+              <Select value={vendorFilter} onValueChange={(v) => v && setVendorFilter(v)}>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue placeholder={t("allVendor")}>
+                    {vendorFilter === "all" ? t("allVendor") : vendors.find((v) => String(v.id) === vendorFilter)?.label ?? "—"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("allVendor")}</SelectItem>
+                  {vendors.map((v) => <SelectItem key={v.id} value={String(v.id)}>{v.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-48 space-y-1">
+              <Label className="text-xs text-muted-foreground">{tc("table.status")}</Label>
+              <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue placeholder={tc("filters.allStatus")}>
+                    {statusFilter === "all" ? tc("filters.allStatus") : vendorInvoiceStatusLabel(statusFilter)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{tc("filters.allStatus")}</SelectItem>
+                  {STATUS.map((s) => <SelectItem key={s} value={s}>{vendorInvoiceStatusLabel(s)}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date From</Label>
+                <Label className="text-xs text-muted-foreground">{tc("filters.from")}</Label>
                 <Input className="h-9 w-36" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date To</Label>
+                <Label className="text-xs text-muted-foreground">{tc("filters.to")}</Label>
                 <Input className="h-9 w-36" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
               </div>
             </div>

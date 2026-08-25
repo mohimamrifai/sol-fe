@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { createAdminServiceType, updateAdminServiceType } from "@/lib/admin-api";
 import { MASTER_PRICING_BASIS_OPTIONS, MASTER_SERVICE_CATEGORY_OPTIONS } from "@/lib/admin-fsd-options";
 import { ApiError } from "@/lib/api-client";
@@ -82,6 +83,20 @@ export function MasterServiceTypeDialog({
     }
   }, [open, mode, row, transportModes]);
 
+  const transportModeOptions = useMemo(
+    () =>
+      transportModes.map((tm) => ({
+        value: String(tm.id),
+        label: String(tm.name ?? tm.code ?? tm.id),
+      })),
+    [transportModes]
+  );
+
+  const serviceCategoryLabel =
+    MASTER_SERVICE_CATEGORY_OPTIONS.find((o) => o.value === serviceCategory)?.label ?? serviceCategory;
+  const pricingBasisLabel =
+    MASTER_PRICING_BASIS_OPTIONS.find((o) => o.value === pricingBasis)?.label ?? pricingBasis;
+
   const save = async () => {
     setError(null);
     setSaving(true);
@@ -140,24 +155,15 @@ export function MasterServiceTypeDialog({
           ) : null}
           <div className="space-y-2">
             <Label>Moda transport</Label>
-            <Select
+            <SearchableCombobox
               value={transportModeId}
-              onValueChange={(v) => {
-                if (v != null) setTransportModeId(v);
-              }}
+              onChange={setTransportModeId}
+              options={transportModeOptions}
+              placeholder="Pilih moda"
+              searchPlaceholder="Cari moda transport…"
               disabled={readOnly}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih moda" />
-              </SelectTrigger>
-              <SelectContent>
-                {transportModes.map((tm) => (
-                  <SelectItem key={String(tm.id)} value={String(tm.id)}>
-                    {String(tm.name ?? tm.code ?? tm.id)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              aria-label="Moda transport"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="st-name">Nama</Label>
@@ -167,7 +173,9 @@ export function MasterServiceTypeDialog({
             <Label>Service Category</Label>
             <Select value={serviceCategory} onValueChange={(v) => v && setServiceCategory(v)} disabled={readOnly}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Pilih kategori">
+                  {serviceCategoryLabel}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {MASTER_SERVICE_CATEGORY_OPTIONS.map((o) => (
@@ -182,7 +190,9 @@ export function MasterServiceTypeDialog({
             <Label>Pricing Basis</Label>
             <Select value={pricingBasis} onValueChange={(v) => v && setPricingBasis(v)} disabled={readOnly}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Pilih basis harga">
+                  {pricingBasisLabel}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {MASTER_PRICING_BASIS_OPTIONS.map((o) => (

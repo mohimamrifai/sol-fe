@@ -1,29 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useShipmentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
-import { adminShipmentReportExportUrl, fetchAdminCompanies, fetchAdminShipmentReport, fetchAdminServiceTypes } from "@/lib/admin-api";
+import { adminShipmentReportExportUrl, ADMIN_REPORT_PER_PAGE, fetchAdminCompanies, fetchAdminShipmentReport, fetchAdminServiceTypes } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-const PER_PAGE = 20;
+const PER_PAGE = ADMIN_REPORT_PER_PAGE;
 
 export default function AdminShipmentReportPage() {
   const authHydrated = useAuthPersistHydrated();
   const t = useTranslations("AdminFsdReports");
   const tc = useTranslations("AdminCommon");
+  const shipmentStatusLabel = useShipmentStatusLabel();
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [meta, setMeta] = useState<LaravelPaginated<Record<string, unknown>> | null>(null);
   const [companies, setCompanies] = useState<{ id: number; label: string }[]>([]);
@@ -65,6 +68,27 @@ export default function AdminShipmentReportPage() {
     });
   }, [authHydrated]);
 
+  const companyOptions = useMemo(
+    () => [{ value: "all", label: t("allCustomer") }, ...companies.map((c) => ({ value: String(c.id), label: c.label }))],
+    [companies, t]
+  );
+  const serviceOptions = useMemo(
+    () => [{ value: "all", label: t("allService") }, ...serviceTypes.map((s) => ({ value: String(s.id), label: s.label }))],
+    [serviceTypes, t]
+  );
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.allStatus") },
+      { value: "planning", label: shipmentStatusLabel("planning") },
+      { value: "ready_for_departure", label: shipmentStatusLabel("ready_for_departure") },
+      { value: "in_transit", label: shipmentStatusLabel("in_transit") },
+      { value: "completed", label: shipmentStatusLabel("completed") },
+      { value: "cancelled", label: shipmentStatusLabel("cancelled") },
+    ],
+    [tc, shipmentStatusLabel]
+  );
+  const statusFilterLabel = statusFilterOptions.find((o) => o.value === statusFilter)?.label ?? tc("filters.allStatus");
+
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
       <AdminPageHeader icon={BarChart3} title={t("shipment.title")} description={t("shipment.subtitle")} actions={
@@ -72,19 +96,44 @@ export default function AdminShipmentReportPage() {
       } />
       <Card><CardHeader><CardTitle>{t("reportData")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-wrap gap-3">
-          <Select value={companyFilter} onValueChange={(v) => v && setCompanyFilter(v)}>
-            <SelectTrigger className="h-9 w-48"><SelectValue placeholder={tc("table.customer")}>{companyFilter === "all" ? t("allCustomer") : companies.find((c) => String(c.id) === companyFilter)?.label ?? "—"}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("allCustomer")}</SelectItem>{companies.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={serviceFilter} onValueChange={(v) => v && setServiceFilter(v)}>
-            <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Service">{serviceFilter === "all" ? t("allService") : serviceTypes.find((s) => String(s.id) === serviceFilter)?.label ?? "—"}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("allService")}</SelectItem>{serviceTypes.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-            <SelectTrigger className="h-9 w-40"><SelectValue placeholder={tc("table.status")}>{statusFilter === "all" ? tc("filters.allStatus") : statusFilter}</SelectValue></SelectTrigger>
-            <SelectContent><SelectItem value="all">{tc("filters.allStatus")}</SelectItem><SelectItem value="draft">draft</SelectItem><SelectItem value="in_transit">in_transit</SelectItem><SelectItem value="delivered">delivered</SelectItem></SelectContent>
-          </Select>
-          <div className="flex items-end gap-2">
+          <div className="w-48 space-y-1">
+            <Label className="text-xs text-muted-foreground">{tc("table.customer")}</Label>
+            <SearchableCombobox
+              value={companyFilter}
+              onChange={setCompanyFilter}
+              options={companyOptions}
+              placeholder={t("allCustomer")}
+              searchPlaceholder="Cari customer…"
+              className="h-9"
+              aria-label={tc("table.customer")}
+            />
+          </div>
+          <div className="w-44 space-y-1">
+            <Label className="text-xs text-muted-foreground">{t("shipment.columns.service")}</Label>
+            <SearchableCombobox
+              value={serviceFilter}
+              onChange={setServiceFilter}
+              options={serviceOptions}
+              placeholder={t("allService")}
+              searchPlaceholder="Cari service…"
+              className="h-9"
+              aria-label={t("shipment.columns.service")}
+            />
+          </div>
+          <div className="w-40 space-y-1">
+            <Label className="text-xs text-muted-foreground">{tc("table.status")}</Label>
+            <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder={tc("filters.allStatus")}>{statusFilterLabel}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {statusFilterOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
             <div className="space-y-1"><Label className="text-xs text-muted-foreground">{tc("filters.from")}</Label><Input className="h-9 w-36" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} /></div>
             <div className="space-y-1"><Label className="text-xs text-muted-foreground">{tc("filters.to")}</Label><Input className="h-9 w-36" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} /></div>
           </div>
@@ -108,7 +157,7 @@ export default function AdminShipmentReportPage() {
                     <TableCell>{String(r.customer ?? "—")}</TableCell>
                     <TableCell>{String(r.route ?? "—")}</TableCell>
                     <TableCell>{String(r.service_type ?? "—")}</TableCell>
-                    <TableCell><Badge variant="outline">{String(r.status ?? "—")}</Badge></TableCell>
+                    <TableCell><Badge variant="outline">{shipmentStatusLabel(String(r.status ?? ""))}</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

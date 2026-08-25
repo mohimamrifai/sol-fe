@@ -102,6 +102,8 @@ export default function MasterAdditionalChargeDetailPage() {
   }
 
   const activityLog = (detail.activity_log as Array<Record<string, unknown>>) ?? [];
+  const formCategoryLabel = t(`categories.${form.charge_category}` as "categories.other");
+  const formPricingBasisLabel = t(`pricingBasis.${form.pricing_basis}` as "pricingBasis.per_shipment");
 
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
@@ -143,14 +145,18 @@ export default function MasterAdditionalChargeDetailPage() {
                 <div className="space-y-2">
                   <Label>{t("columns.category")}</Label>
                   <Select value={form.charge_category} onValueChange={(v) => v && setForm((f) => ({ ...f, charge_category: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue>{formCategoryLabel}</SelectValue>
+                    </SelectTrigger>
                     <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{t(`categories.${c}` as "categories.other")}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>{t("columns.pricingBasis")}</Label>
                   <Select value={form.pricing_basis} onValueChange={(v) => v && setForm((f) => ({ ...f, pricing_basis: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue>{formPricingBasisLabel}</SelectValue>
+                    </SelectTrigger>
                     <SelectContent>{PRICING_BASES.map((p) => <SelectItem key={p} value={p}>{t(`pricingBasis.${p}` as "pricingBasis.per_shipment")}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>

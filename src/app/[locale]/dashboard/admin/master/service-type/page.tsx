@@ -180,9 +180,15 @@ export default function MasterServiceTypesPage() {
     }
   };
 
-  const categoryLabel = useMemo(
-    () => (value: unknown) =>
-      MASTER_SERVICE_CATEGORY_OPTIONS.find((o) => o.value === String(value ?? ""))?.label ?? humanizeSnakeCase(String(value ?? "")),
+  const categoryLabel = useCallback(
+    (svc: Row) => {
+      if (svc.service_category_label) return String(svc.service_category_label);
+      const value = String(svc.service_category ?? "");
+      return (
+        MASTER_SERVICE_CATEGORY_OPTIONS.find((o) => o.value === value)?.label
+        ?? (value ? humanizeSnakeCase(value) : "—")
+      );
+    },
     []
   );
 
@@ -227,7 +233,7 @@ export default function MasterServiceTypesPage() {
                     </TableCell>
                     <TableCell className="font-mono text-xs">{code}</TableCell>
                     <TableCell className="font-medium">{String(svc.name ?? "")}</TableCell>
-                    <TableCell>{categoryLabel(svc.service_category)}</TableCell>
+                    <TableCell>{categoryLabel(svc)}</TableCell>
                     <TableCell>
                       <MasterActiveBadge active={active} />
                     </TableCell>

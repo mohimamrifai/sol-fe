@@ -2,6 +2,9 @@ import { apiFetch } from "../../api-client";
 import { buildListQuery, normalizeListParams, type ListQueryParams } from "../../list-query";
 import type { LaravelPaginated } from "../../types-api";
 
+/** Default page size for admin report tables. */
+export const ADMIN_REPORT_PER_PAGE = 10;
+
 type ReportQuery = ListQueryParams & Record<string, string | number | undefined>;
 
 function buildReportQuery(params?: ReportQuery): string {

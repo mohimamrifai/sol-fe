@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
@@ -45,6 +46,7 @@ const PER_PAGE = 10;
 
 type PricingChargeRow = {
   additional_charge_id: string;
+  additional_charge_label?: string;
   charge_type: "fixed" | "percentage";
   amount: string;
 };
@@ -75,6 +77,24 @@ export default function MasterCustomerPricingPage() {
     rate: "", minimum_charge: "", container_type_id: "", status: "active", remark: "",
   });
   const [saving, setSaving] = useState(false);
+
+  const companyOptions = useMemo(
+    () => companies.map((c) => ({ value: String(c.id), label: c.label })),
+    [companies]
+  );
+  const locationOptions = useMemo(
+    () => locations.map((l) => ({ value: String(l.id), label: l.label })),
+    [locations]
+  );
+  const additionalChargeOptions = useMemo(() => {
+    const map = new Map(additionalCharges.map((ac) => [String(ac.id), ac.label]));
+    for (const row of charges) {
+      if (row.additional_charge_id && row.additional_charge_label && !map.has(row.additional_charge_id)) {
+        map.set(row.additional_charge_id, row.additional_charge_label);
+      }
+    }
+    return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+  }, [additionalCharges, charges]);
 
   const load = useCallback(async () => {
     if (!authHydrated) return;
@@ -126,6 +146,7 @@ export default function MasterCustomerPricingPage() {
         setCharges(
           chargeRows.map((c) => ({
             additional_charge_id: String(c.additional_charge_id ?? ""),
+            additional_charge_label: String(c.additional_charge ?? ""),
             charge_type: (String(c.charge_type ?? "fixed") as "fixed" | "percentage"),
             amount: String(c.amount ?? ""),
           }))
@@ -238,24 +259,36 @@ export default function MasterCustomerPricingPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
               <Label>{t("customerPricing.columns.customer")}</Label>
-              <Select value={form.company_id} onValueChange={(v) => v && setForm((f) => ({ ...f, company_id: v }))}>
-                <SelectTrigger><SelectValue placeholder={t("customerPricing.columns.customer")}>{form.company_id ? companies.find((c) => String(c.id) === form.company_id)?.label ?? "—" : t("customerPricing.columns.customer")}</SelectValue></SelectTrigger>
-                <SelectContent>{companies.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.label}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchableCombobox
+                value={form.company_id}
+                onChange={(v) => setForm((f) => ({ ...f, company_id: v }))}
+                options={companyOptions}
+                placeholder={t("customerPricing.columns.customer")}
+                searchPlaceholder="Cari customer…"
+                aria-label={t("customerPricing.columns.customer")}
+              />
             </div>
             <div className="space-y-2">
               <Label>Origin</Label>
-              <Select value={form.origin_location_id} onValueChange={(v) => v && setForm((f) => ({ ...f, origin_location_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Origin">{form.origin_location_id ? locations.find((l) => String(l.id) === form.origin_location_id)?.label ?? "—" : "Origin"}</SelectValue></SelectTrigger>
-                <SelectContent>{locations.map((l) => <SelectItem key={l.id} value={String(l.id)}>{l.label}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchableCombobox
+                value={form.origin_location_id}
+                onChange={(v) => setForm((f) => ({ ...f, origin_location_id: v }))}
+                options={locationOptions}
+                placeholder="Origin"
+                searchPlaceholder="Cari lokasi…"
+                aria-label="Origin"
+              />
             </div>
             <div className="space-y-2">
               <Label>Destination</Label>
-              <Select value={form.destination_location_id} onValueChange={(v) => v && setForm((f) => ({ ...f, destination_location_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Destination">{form.destination_location_id ? locations.find((l) => String(l.id) === form.destination_location_id)?.label ?? "—" : "Destination"}</SelectValue></SelectTrigger>
-                <SelectContent>{locations.map((l) => <SelectItem key={l.id} value={String(l.id)}>{l.label}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchableCombobox
+                value={form.destination_location_id}
+                onChange={(v) => setForm((f) => ({ ...f, destination_location_id: v }))}
+                options={locationOptions}
+                placeholder="Destination"
+                searchPlaceholder="Cari lokasi…"
+                aria-label="Destination"
+              />
             </div>
             <div className="space-y-2">
               <Label>Cargo Category</Label>
@@ -295,27 +328,65 @@ export default function MasterCustomerPricingPage() {
                 <p className="text-sm text-muted-foreground">{t("customerPricing.noCharges")}</p>
               ) : (
                 <div className="space-y-3">
-                  {charges.map((charge, index) => (
-                    <div key={index} className="grid gap-2 sm:grid-cols-[1fr_140px_140px_auto]">
-                      <Select value={charge.additional_charge_id} onValueChange={(v) => v && updateChargeRow(index, { additional_charge_id: v })}>
-                        <SelectTrigger><SelectValue placeholder={t("customerPricing.chargeName")} /></SelectTrigger>
-                        <SelectContent>
-                          {additionalCharges.map((ac) => (
-                            <SelectItem key={ac.id} value={String(ac.id)}>{ac.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select value={charge.charge_type} onValueChange={(v) => v && updateChargeRow(index, { charge_type: v as "fixed" | "percentage" })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed">{t("customerPricing.chargeFixed")}</SelectItem>
-                          <SelectItem value="percentage">{t("customerPricing.chargePercentage")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Input type="number" value={charge.amount} onChange={(e) => updateChargeRow(index, { amount: e.target.value })} placeholder={t("customerPricing.chargeAmount")} />
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeChargeRow(index)}>{tc("actions.delete")}</Button>
-                    </div>
-                  ))}
+                  {charges.map((charge, index) => {
+                    const chargeTypeLabel =
+                      charge.charge_type === "fixed"
+                        ? t("customerPricing.chargeFixed")
+                        : t("customerPricing.chargePercentage");
+
+                    return (
+                      <div key={index} className="space-y-3 rounded-md border bg-muted/20 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium text-muted-foreground">#{index + 1}</span>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removeChargeRow(index)}>
+                            {tc("actions.delete")}
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{t("customerPricing.chargeName")}</Label>
+                          <SearchableCombobox
+                            value={charge.additional_charge_id}
+                            onChange={(v) => {
+                              const label = additionalChargeOptions.find((o) => o.value === v)?.label;
+                              updateChargeRow(index, {
+                                additional_charge_id: v,
+                                ...(label ? { additional_charge_label: label } : {}),
+                              });
+                            }}
+                            options={additionalChargeOptions}
+                            placeholder={t("customerPricing.chargeName")}
+                            searchPlaceholder="Cari charge…"
+                            aria-label={t("customerPricing.chargeName")}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Charge Type</Label>
+                          <Select
+                            value={charge.charge_type}
+                            onValueChange={(v) => v && updateChargeRow(index, { charge_type: v as "fixed" | "percentage" })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Charge Type">{chargeTypeLabel}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fixed">{t("customerPricing.chargeFixed")}</SelectItem>
+                              <SelectItem value="percentage">{t("customerPricing.chargePercentage")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{t("customerPricing.chargeAmount")}</Label>
+                          <Input
+                            type="number"
+                            className="w-full"
+                            value={charge.amount}
+                            onChange={(e) => updateChargeRow(index, { amount: e.target.value })}
+                            placeholder={t("customerPricing.chargeAmount")}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

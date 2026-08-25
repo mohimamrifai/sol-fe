@@ -516,14 +516,25 @@
       "loadError": "Gagal memuat role.",
       "saveError": "Gagal menyimpan role.",
       "created": "Role berhasil dibuat.",
+      "updated": "Role berhasil diperbarui.",
+      "deactivated": "Role berhasil dinonaktifkan.",
       "permissionsSaved": "Permission role diperbarui.",
+      "deactivate": "Nonaktifkan",
+      "deactivateConfirm": "Role akan dinonaktifkan jika belum digunakan user.",
+      "generalInfo": "Informasi Umum",
+      "assignedUsers": "User Terassign",
+      "noDescription": "—",
+      "noAssignedUsers": "Belum ada user pada role ini.",
       "statusActive": "Active",
       "statusInactive": "Inactive",
       "stats": { "total": "Total Roles", "active": "Active Roles", "inactive": "Inactive Roles" },
       "columns": {
         "name": "Role Name",
         "description": "Description",
-        "totalUsers": "Total Users"
+        "totalUsers": "Total Users",
+        "userName": "Nama Lengkap",
+        "userEmail": "Email",
+        "userStatus": "Status"
       },
       "fields": {
         "name": "Role Name",
