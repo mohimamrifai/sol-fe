@@ -60,6 +60,8 @@ export type ListQueryParams = {
   invoiceStatus?: string;
   /** Payments list — view mode (payments | ar) */
   view?: string;
+  /** Payments list — Midtrans link status (expired) */
+  linkStatus?: string;
   /** Locations list — province filter */
   province?: string;
   /** Locations list — city filter */
@@ -130,6 +132,8 @@ export function buildListQuery(params?: ListQueryParams): string {
   if (invSt) q.set("invoice_status", invSt);
   const vw = params?.view?.trim();
   if (vw) q.set("view", vw);
+  const ls = params?.linkStatus?.trim();
+  if (ls) q.set("link_status", ls);
   const pv = params?.province?.trim();
   if (pv) q.set("province", pv);
   const ct = params?.city?.trim();

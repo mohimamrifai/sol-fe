@@ -35,12 +35,17 @@ import {
 } from "@/lib/dashboard-api";
 import {
   adminDashboardBookingLink,
+  adminDashboardContainerLink,
+  adminDashboardFinanceLink,
+  adminDashboardOperationsLink,
   adminDashboardShipmentLink,
   adminDashboardSummaryLink,
 } from "@/lib/admin-dashboard-links";
+import { hasFeatureAccess } from "@/lib/feature-access";
+import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const BOOKING_STATUS_KEYS = ["draft", "submitted", "under_review", "confirmed", "rejected"] as const;
+const BOOKING_STATUS_KEYS = ["draft", "submitted", "under_review", "approved", "rejected"] as const;
 const SHIPMENT_STATUS_KEYS = [
   "planning",
   "ready_operation",
@@ -62,7 +67,7 @@ type DashboardSuperAdminProps = {
   onFiltersChange?: (filters: AdminDashboardFilters) => void;
 };
 
-function StatusCountGrid({
+function StatusCountTable({
   title,
   items,
   labelPrefix,
@@ -76,28 +81,70 @@ function StatusCountGrid({
   const t = useTranslations("DashboardAdmin");
 
   return (
-    <Card className="min-w-0">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-2 sm:grid-cols-2">
+    <div className="min-w-0">
+      <h3 className="mb-3 text-sm font-medium text-muted-foreground">{title}</h3>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("table.status")}</TableHead>
+            <TableHead className="text-right">{t("table.total")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {items.map(({ key, value }) => (
-            <Link
-              key={key}
-              href={linkForKey(key)}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-auto min-h-10 cursor-pointer justify-between px-3 py-2 text-left font-normal"
-              )}
-            >
-              <span>{t(`${labelPrefix}.${key}` as Parameters<typeof t>[0])}</span>
-              <span className="font-semibold tabular-nums">{value}</span>
-            </Link>
+            <TableRow key={key} className="hover:bg-muted/50">
+              <TableCell>
+                <Link
+                  href={linkForKey(key)}
+                  className="block w-full text-foreground hover:underline"
+                >
+                  {t(`${labelPrefix}.${key}` as Parameters<typeof t>[0])}
+                </Link>
+              </TableCell>
+              <TableCell className="text-right font-semibold tabular-nums">
+                <Link href={linkForKey(key)} className="block w-full">
+                  {value}
+                </Link>
+              </TableCell>
+            </TableRow>
           ))}
-        </div>
-      </CardContent>
-    </Card>
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function ClickableMetricList({
+  items,
+  labelPrefix,
+  linkForKey,
+  formatValue,
+}: {
+  items: Array<{ key: string; value: number }>;
+  labelPrefix: "operations" | "finance" | "container";
+  linkForKey: (key: string) => string;
+  formatValue?: (value: number) => string;
+}) {
+  const t = useTranslations("DashboardAdmin");
+
+  return (
+    <div className="space-y-2 text-sm">
+      {items.map(({ key, value }) => (
+        <Link
+          key={key}
+          href={linkForKey(key)}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "flex h-auto min-h-10 w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 font-normal"
+          )}
+        >
+          <span>{t(`${labelPrefix}.${key}` as Parameters<typeof t>[0])}</span>
+          <span className="font-semibold tabular-nums">
+            {formatValue ? formatValue(value) : value}
+          </span>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -109,6 +156,7 @@ export function DashboardSuperAdmin({
 }: DashboardSuperAdminProps) {
   const t = useTranslations("DashboardAdmin");
   const router = useRouter();
+  const { user } = useAuthStore();
   const [internalFilters, setInternalFilters] = useState<AdminDashboardFilters>({
     period: "today",
     businessDate: new Date().toISOString().slice(0, 10),
@@ -120,10 +168,15 @@ export function DashboardSuperAdmin({
   const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
 
+  const sections = data?.sections;
   const summary = data?.summary;
   const finance = data?.financeSummary;
   const operations = data?.todayOperations;
   const containers = data?.containerSummary;
+  const dateRange = {
+    dateFrom: data?.filters?.dateFrom ?? filters.dateFrom,
+    dateTo: data?.filters?.dateTo ?? filters.dateTo,
+  };
 
   const summaryCards = useMemo<AdminStatCard[]>(() => {
     if (!summary) return [];
@@ -131,7 +184,7 @@ export function DashboardSuperAdmin({
       {
         key: "totalCustomers",
         label: t("summary.totalCustomers"),
-        value: summary.totalCustomers ?? summary.activeCompanies ?? 0,
+        value: summary.totalCustomers ?? 0,
         icon: Building2,
         iconClassName: "bg-sky-100 text-sky-700",
       },
@@ -187,6 +240,65 @@ export function DashboardSuperAdmin({
     key,
     value: data?.shipmentStatusBreakdown?.[key] ?? 0,
   }));
+
+  const operationItems = operations
+    ? Object.entries(operations).map(([key, value]) => ({ key, value: Number(value) }))
+    : [];
+
+  const financeItems = finance
+    ? Object.entries(finance).map(([key, value]) => ({ key, value: Number(value) }))
+    : [];
+
+  const containerItems = containers
+    ? Object.entries(containers).map(([key, value]) => ({ key, value: Number(value) }))
+    : [];
+
+  const quickActions = [
+    {
+      key: "createCustomer",
+      href: "/dashboard/admin/customer/customers/create",
+      icon: Plus,
+      variant: "default" as const,
+      visible: hasFeatureAccess(user, "create_companies"),
+    },
+    {
+      key: "createBooking",
+      href: "/dashboard/admin/customer/bookings/create",
+      icon: FileText,
+      variant: "outline" as const,
+      visible: hasFeatureAccess(user, "create_bookings"),
+    },
+    {
+      key: "shipmentPlanning",
+      href: "/dashboard/admin/customer/shipments?status=created",
+      icon: Truck,
+      variant: "outline" as const,
+      visible: hasFeatureAccess(user, "view_shipments"),
+    },
+    {
+      key: "customerInvoice",
+      href: "/dashboard/admin/customer/invoices?action=create",
+      icon: Receipt,
+      variant: "outline" as const,
+      visible: hasFeatureAccess(user, "create_invoices") || hasFeatureAccess(user, "view_invoices"),
+    },
+    {
+      key: "vendorJobOrder",
+      href: "/dashboard/admin/vendor/job-orders",
+      icon: ClipboardList,
+      variant: "outline" as const,
+      visible:
+        hasFeatureAccess(user, "view_vendor_job_orders_admin") ||
+        hasFeatureAccess(user, "manage_vendor_job_orders_admin"),
+    },
+    {
+      key: "reports",
+      href: "/dashboard/admin/reports/booking",
+      icon: BarChart3,
+      variant: "outline" as const,
+      visible: hasFeatureAccess(user, "view_reports"),
+    },
+  ].filter((action) => action.visible);
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
@@ -256,169 +368,179 @@ export function DashboardSuperAdmin({
         </Button>
       </AdminFilterBar>
 
-      <AdminStatsCards cards={summaryCards} columns={3} loading={loading} />
+      {sections?.summary && summaryCards.length > 0 ? (
+        <AdminStatsCards cards={summaryCards} columns={3} loading={loading} />
+      ) : null}
 
-      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-        <StatusCountGrid
-          title={t("sections.bookingSummary")}
-          items={bookingItems}
-          labelPrefix="bookingStatus"
-          linkForKey={adminDashboardBookingLink}
-        />
-        <StatusCountGrid
-          title={t("sections.shipmentSummary")}
-          items={shipmentItems}
-          labelPrefix="shipmentStatus"
-          linkForKey={adminDashboardShipmentLink}
-        />
-      </div>
-
-      <div className="grid min-w-0 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("sections.todayOperations")}</CardTitle>
+      {sections?.bookingStatus || sections?.shipmentStatus ? (
+        <Card className="min-w-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{t("sections.bookingSummary")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {operations ? (
-              Object.entries(operations).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between gap-2">
-                  <span>{t(`operations.${key}` as Parameters<typeof t>[0])}</span>
-                  <span className="font-semibold tabular-nums">{value}</span>
-                </div>
-              ))
+          <CardContent className="grid min-w-0 gap-6 xl:grid-cols-2">
+            {sections?.bookingStatus ? (
+              <StatusCountTable
+                title={t("subsections.bookingStatus")}
+                items={bookingItems}
+                labelPrefix="bookingStatus"
+                linkForKey={adminDashboardBookingLink}
+              />
+            ) : null}
+            {sections?.shipmentStatus ? (
+              <StatusCountTable
+                title={t("subsections.shipmentStatus")}
+                items={shipmentItems}
+                labelPrefix="shipmentStatus"
+                linkForKey={adminDashboardShipmentLink}
+              />
             ) : null}
           </CardContent>
         </Card>
+      ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("sections.financeSummary")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {finance ? (
-              Object.entries(finance).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between gap-2">
-                  <span>{t(`finance.${key}` as Parameters<typeof t>[0])}</span>
-                  <span className="font-semibold tabular-nums">{formatDashboardCurrency(Number(value))}</span>
-                </div>
-              ))
-            ) : null}
-          </CardContent>
-        </Card>
+      {sections?.todayOperations || sections?.financeSummary || sections?.containerSummary ? (
+        <div className="grid min-w-0 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          {sections?.todayOperations && operations ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("sections.todayOperations")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ClickableMetricList
+                  items={operationItems}
+                  labelPrefix="operations"
+                  linkForKey={(key) => adminDashboardOperationsLink(key, filters.businessDate)}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("sections.containerSummary")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {containers ? (
-              Object.entries(containers).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between gap-2">
-                  <span>{t(`container.${key}` as Parameters<typeof t>[0])}</span>
-                  <span className="font-semibold tabular-nums">{value}</span>
-                </div>
-              ))
-            ) : null}
-          </CardContent>
-        </Card>
-      </div>
+          {sections?.financeSummary && finance ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("sections.financeSummary")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ClickableMetricList
+                  items={financeItems}
+                  labelPrefix="finance"
+                  linkForKey={(key) => adminDashboardFinanceLink(key, dateRange)}
+                  formatValue={(value) => formatDashboardCurrency(value)}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
 
-      <div className="grid min-w-0 gap-4 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4" />
-              {t("sections.recentActivity")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("activity.time")}</TableHead>
-                  <TableHead>{t("activity.module")}</TableHead>
-                  <TableHead>{t("activity.activity")}</TableHead>
-                  <TableHead>{t("activity.user")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(data?.recentActivity ?? []).length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      {t("activity.empty")}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data?.recentActivity.map((row, index) => (
-                    <TableRow key={`${row.time}-${index}`}>
-                      <TableCell>{row.time}</TableCell>
-                      <TableCell>{row.module}</TableCell>
-                      <TableCell>{row.activity}</TableCell>
-                      <TableCell>{row.user}</TableCell>
+          {sections?.containerSummary && containers ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("sections.containerSummary")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ClickableMetricList
+                  items={containerItems}
+                  labelPrefix="container"
+                  linkForKey={adminDashboardContainerLink}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
+      ) : null}
+
+      {sections?.recentActivity || sections?.notifications ? (
+        <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+          {sections?.recentActivity ? (
+            <Card className="xl:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Activity className="h-4 w-4" />
+                  {t("sections.recentActivity")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("activity.time")}</TableHead>
+                      <TableHead>{t("activity.module")}</TableHead>
+                      <TableHead>{t("activity.activity")}</TableHead>
+                      <TableHead>{t("activity.user")}</TableHead>
                     </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(data?.recentActivity ?? []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                          {t("activity.empty")}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      data?.recentActivity?.map((row, index) => (
+                        <TableRow key={`${row.time}-${index}`}>
+                          <TableCell>{row.time}</TableCell>
+                          <TableCell>{row.module}</TableCell>
+                          <TableCell>{row.activity}</TableCell>
+                          <TableCell>{row.user}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {sections?.notifications ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Bell className="h-4 w-4" />
+                  {t("sections.notifications")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {(data?.notifications ?? []).length === 0 ? (
+                  <p className="text-muted-foreground">{t("notifications.empty")}</p>
+                ) : (
+                  data?.notifications?.map((item) => (
+                    <Link
+                      key={item.key}
+                      href={item.link ?? "/dashboard"}
+                      className="block cursor-pointer rounded-md border border-border px-3 py-2 transition-colors hover:bg-muted/50"
+                    >
+                      {t(`notifications.${item.key}` as Parameters<typeof t>[0], { count: item.count })}
+                    </Link>
                   ))
                 )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
+      ) : null}
 
+      {sections?.quickActions && quickActions.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Bell className="h-4 w-4" />
-              {t("sections.notifications")}
-            </CardTitle>
+            <CardTitle className="text-base">{t("sections.quickActions")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {(data?.notifications ?? []).length === 0 ? (
-              <p className="text-muted-foreground">{t("notifications.empty")}</p>
-            ) : (
-              data?.notifications.map((item) => (
+          <CardContent className="flex flex-wrap gap-2">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
                 <Link
-                  key={item.key}
-                  href={item.link ?? "/dashboard"}
-                  className="block cursor-pointer rounded-md border border-border px-3 py-2 transition-colors hover:bg-muted/50"
+                  key={action.key}
+                  href={action.href}
+                  className={cn(buttonVariants({ variant: action.variant }), "cursor-pointer")}
                 >
-                  {t(`notifications.${item.key}` as Parameters<typeof t>[0], { count: item.count })}
+                  <Icon className="mr-2 h-4 w-4" />
+                  {t(`quickActions.${action.key}` as Parameters<typeof t>[0])}
                 </Link>
-              ))
-            )}
+              );
+            })}
           </CardContent>
         </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("sections.quickActions")}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Link href="/dashboard/admin/customer/customers/create" className={cn(buttonVariants(), "cursor-pointer")}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("quickActions.createCustomer")}
-          </Link>
-          <Link href="/dashboard/admin/customer/bookings/create" className={buttonVariants({ variant: "outline" })}>
-            <FileText className="mr-2 h-4 w-4" />
-            {t("quickActions.createBooking")}
-          </Link>
-          <Link href="/dashboard/admin/customer/shipments" className={buttonVariants({ variant: "outline" })}>
-            <Truck className="mr-2 h-4 w-4" />
-            {t("quickActions.shipmentPlanning")}
-          </Link>
-          <Link href="/dashboard/admin/customer/invoices" className={buttonVariants({ variant: "outline" })}>
-            <Receipt className="mr-2 h-4 w-4" />
-            {t("quickActions.customerInvoice")}
-          </Link>
-          <Link href="/dashboard/admin/vendor/job-orders" className={buttonVariants({ variant: "outline" })}>
-            <ClipboardList className="mr-2 h-4 w-4" />
-            {t("quickActions.vendorJobOrder")}
-          </Link>
-          <Link href="/dashboard/admin/reports/shipment" className={buttonVariants({ variant: "outline" })}>
-            <BarChart3 className="mr-2 h-4 w-4" />
-            {t("quickActions.reports")}
-          </Link>
-        </CardContent>
-      </Card>
+      ) : null}
     </div>
   );
 }

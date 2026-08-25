@@ -16,11 +16,18 @@ export type AdminDashboardSummary = {
   revenueThisMonth: number;
   outstandingReceivable: number;
   outstandingPayable: number;
-  activeCompanies?: number;
-  overdueInvoices?: number;
-  pendingCompanyApprovals?: number;
-  paymentsToday?: number;
-  rackUtilization?: number;
+};
+
+export type AdminDashboardSections = {
+  summary: boolean;
+  bookingStatus: boolean;
+  shipmentStatus: boolean;
+  todayOperations: boolean;
+  financeSummary: boolean;
+  containerSummary: boolean;
+  recentActivity: boolean;
+  notifications: boolean;
+  quickActions: boolean;
 };
 
 export type AdminDashboardStatusBreakdown = Record<string, number>;
@@ -70,19 +77,15 @@ export type AdminDashboardPayload = {
     dateFrom: string;
     dateTo: string;
   };
-  summary: AdminDashboardSummary;
-  bookingStatusBreakdown: AdminDashboardStatusBreakdown;
-  shipmentStatusBreakdown: AdminDashboardStatusBreakdown;
-  todayOperations: AdminDashboardTodayOperations;
-  financeSummary: AdminDashboardFinanceSummary;
-  containerSummary: AdminDashboardContainerSummary;
-  recentActivity: AdminDashboardActivity[];
-  notifications: AdminDashboardNotification[];
-  pendingBookings?: unknown[];
-  activeShipments?: unknown[];
-  overdueInvoices?: unknown[];
-  recentPayments?: unknown[];
-  shipmentVolumeByWeek?: unknown[];
+  sections?: AdminDashboardSections;
+  summary: AdminDashboardSummary | null;
+  bookingStatusBreakdown: AdminDashboardStatusBreakdown | null;
+  shipmentStatusBreakdown: AdminDashboardStatusBreakdown | null;
+  todayOperations: AdminDashboardTodayOperations | null;
+  financeSummary: AdminDashboardFinanceSummary | null;
+  containerSummary: AdminDashboardContainerSummary | null;
+  recentActivity: AdminDashboardActivity[] | null;
+  notifications: AdminDashboardNotification[] | null;
 };
 
 export type CustomerDashboardCards = {

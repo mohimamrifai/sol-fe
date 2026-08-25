@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -83,6 +84,7 @@ function formatMethod(method: string, t: ReturnType<typeof useTranslations<"Admi
 }
 
 export default function AdminPaymentsPage() {
+  const searchParams = useSearchParams();
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
   const invoiceStatusLabel = useInvoiceStatusLabel();
@@ -117,10 +119,24 @@ export default function AdminPaymentsPage() {
   const [methodFilter, setMethodFilter] = useState("all");
   const [paymentDateFrom, setPaymentDateFrom] = useState("");
   const [paymentDateTo, setPaymentDateTo] = useState("");
+  const [linkStatusFilter, setLinkStatusFilter] = useState<string | undefined>();
+
+  useEffect(() => {
+    const dateFrom = searchParams.get("date_from");
+    const dateTo = searchParams.get("date_to");
+    const status = searchParams.get("status");
+    const linkStatus = searchParams.get("link_status");
+    if (dateFrom) setPaymentDateFrom(dateFrom);
+    if (dateTo) setPaymentDateTo(dateTo);
+    if (status && status !== "expired") setStatusFilter(status);
+    if (status === "expired" || linkStatus === "expired") {
+      setLinkStatusFilter("expired");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter, companyFilter, methodFilter, paymentDateFrom, paymentDateTo]);
+  }, [debouncedSearch, statusFilter, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, linkStatusFilter]);
 
   const invoiceStatusParam = statusFilter === "all" ? undefined : statusFilter;
 
@@ -145,6 +161,7 @@ export default function AdminPaymentsPage() {
         view: "ar",
         search: debouncedSearch.trim() || undefined,
         invoiceStatus: invoiceStatusParam,
+        linkStatus: linkStatusFilter,
         companyId: paramFromFilter(companyFilter),
         paymentMethod: stringParamFromFilter(methodFilter),
         paymentDateFrom: dateParamFromFilter(paymentDateFrom),
@@ -160,7 +177,7 @@ export default function AdminPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, invoiceStatusParam, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, t]);
+  }, [authHydrated, page, debouncedSearch, invoiceStatusParam, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, linkStatusFilter, t]);
 
   const refreshPayments = useCallback(() => {
     void load();

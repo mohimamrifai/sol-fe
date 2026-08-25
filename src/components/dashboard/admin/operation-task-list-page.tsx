@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +42,7 @@ type Props = {
 
 export function OperationTaskListPage({ operationType, title, description, basePath, icon: Icon }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const authHydrated = useAuthPersistHydrated();
   const t = useTranslations("AdminFsdOperations");
   const tc = useTranslations("AdminCommon");
@@ -60,6 +61,18 @@ export function OperationTaskListPage({ operationType, title, description, baseP
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const date = searchParams.get("date");
+    const status = searchParams.get("status");
+    if (date) {
+      setDateFrom(date);
+      setDateTo(date);
+    }
+    if (status) {
+      setStatusFilter(status);
+    }
+  }, [searchParams]);
 
   const statusLabel = useCallback(
     (value: string) => {

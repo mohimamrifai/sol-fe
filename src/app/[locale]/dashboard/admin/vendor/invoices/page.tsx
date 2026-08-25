@@ -170,7 +170,11 @@ export default function AdminVendorInvoicesPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     const status = searchParams.get("status");
+    const dateFrom = searchParams.get("date_from");
+    const dateTo = searchParams.get("date_to");
     if (status) setStatusFilter(status);
+    if (dateFrom) setInvoiceDateFrom(dateFrom);
+    if (dateTo) setInvoiceDateTo(dateTo);
   }, [searchParams]);
 
   useEffect(() => {

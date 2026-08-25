@@ -29,11 +29,19 @@
       "notifications": "Notifications",
       "quickActions": "Quick Actions"
     },
+    "subsections": {
+      "bookingStatus": "Booking Status",
+      "shipmentStatus": "Shipment Status"
+    },
+    "table": {
+      "status": "Status",
+      "total": "Total"
+    },
     "bookingStatus": {
       "draft": "Draft",
       "submitted": "Submitted",
       "under_review": "Under Review",
-      "confirmed": "Confirmed",
+      "approved": "Approved",
       "rejected": "Rejected"
     },
     "shipmentStatus": {
@@ -86,6 +94,7 @@
       "invoicesDueToday": "{count} customer invoices due today.",
       "vendorInvoicesPending": "{count} vendor invoices pending verification.",
       "expiredPayments": "{count} Midtrans payment links expired.",
+      "freeStorageExceeded": "{count} containers exceeded free storage.",
       "empty": "No notifications."
     },
     "quickActions": {

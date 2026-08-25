@@ -261,14 +261,26 @@ export default function AdminInvoicesPage() {
   const [invoiceDateTo, setInvoiceDateTo] = useState("");
   const [dueDateFrom, setDueDateFrom] = useState("");
   const [dueDateTo, setDueDateTo] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editRow, setEditRow] = useState<InvRow | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteRow, setDeleteRow] = useState<InvRow | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const status = searchParams.get("status");
     const issuedFrom = searchParams.get("issued_from");
     const issuedTo = searchParams.get("issued_to");
+    const dueFrom = searchParams.get("due_from");
+    const dueTo = searchParams.get("due_to");
     if (status) setStatusFilter(status);
     if (issuedFrom) setInvoiceDateFrom(issuedFrom);
     if (issuedTo) setInvoiceDateTo(issuedTo);
+    if (dueFrom) setDueDateFrom(dueFrom);
+    if (dueTo) setDueDateTo(dueTo);
+    if (searchParams.get("action") === "create") setCreateOpen(true);
   }, [searchParams]);
 
   const invoiceStatusFilters = useMemo(
@@ -282,14 +294,6 @@ export default function AdminInvoicesPage() {
     ],
     [t, tc]
   );
-
-  const [createOpen, setCreateOpen] = useState(false);
-  const [generateOpen, setGenerateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editRow, setEditRow] = useState<InvRow | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteRow, setDeleteRow] = useState<InvRow | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     setPage(1);

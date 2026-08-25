@@ -16,8 +16,16 @@ const BOOKING_FSD_FILTER: Record<string, string> = {
   draft: "draft",
   submitted: "submitted",
   under_review: "under_review",
-  confirmed: "confirmed",
+  approved: "confirmed",
   rejected: "rejected",
+};
+
+const CONTAINER_STATUS_FILTER: Record<string, string> = {
+  available: "available",
+  reserved: "reserved",
+  inTransit: "in_transit",
+  maintenance: "maintenance",
+  inactive: "inactive",
 };
 
 function monthRange(date = new Date()): { from: string; to: string } {
@@ -59,4 +67,54 @@ export function adminDashboardSummaryLink(key: string, businessDate?: string): s
     default:
       return "/dashboard";
   }
+}
+
+export function adminDashboardOperationsLink(key: string, businessDate?: string): string {
+  const today = businessDate ?? new Date().toISOString().slice(0, 10);
+  switch (key) {
+    case "pickupToday":
+      return `/dashboard/admin/operations/pickup?date=${today}`;
+    case "trainDepartureToday":
+      return `/dashboard/admin/operations/train-departure?date=${today}`;
+    case "trainArrivalToday":
+      return `/dashboard/admin/operations/train-arrival?date=${today}`;
+    case "deliveryToday":
+      return `/dashboard/admin/operations/delivery?date=${today}`;
+    case "podWaitingUpload":
+      return "/dashboard/admin/operations/proof-of-delivery?status=waiting_pod";
+    default:
+      return "/dashboard";
+  }
+}
+
+export function adminDashboardFinanceLink(
+  key: string,
+  range?: { dateFrom?: string; dateTo?: string }
+): string {
+  const from = range?.dateFrom ?? "";
+  const to = range?.dateTo ?? "";
+
+  switch (key) {
+    case "customerInvoice":
+      return `/dashboard/admin/customer/invoices?issued_from=${from}&issued_to=${to}`;
+    case "customerPayment":
+      return from && to
+        ? `/dashboard/admin/customer/payments?date_from=${from}&date_to=${to}`
+        : "/dashboard/admin/customer/payments";
+    case "outstandingCustomer":
+      return "/dashboard/admin/customer/invoices?status=issued";
+    case "vendorInvoice":
+      return `/dashboard/admin/vendor/invoices?date_from=${from}&date_to=${to}`;
+    case "vendorPayment":
+      return `/dashboard/admin/vendor/payments?date_from=${from}&date_to=${to}`;
+    case "outstandingVendor":
+      return "/dashboard/admin/vendor/invoices?status=ready_for_payment";
+    default:
+      return "/dashboard";
+  }
+}
+
+export function adminDashboardContainerLink(statusKey: string): string {
+  const status = CONTAINER_STATUS_FILTER[statusKey] ?? statusKey;
+  return `/dashboard/admin/container/containers?status=${encodeURIComponent(status)}`;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,7 @@ const STATUS_META: Record<(typeof STATUS_OPTIONS)[number], { icon: typeof Clock;
 export default function AdminProofOfDeliveryOperationsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = String(params?.locale ?? "id");
   const basePath = `/${locale}/dashboard/admin/operations/proof-of-delivery`;
   const authHydrated = useAuthPersistHydrated();
@@ -51,6 +52,13 @@ export default function AdminProofOfDeliveryOperationsPage() {
   const [podDateFrom, setPodDateFrom] = useState("");
   const [podDateTo, setPodDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status) {
+      setStatusFilter(status);
+    }
+  }, [searchParams]);
 
   const statusLabel = useCallback(
     (value: string) => {

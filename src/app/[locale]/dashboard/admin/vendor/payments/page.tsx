@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +49,7 @@ const STATUS_META: Record<(typeof STATUS)[number], { icon: typeof Clock; iconCla
 export default function AdminVendorPaymentsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = String(params?.locale ?? "id");
   const basePath = `/${locale}/dashboard/admin/vendor/payments`;
   const authHydrated = useAuthPersistHydrated();
@@ -69,6 +70,13 @@ export default function AdminVendorPaymentsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const dateFromParam = searchParams.get("date_from");
+    const dateToParam = searchParams.get("date_to");
+    if (dateFromParam) setDateFrom(dateFromParam);
+    if (dateToParam) setDateTo(dateToParam);
+  }, [searchParams]);
 
   const vendorFilterOptions = useMemo(
     () => [

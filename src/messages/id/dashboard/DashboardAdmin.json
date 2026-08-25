@@ -29,11 +29,19 @@
       "notifications": "Notifikasi",
       "quickActions": "Aksi Cepat"
     },
+    "subsections": {
+      "bookingStatus": "Status Booking",
+      "shipmentStatus": "Status Shipment"
+    },
+    "table": {
+      "status": "Status",
+      "total": "Total"
+    },
     "bookingStatus": {
       "draft": "Draft",
       "submitted": "Diajukan",
       "under_review": "Dalam Review",
-      "confirmed": "Terkonfirmasi",
+      "approved": "Approved",
       "rejected": "Ditolak"
     },
     "shipmentStatus": {
@@ -86,6 +94,7 @@
       "invoicesDueToday": "{count} invoice pelanggan jatuh tempo hari ini.",
       "vendorInvoicesPending": "{count} invoice vendor belum diverifikasi.",
       "expiredPayments": "{count} link pembayaran Midtrans kedaluwarsa.",
+      "freeStorageExceeded": "{count} kontainer melebihi free storage.",
       "empty": "Tidak ada notifikasi."
     },
     "quickActions": {
