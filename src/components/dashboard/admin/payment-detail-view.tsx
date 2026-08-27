@@ -2,7 +2,9 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,6 +20,10 @@ import { paymentStatusBadgeClass } from "@/lib/payment-status";
 import { cn } from "@/lib/utils";
 import { useInvoiceStatusLabel, usePaymentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
+import { regenerateAdminPaymentLink } from "@/lib/admin-api";
+import { ApiError } from "@/lib/api-client";
+import { toast } from "sonner";
+import { PaymentSupportingDocuments } from "@/components/dashboard/admin/payments/payment-supporting-documents";
 
 type Row = Record<string, unknown>;
 
@@ -63,9 +69,11 @@ function fieldRow(label: string, value: ReactNode) {
 type Props = {
   data: Row | null;
   locale?: string;
+  canManage?: boolean;
+  onRefresh?: () => void;
 };
 
-export function PaymentDetailView({ data, locale = "id" }: Props) {
+export function PaymentDetailView({ data, locale = "id", canManage = false, onRefresh }: Props) {
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
   const tMethod = useTranslations("Payments.paymentMethod");
@@ -82,6 +90,11 @@ export function PaymentDetailView({ data, locale = "id" }: Props) {
   const onlinePayment = (data.online_payment ?? null) as Row | null;
   const paymentHistory = (data.payment_history ?? []) as Row[];
   const activityTimeline = (data.activity_timeline ?? []) as Row[];
+  const supportingDocuments = (data.supporting_documents ?? []) as Array<Record<string, unknown>>;
+  const actions = (data.actions ?? {}) as Record<string, unknown>;
+  const paymentId = Number(data.id);
+
+  const [regenerating, setRegenerating] = useState(false);
 
   const arStatus = String(data.invoice_ar_status ?? invoice.status ?? "");
   const invoiceId = invoice.id != null ? Number(invoice.id) : null;
@@ -200,7 +213,56 @@ export function PaymentDetailView({ data, locale = "id" }: Props) {
               {paymentStatusLabel(String(onlinePayment.midtrans_status))}
             </Badge>
           ) : "—")}
+          {(actions.can_copy_link || actions.can_regenerate_link) && canManage ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {actions.can_copy_link && onlinePayment.payment_link ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(String(onlinePayment.payment_link)).then(
+                      () => toast.success(t("generateLink.copied")),
+                      () => toast.error(t("generateLink.copyFailed"))
+                    );
+                  }}
+                >
+                  {t("detail.copyLink")}
+                </Button>
+              ) : null}
+              {actions.can_regenerate_link && Number.isFinite(paymentId) ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={regenerating}
+                  onClick={() => {
+                    setRegenerating(true);
+                    void regenerateAdminPaymentLink(paymentId)
+                      .then((res) => {
+                        toast.success(res.message);
+                        onRefresh?.();
+                      })
+                      .catch((e) => toast.error(e instanceof ApiError ? e.message : t("detail.regenerateFailed")))
+                      .finally(() => setRegenerating(false));
+                  }}
+                >
+                  {regenerating ? t("detail.regenerating") : t("detail.regenerateLink")}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
+      ) : null}
+
+      {Number.isFinite(paymentId) ? (
+        <PaymentSupportingDocuments
+          paymentId={paymentId}
+          paymentNo={String(data.payment_number ?? data.payment_no ?? paymentId)}
+          documents={supportingDocuments as never[]}
+          canUpload={canManage}
+          onUploaded={onRefresh}
+        />
       ) : null}
 
       {activityTimeline.length > 0 ? (

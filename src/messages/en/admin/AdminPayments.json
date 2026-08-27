@@ -89,7 +89,21 @@
       "midtransStatus": "Midtrans Status",
       "printReceipt": "Print Receipt",
       "receiptDownloaded": "Receipt downloaded.",
-      "receiptFailed": "Failed to download receipt."
+      "receiptFailed": "Failed to download receipt.",
+      "copyLink": "Copy Payment Link",
+      "regenerateLink": "Regenerate Payment Link",
+      "regenerating": "Regenerating link…",
+      "regenerateFailed": "Failed to regenerate payment link.",
+      "sectionDocuments": "Supporting Documents",
+      "documentsEmpty": "No supporting documents yet.",
+      "uploadProof": "Upload Payment Proof",
+      "uploadOther": "Upload Other Document",
+      "docView": "View",
+      "docDownload": "Download",
+      "docUploaded": "Document uploaded.",
+      "docUploadFailed": "Failed to upload document.",
+      "docOpenFailed": "Failed to open document.",
+      "docDownloadFailed": "Failed to download document."
     },
     "generateLink": {
       "title": "Generate Payment Link",

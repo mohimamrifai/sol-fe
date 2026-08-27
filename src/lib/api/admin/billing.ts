@@ -131,6 +131,43 @@ export async function fetchAdminPaymentOptions() {
   );
 }
 
+export async function regenerateAdminPaymentLink(paymentId: number) {
+  return apiFetch<{ message: string; data: { payment_url: string; payment_id?: number } }>(
+    `/admin/payments/${paymentId}/regenerate-payment-link`,
+    { method: "POST" }
+  );
+}
+
+export async function downloadAdminPaymentProof(
+  paymentId: number,
+  opts?: { download?: boolean; attachmentId?: number }
+) {
+  const qs = new URLSearchParams();
+  if (opts?.download) qs.set("download", "1");
+  if (opts?.attachmentId) qs.set("attachment_id", String(opts.attachmentId));
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return apiFetchBlob(`/admin/payments/${paymentId}/proof-download${suffix}`, { method: "GET" });
+}
+
+export async function previewAdminPaymentProof(paymentId: number, attachmentId?: number) {
+  const suffix = attachmentId ? `?attachment_id=${attachmentId}` : "";
+  return apiFetchBlob(`/admin/payments/${paymentId}/proof-preview${suffix}`, { method: "GET" });
+}
+
+export async function uploadAdminPaymentProof(
+  paymentId: number,
+  file: File,
+  category: "payment_proof" | "other" = "payment_proof"
+) {
+  const fd = new FormData();
+  fd.append("proof_file", file);
+  fd.append("category", category);
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(
+    `/admin/payments/${paymentId}/proof`,
+    { method: "POST", body: fd }
+  );
+}
+
 export async function downloadAdminPaymentReceipt(paymentId: number, download = false) {
   return apiFetchBlob(`/admin/payments/${paymentId}/receipt${download ? "?download=1" : ""}`, {
     method: "GET",

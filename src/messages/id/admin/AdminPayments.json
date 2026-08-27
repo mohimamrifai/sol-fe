@@ -89,7 +89,21 @@
       "midtransStatus": "Status Midtrans",
       "printReceipt": "Cetak Receipt",
       "receiptDownloaded": "Receipt berhasil diunduh.",
-      "receiptFailed": "Gagal mengunduh receipt."
+      "receiptFailed": "Gagal mengunduh receipt.",
+      "copyLink": "Salin Payment Link",
+      "regenerateLink": "Regenerate Payment Link",
+      "regenerating": "Membuat ulang link…",
+      "regenerateFailed": "Gagal regenerate payment link.",
+      "sectionDocuments": "Dokumen Pendukung",
+      "documentsEmpty": "Belum ada dokumen pendukung.",
+      "uploadProof": "Upload Bukti Pembayaran",
+      "uploadOther": "Upload Dokumen Lain",
+      "docView": "Lihat",
+      "docDownload": "Unduh",
+      "docUploaded": "Dokumen berhasil diunggah.",
+      "docUploadFailed": "Gagal mengunggah dokumen.",
+      "docOpenFailed": "Gagal membuka dokumen.",
+      "docDownloadFailed": "Gagal mengunduh dokumen."
     },
     "generateLink": {
       "title": "Generate Link Pembayaran",

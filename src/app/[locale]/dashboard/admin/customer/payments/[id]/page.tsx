@@ -8,6 +8,8 @@ import { PaymentDetailView } from "@/components/dashboard/admin/payment-detail-v
 import { RecordPaymentDialog } from "@/components/dashboard/admin/payments/record-payment-dialog";
 import { downloadAdminPaymentReceipt, fetchAdminPayment } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
+import { useAuthStore } from "@/lib/store";
+import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -18,6 +20,10 @@ export default function AdminPaymentDetailPage() {
   const tc = useTranslations("AdminCommon");
   const locale = String(params?.locale ?? "id");
   const id = Number(params?.id);
+  const authHydrated = useAuthPersistHydrated();
+  const { user } = useAuthStore();
+  const roles = user?.roles ?? [];
+  const canManage = authHydrated && (roles.includes("super_admin") || roles.includes("finance"));
 
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +93,7 @@ export default function AdminPaymentDetailPage() {
         {loading ? (
           <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
         ) : (
-          <PaymentDetailView data={data} locale={locale} />
+          <PaymentDetailView data={data} locale={locale} canManage={canManage} onRefresh={() => void load()} />
         )}
         <Button
           variant="outline"
