@@ -38,9 +38,17 @@ import {
 } from "@/components/ui/popover";
 import { ChevronDown, Package, Truck, Wrench, Settings } from "lucide-react";
 import { DangerousGoodsSection } from "@/components/dashboard/admin/bookings/create/dangerous-goods-section";
-import { ShipperConsigneeSection } from "@/components/dashboard/admin/bookings/create/shipper-consignee-section";
+import { deleteAdminBookingAttachment, fetchAdminCompanyLocations } from "@/lib/admin-api";
+import type { AttachmentDraft, CustomerLoc } from "@/hooks/use-booking-form";
+import { ADMIN_SHIPMENT_COVERAGES } from "@/hooks/use-admin-booking-form";
+import { PartyInfoSection } from "@/components/dashboard/booking/create/party-info-section";
 import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
+import { AttachmentSection } from "@/components/dashboard/booking/create/attachment-section";
 import type { ContainerRow, PackageRow } from "@/hooks/use-booking-form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "next-intl";
+import { Trash2 } from "lucide-react";
 
 type Loc = { id: number; name: string; code?: string };
 type TM = { id: number; name: string; code?: string };
@@ -55,7 +63,15 @@ type CC = {
   requires_temperature?: boolean;
   is_project_cargo?: boolean;
 };
+type ExistingAttachment = {
+  id: number;
+  original_name?: string;
+  document_type?: string | null;
+  file_path?: string;
+};
+
 type ComboOption = { value: string; label: string };
+
 
 const FCL_MANDATORY_CODES = ["FREE_STORAGE_FCL", "LOLO", "CONTAINER_RENT"];
 const LCL_MANDATORY_CODES = ["FREE_STORAGE_LCL"];
@@ -84,6 +100,9 @@ export function BookingEditDialog({
   saving,
   onSave,
 }: BookingEditDialogProps) {
+  const tForm = useTranslations("Bookings.create.form");
+  const tCommon = useTranslations("Bookings");
+  const te = useTranslations("AdminBookings.editDialog");
   const [locations, setLocations] = useState<Loc[]>([]);
   const [modes, setModes] = useState<TM[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ST[]>([]);
@@ -105,8 +124,35 @@ export function BookingEditDialog({
   const [departureDate, setDepartureDate] = useState("");
   const [cargo, setCargo] = useState("");
   const [cargoCategoryId, setCargoCategoryId] = useState("");
-  const [shipper, setShipper] = useState({ name: "", address: "", phone: "" });
-  const [consignee, setConsignee] = useState({ name: "", address: "", phone: "" });
+  const [shipperName, setShipperName] = useState("");
+  const [shipperAddress, setShipperAddress] = useState("");
+  const [shipperPhone, setShipperPhone] = useState("");
+  const [shipperLocationId, setShipperLocationId] = useState("");
+  const [shipperPicName, setShipperPicName] = useState("");
+  const [shipperPicEmail, setShipperPicEmail] = useState("");
+  const [shipperPicMobile, setShipperPicMobile] = useState("");
+  const [shipperProvinceId, setShipperProvinceId] = useState("");
+  const [shipperCityId, setShipperCityId] = useState("");
+  const [shipperDistrictId, setShipperDistrictId] = useState("");
+  const [shipperPostalCode, setShipperPostalCode] = useState("");
+  const [consigneeName, setConsigneeName] = useState("");
+  const [consigneeAddress, setConsigneeAddress] = useState("");
+  const [consigneePhone, setConsigneePhone] = useState("");
+  const [consigneeType, setConsigneeType] = useState<"customer_location" | "external">("external");
+  const [consigneeLocationId, setConsigneeLocationId] = useState("");
+  const [consigneePicName, setConsigneePicName] = useState("");
+  const [consigneePicEmail, setConsigneePicEmail] = useState("");
+  const [consigneePicMobile, setConsigneePicMobile] = useState("");
+  const [consigneeProvinceId, setConsigneeProvinceId] = useState("");
+  const [consigneeCityId, setConsigneeCityId] = useState("");
+  const [consigneeDistrictId, setConsigneeDistrictId] = useState("");
+  const [consigneePostalCode, setConsigneePostalCode] = useState("");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
+  const [shipmentCoverage, setShipmentCoverage] = useState("port_to_port");
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+  const [pickupNotes, setPickupNotes] = useState("");
+  const [customerLocations, setCustomerLocations] = useState<CustomerLoc[]>([]);
   const [isDg, setIsDg] = useState(false);
   const [dgClassId, setDgClassId] = useState("");
   const [unNumber, setUnNumber] = useState("");
@@ -121,6 +167,9 @@ export function BookingEditDialog({
   const [containerResponsibility, setContainerResponsibility] = useState("COC");
   const [packages, setPackages] = useState<PackageRow[]>([]);
   const [containers, setContainers] = useState<ContainerRow[]>([]);
+  const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<ExistingAttachment[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -171,16 +220,36 @@ export function BookingEditDialog({
     setDepartureDate(data.departure_date ? String(data.departure_date).slice(0, 10) : "");
     setCargo(data.cargo_description ?? "");
     setCargoCategoryId(data.cargo_category_id ? String(data.cargo_category_id) : (data.cargoCategory?.id ? String(data.cargoCategory.id) : (data.cargo_category?.id ? String(data.cargo_category.id) : "")));
-    setShipper({
-      name: data.shipper_name ?? "",
-      address: data.shipper_address ?? "",
-      phone: data.shipper_phone ?? "",
-    });
-    setConsignee({
-      name: data.consignee_name ?? "",
-      address: data.consignee_address ?? "",
-      phone: data.consignee_phone ?? "",
-    });
+    setShipperName(data.shipper_name ?? "");
+    setShipperAddress(data.shipper_address ?? "");
+    setShipperPhone(data.shipper_phone ?? "");
+    setShipperLocationId(data.shipper_location_id ? String(data.shipper_location_id) : "");
+    const shipperSnap = (data as BookingDetail & { shipper_snapshot?: Record<string, unknown> }).shipper_snapshot;
+    setShipperPicName(String(shipperSnap?.pic_name ?? ""));
+    setShipperPicEmail(String(shipperSnap?.pic_email ?? ""));
+    setShipperPicMobile(String(shipperSnap?.pic_mobile ?? shipperSnap?.phone ?? data.shipper_phone ?? ""));
+    setShipperProvinceId(String(shipperSnap?.province_id ?? ""));
+    setShipperCityId(String(shipperSnap?.city_id ?? ""));
+    setShipperDistrictId(String(shipperSnap?.district_id ?? ""));
+    setShipperPostalCode(String(shipperSnap?.postal_code ?? ""));
+    setConsigneeName(data.consignee_name ?? "");
+    setConsigneeAddress(data.consignee_address ?? "");
+    setConsigneePhone(data.consignee_phone ?? "");
+    setConsigneeType(((data as BookingDetail & { consignee_type?: string }).consignee_type as "customer_location" | "external") ?? "external");
+    setConsigneeLocationId((data as BookingDetail & { consignee_location_id?: number }).consignee_location_id ? String((data as BookingDetail & { consignee_location_id?: number }).consignee_location_id) : "");
+    const consigneeSnap = (data as BookingDetail & { consignee_snapshot?: Record<string, unknown> }).consignee_snapshot;
+    setConsigneePicName(String(consigneeSnap?.pic_name ?? ""));
+    setConsigneePicEmail(String(consigneeSnap?.pic_email ?? ""));
+    setConsigneePicMobile(String(consigneeSnap?.pic_mobile ?? consigneeSnap?.phone ?? data.consignee_phone ?? ""));
+    setConsigneeProvinceId(String(consigneeSnap?.province_id ?? ""));
+    setConsigneeCityId(String(consigneeSnap?.city_id ?? ""));
+    setConsigneeDistrictId(String(consigneeSnap?.district_id ?? ""));
+    setConsigneePostalCode(String(consigneeSnap?.postal_code ?? ""));
+    setDeliveryNotes(String((data as BookingDetail & { delivery_notes?: string }).delivery_notes ?? ""));
+    setShipmentCoverage(String(data.shipment_coverage ?? "port_to_port"));
+    setPickupDate((data as BookingDetail & { pickup_date?: string }).pickup_date ? String((data as BookingDetail & { pickup_date?: string }).pickup_date).slice(0, 10) : "");
+    setPickupTime(String((data as BookingDetail & { pickup_time?: string }).pickup_time ?? ""));
+    setPickupNotes(String((data as BookingDetail & { pickup_notes?: string }).pickup_notes ?? ""));
     setIsDg(Boolean(data.is_dangerous_goods));
     setDgClassId(data.dg_class_id ? String(data.dg_class_id) : (data.dgClass?.id ? String(data.dgClass.id) : (data.dg_class?.id ? String(data.dg_class.id) : "")));
     setUnNumber(data.un_number ?? "");
@@ -228,8 +297,33 @@ export function BookingEditDialog({
       }))
     );
     setMsdsFile(null);
+    setNotes(String(data.notes ?? ""));
+    setAttachments([]);
+    setExistingAttachments(
+      (((data as BookingDetail & { attachments?: ExistingAttachment[] }).attachments ?? []) as ExistingAttachment[]).map((att) => ({
+        id: Number(att.id),
+        original_name: att.original_name,
+        document_type: att.document_type,
+        file_path: att.file_path,
+      }))
+    );
     setValidationErrors(null);
   }, [open, data]);
+
+  useEffect(() => {
+    if (!open || !data?.company_id) {
+      setCustomerLocations([]);
+      return;
+    }
+    let cancelled = false;
+    void fetchAdminCompanyLocations(Number(data.company_id), { page: 1, perPage: 500, status: "active" }).then((res) => {
+      if (cancelled) return;
+      setCustomerLocations(((res as LaravelPaginated<CustomerLoc>).data ?? []) as CustomerLoc[]);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, data?.company_id]);
 
   useEffect(() => {
     if (!open || !modeId) return;
@@ -268,6 +362,11 @@ export function BookingEditDialog({
     value: String(s.id),
     label: `${s.name}${s.code ? ` (${s.code})` : ""}`,
   }));
+  const coverageOptions: ComboOption[] = ADMIN_SHIPMENT_COVERAGES.map((c) => ({
+    value: c.value,
+    label: tCommon(`coverage.${c.value}`),
+  }));
+  const showPickupFields = shipmentCoverage === "door_to_port" || shipmentCoverage === "door_to_door";
   const cargoCategoryOptions: ComboOption[] = cargoCats.map((c) => ({ value: String(c.id), label: c.name }));
 
   // Sync isDg
@@ -324,12 +423,53 @@ export function BookingEditDialog({
     fd.append("cargo_category_id", cargoCategoryId);
     if (departureDate) fd.append("departure_date", departureDate);
     if (cargo) fd.append("cargo_description", cargo);
-    fd.append("shipper_name", shipper.name);
-    fd.append("shipper_address", shipper.address);
-    fd.append("shipper_phone", shipper.phone);
-    fd.append("consignee_name", consignee.name);
-    fd.append("consignee_address", consignee.address);
-    fd.append("consignee_phone", consignee.phone);
+    if (shipmentCoverage) fd.append("shipment_coverage", shipmentCoverage);
+    if (pickupDate) fd.append("pickup_date", pickupDate);
+    if (pickupTime) fd.append("pickup_time", pickupTime);
+    if (pickupNotes) fd.append("pickup_notes", pickupNotes);
+    if (deliveryNotes) fd.append("delivery_notes", deliveryNotes);
+    if (notes) fd.append("notes", notes);
+    fd.append("shipper_name", shipperName);
+    fd.append("shipper_address", shipperAddress);
+    fd.append("shipper_phone", shipperPhone);
+    if (shipperLocationId) fd.append("shipper_location_id", shipperLocationId);
+    fd.append(
+      "shipper_snapshot",
+      JSON.stringify({
+        company: shipperName,
+        pic_name: shipperPicName,
+        pic_email: shipperPicEmail,
+        pic_mobile: shipperPicMobile,
+        country: "Indonesia",
+        province_id: shipperProvinceId || null,
+        city_id: shipperCityId || null,
+        district_id: shipperDistrictId || null,
+        postal_code: shipperPostalCode || null,
+        address: shipperAddress,
+        phone: shipperPhone,
+      })
+    );
+    fd.append("consignee_name", consigneeName);
+    fd.append("consignee_address", consigneeAddress);
+    fd.append("consignee_phone", consigneePhone);
+    fd.append("consignee_type", consigneeType);
+    if (consigneeType === "customer_location" && consigneeLocationId) fd.append("consignee_location_id", consigneeLocationId);
+    fd.append(
+      "consignee_snapshot",
+      JSON.stringify({
+        company: consigneeName,
+        pic_name: consigneePicName,
+        pic_email: consigneePicEmail,
+        pic_mobile: consigneePicMobile,
+        country: "Indonesia",
+        province_id: consigneeProvinceId || null,
+        city_id: consigneeCityId || null,
+        district_id: consigneeDistrictId || null,
+        postal_code: consigneePostalCode || null,
+        address: consigneeAddress,
+        phone: consigneePhone,
+      })
+    );
     fd.append("is_dangerous_goods", isDg ? "1" : "0");
     if (isDg && dgClassId) fd.append("dg_class_id", dgClassId);
     if (isDg && unNumber) fd.append("un_number", unNumber);
@@ -338,6 +478,20 @@ export function BookingEditDialog({
     if (showTemp && temperature) fd.append("temperature", temperature);
     fd.append("additional_services", JSON.stringify(selectedAddOns.map((id) => ({ id }))));
     if (isFCL) fd.append("container_responsibility", containerResponsibility);
+    attachments.forEach((a, i) => {
+      fd.append(`attachments[${i}]`, a.file);
+    });
+    if (attachments.length) {
+      fd.append(
+        "attachments_meta",
+        JSON.stringify(
+          attachments.map((a) => ({
+            document_type: a.document_type || "other",
+            remarks: a.remarks || "",
+          }))
+        )
+      );
+    }
     if (packages.length) {
       fd.append(
         "packages",
@@ -409,9 +563,9 @@ export function BookingEditDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl p-0 gap-0">
         <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
           <div>
-            <DialogTitle className="text-xl">Edit Booking</DialogTitle>
+            <DialogTitle className="text-xl">{te("title")}</DialogTitle>
             <DialogDescription>
-              Ubah detail booking untuk <span className="font-mono">{data?.booking_number ?? "booking"}</span>.
+              {te("description", { bookingNo: data?.booking_number ?? "booking" })}
             </DialogDescription>
           </div>
         </div>
@@ -420,14 +574,14 @@ export function BookingEditDialog({
           {loadError ? <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-4">{loadError}</p> : null}
           
           {loading ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Memuat detail booking…</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{te("loading")}</p>
           ) : loadingMasters ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Memuat form edit…</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{te("loadingMasters")}</p>
           ) : (
             <div className="space-y-8">
               {/* Section 1: Route & Service */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Rute & Layanan</h3>
+                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("routeTitle")}</h3>
                 <div className="grid gap-5 sm:grid-cols-2 bg-white p-5 rounded-xl border shadow-sm">
                   <div className="space-y-2">
                     <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Origin</Label>
@@ -461,25 +615,139 @@ export function BookingEditDialog({
                     </Combobox>
                     {renderError("service_type_id")}
                   </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+                      {tForm("shipmentCoverage")}
+                    </Label>
+                    <Combobox
+                      items={coverageOptions}
+                      value={coverageOptions.find((x) => x.value === shipmentCoverage) ?? null}
+                      onValueChange={(next) => setShipmentCoverage(next?.value ?? "")}
+                    >
+                      <ComboboxInput
+                        className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.shipment_coverage && "[&_input]:border-red-500")}
+                        placeholder={tForm("shipmentCoveragePlaceholder")}
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>{tForm("comboboxEmpty")}</ComboboxEmpty>
+                        <ComboboxList>
+                          {(item: ComboOption) => (
+                            <ComboboxItem key={item.value} value={item}>
+                              {item.label}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                    {renderError("shipment_coverage")}
+                  </div>
+                  {showPickupFields ? (
+                    <>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+                          {tForm("pickupDate")}
+                        </Label>
+                        <Input
+                          type="date"
+                          value={pickupDate}
+                          onChange={(e) => setPickupDate(e.target.value)}
+                          className={cn("h-10 bg-zinc-50/50", validationErrors?.pickup_date && "border-red-500")}
+                        />
+                        {renderError("pickup_date")}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+                          {tForm("pickupTime")}
+                        </Label>
+                        <Input
+                          type="time"
+                          value={pickupTime}
+                          onChange={(e) => setPickupTime(e.target.value)}
+                          className={cn("h-10 bg-zinc-50/50", validationErrors?.pickup_time && "border-red-500")}
+                        />
+                        {renderError("pickup_time")}
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">
+                          {tForm("pickupNotes")}
+                        </Label>
+                        <Textarea
+                          value={pickupNotes}
+                          onChange={(e) => setPickupNotes(e.target.value)}
+                          className="min-h-[88px] bg-zinc-50/50"
+                          placeholder={tForm("pickupNotesPlaceholder")}
+                        />
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               </div>
 
               {/* Section 2: Parties */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Informasi Pihak Terkait</h3>
-                <ShipperConsigneeSection
-                  shipper={shipper}
-                  onShipperChange={(fields) => setShipper((prev) => ({ ...prev, ...fields }))}
-                  consignee={consignee}
-                  onConsigneeChange={(fields) => setConsignee((prev) => ({ ...prev, ...fields }))}
-                  renderError={renderError}
-                  validationErrors={validationErrors ?? undefined}
+                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("partiesTitle")}</h3>
+                <PartyInfoSection
+                  kind="shipper"
+                  customerLocations={customerLocations}
+                  locationId={shipperLocationId}
+                  setLocationId={setShipperLocationId}
+                  company={shipperName}
+                  setCompany={setShipperName}
+                  picName={shipperPicName}
+                  setPicName={setShipperPicName}
+                  picEmail={shipperPicEmail}
+                  setPicEmail={setShipperPicEmail}
+                  picMobile={shipperPicMobile}
+                  setPicMobile={setShipperPicMobile}
+                  setPhone={setShipperPhone}
+                  provinceId={shipperProvinceId}
+                  setProvinceId={setShipperProvinceId}
+                  cityId={shipperCityId}
+                  setCityId={setShipperCityId}
+                  districtId={shipperDistrictId}
+                  setDistrictId={setShipperDistrictId}
+                  postalCode={shipperPostalCode}
+                  setPostalCode={setShipperPostalCode}
+                  address={shipperAddress}
+                  setAddress={setShipperAddress}
+                  renderFieldError={(field) => validationErrors?.[field]?.[0] ?? null}
+                />
+                <PartyInfoSection
+                  kind="consignee"
+                  customerLocations={customerLocations}
+                  locationId={consigneeLocationId}
+                  setLocationId={setConsigneeLocationId}
+                  destinationType={consigneeType}
+                  setDestinationType={setConsigneeType}
+                  showDeliveryNotes={shipmentCoverage === "port_to_door" || shipmentCoverage === "door_to_door"}
+                  company={consigneeName}
+                  setCompany={setConsigneeName}
+                  picName={consigneePicName}
+                  setPicName={setConsigneePicName}
+                  picEmail={consigneePicEmail}
+                  setPicEmail={setConsigneePicEmail}
+                  picMobile={consigneePicMobile}
+                  setPicMobile={setConsigneePicMobile}
+                  setPhone={setConsigneePhone}
+                  provinceId={consigneeProvinceId}
+                  setProvinceId={setConsigneeProvinceId}
+                  cityId={consigneeCityId}
+                  setCityId={setConsigneeCityId}
+                  districtId={consigneeDistrictId}
+                  setDistrictId={setConsigneeDistrictId}
+                  postalCode={consigneePostalCode}
+                  setPostalCode={setConsigneePostalCode}
+                  address={consigneeAddress}
+                  setAddress={setConsigneeAddress}
+                  deliveryNotes={deliveryNotes}
+                  setDeliveryNotes={setDeliveryNotes}
+                  renderFieldError={(field) => validationErrors?.[field]?.[0] ?? null}
                 />
               </div>
 
               {/* Section 3: Cargo Details */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Detail Kargo & Pengiriman</h3>
+                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("cargoTitle")}</h3>
                 <CargoDetailSection
                   isLCL={isLCL}
                   isFCL={isFCL}
@@ -523,7 +791,7 @@ export function BookingEditDialog({
 
               {/* Section 4: Add-ons */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">Layanan Tambahan</h3>
+                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("addonsTitle")}</h3>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 bg-white p-5 rounded-xl border shadow-sm">
                   {CATEGORIES.map((cat) => {
                     const svcs = addServices.filter((s) => (s.category || "other") === cat.key);
@@ -598,16 +866,55 @@ export function BookingEditDialog({
                   })}
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("attachmentsTitle")}</h3>
+                {existingAttachments.length > 0 ? (
+                  <ul className="space-y-2 rounded-xl border bg-white p-4 text-sm">
+                    {existingAttachments.map((att) => (
+                      <li key={att.id} className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{att.original_name ?? `Attachment #${att.id}`}</p>
+                          <p className="text-xs text-muted-foreground">{att.document_type ?? "—"}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            if (!data?.id) return;
+                            void deleteAdminBookingAttachment(data.id, att.id).then(() => {
+                              setExistingAttachments((prev) => prev.filter((x) => x.id !== att.id));
+                            });
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                <AttachmentSection attachments={attachments} setAttachments={setAttachments} />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">{te("internalNotes")}</Label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="min-h-[96px] bg-white"
+                />
+              </div>
             </div>
           )}
         </div>
 
         <div className="sticky bottom-0 z-10 bg-white border-t px-6 py-4 flex items-center justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Batal
+            {te("cancel")}
           </Button>
           <Button onClick={() => void submit()} disabled={saving || loadingMasters} className="bg-black hover:bg-zinc-800 text-white font-semibold">
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? te("saving") : te("save")}
           </Button>
         </div>
       </DialogContent>

@@ -12,6 +12,7 @@ import {
   fetchAdminBooking,
   rejectBooking,
   submitAdminBooking,
+  updateAdminBooking,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/store";
@@ -20,7 +21,6 @@ import { BookingDetailView } from "@/components/dashboard/admin/bookings/booking
 import { BookingEditDialog } from "@/components/dashboard/admin/bookings/booking-edit-dialog";
 import { BookingRejectDialog } from "@/components/dashboard/admin/bookings/booking-reject-dialog";
 import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
-import { updateAdminBooking } from "@/lib/admin-api";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -69,8 +69,19 @@ export default function AdminBookingDetailPage() {
   const headerActions = useMemo(() => {
     if (!canProcess || !data) return null;
     const actions: Array<{ label: string; onClick: () => void; variant?: "outline" | "destructive" }> = [];
+    const isRejected = st === "rejected";
+    const isCancelled = st === "cancelled";
+    const isSubmitted = st === "submitted" || st === "under_review";
+    const isConfirmed = st === "approved" || st === "confirmed";
+
+    if (isRejected || isCancelled) return [];
 
     if (st === "draft") {
+      actions.push({
+        label: t("actions.edit"),
+        variant: "outline",
+        onClick: () => setEditOpen(true),
+      });
       actions.push({
         label: t("actions.submit"),
         onClick: () =>
@@ -91,7 +102,13 @@ export default function AdminBookingDetailPage() {
         },
       });
     }
-    if (st === "submitted" || st === "under_review") {
+
+    if (isSubmitted) {
+      actions.push({
+        label: t("actions.edit"),
+        variant: "outline",
+        onClick: () => setEditOpen(true),
+      });
       actions.push({
         label: t("actions.confirm"),
         onClick: () =>
@@ -106,7 +123,13 @@ export default function AdminBookingDetailPage() {
         onClick: () => setRejectOpen(true),
       });
     }
-    if (st === "approved" && !hasShipment) {
+
+    if (isConfirmed && !hasShipment) {
+      actions.push({
+        label: t("actions.edit"),
+        variant: "outline",
+        onClick: () => setEditOpen(true),
+      });
       actions.push({
         label: t("actions.convert"),
         onClick: () =>
@@ -121,31 +144,31 @@ export default function AdminBookingDetailPage() {
           }).catch((e) => toast.error(e instanceof ApiError ? e.message : t("toasts.convertFailed"))),
       });
     }
+
     if (hasShipment && data.shipment_id) {
-      actions.push({
+      return [{
         label: t("actions.viewShipment"),
         onClick: () => router.push(`/${locale}/dashboard/admin/customer/shipments/${data.shipment_id}`),
-      });
+      }];
     }
-    actions.push({
-      label: t("actions.duplicate"),
-      variant: "outline",
-      onClick: () =>
-        void duplicateAdminBooking(id).then((res) => {
-          toast.success(t("toasts.duplicated"));
-          const newId = (res as { data?: { id?: number } })?.data?.id;
-          if (typeof newId === "number") {
-            router.push(`/${locale}/dashboard/admin/customer/bookings/${newId}`);
-          }
-        }).catch((e) => toast.error(e instanceof ApiError ? e.message : tc("errors.loadFailed"))),
-    });
-    if (!hasShipment && st !== "cancelled" && st !== "rejected") {
+
+    if (canProcess && data && !isRejected && !isCancelled && !(hasShipment && data.shipment_id)) {
       actions.push({
-        label: t("actions.edit"),
+        label: t("actions.duplicate"),
         variant: "outline",
-        onClick: () => setEditOpen(true),
+        onClick: () =>
+          void duplicateAdminBooking(id).then((res) => {
+            toast.success(t("toasts.duplicated"));
+            const newId = (res as { data?: { id?: number } })?.data?.id;
+            if (typeof newId === "number") {
+              router.push(`/${locale}/dashboard/admin/customer/bookings/${newId}`);
+            } else {
+              void load();
+            }
+          }).catch((e) => toast.error(e instanceof ApiError ? e.message : t("toasts.duplicateFailed"))),
       });
     }
+
     return actions;
   }, [canProcess, data, st, hasShipment, id, load, locale, router, t, tc]);
 

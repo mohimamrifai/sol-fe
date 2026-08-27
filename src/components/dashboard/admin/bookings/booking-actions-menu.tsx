@@ -16,7 +16,6 @@ import {
   ArrowRightLeft,
   CheckCircle2,
   Eye,
-  FilePenLine,
   Loader2,
   MoreHorizontal,
   Send,
@@ -41,7 +40,6 @@ interface BookingActionsMenuProps {
   };
   canProcessOperations: boolean;
   onOpenDetail: (id: number) => void;
-  onOpenEdit?: (id: number) => void;
   onOpenReject: (id: number) => void;
   onDone: () => void;
 }
@@ -50,7 +48,6 @@ export function BookingActionsMenu({
   booking,
   canProcessOperations,
   onOpenDetail,
-  onOpenEdit,
   onOpenReject,
   onDone,
 }: BookingActionsMenuProps) {
@@ -155,15 +152,9 @@ export function BookingActionsMenu({
           </>
         ) : null}
 
-        {canProcessOperations && st === "approved" && !hasShipment ? (
+        {canProcessOperations && (st === "approved" || st === "confirmed") && !hasShipment ? (
           <>
             <DropdownMenuSeparator />
-            {onOpenEdit ? (
-              <DropdownMenuItem className="cursor-pointer" onClick={() => onOpenEdit(booking.id)}>
-                <FilePenLine className="h-4 w-4" />
-                {t("actions.editBooking")}
-              </DropdownMenuItem>
-            ) : null}
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() =>

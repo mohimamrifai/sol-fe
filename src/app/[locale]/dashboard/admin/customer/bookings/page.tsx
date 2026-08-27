@@ -26,11 +26,9 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import {
-  fetchAdminBooking,
   fetchAdminBookingStats,
   fetchAdminBookings,
   rejectBooking,
-  updateAdminBooking,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
@@ -49,10 +47,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { BookingStats } from "@/components/dashboard/admin/bookings/booking-stats";
 import { BookingActionsMenu } from "@/components/dashboard/admin/bookings/booking-actions-menu";
-import { BookingDetailDialog } from "@/components/dashboard/admin/bookings/booking-detail-dialog";
-import { BookingEditDialog } from "@/components/dashboard/admin/bookings/booking-edit-dialog";
 import { BookingRejectDialog } from "@/components/dashboard/admin/bookings/booking-reject-dialog";
-import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
 import {
   AdminListFilters,
   dateParamFromFilter,
@@ -110,15 +105,6 @@ export default function AdminBookingsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailData, setDetailData] = useState<BookingDetail | null>(null);
-  const detailLoading = false;
-  const [detailSaving, setDetailSaving] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editData, setEditData] = useState<BookingDetail | null>(null);
-  const [editLoading, setEditLoading] = useState(false);
-  const [editSaving, setEditSaving] = useState(false);
-
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectSaving, setRejectSaving] = useState(false);
@@ -128,8 +114,8 @@ export default function AdminBookingsPage() {
       { value: "all", label: tc("filters.allStatus") },
       { value: "draft", label: t("stats.draft") },
       { value: "submitted", label: t("filters.submitted") },
-      { value: "under_review", label: t("filters.underReview") },
       { value: "confirmed", label: t("filters.confirmed") },
+      { value: "converted", label: t("stats.converted") },
       { value: "rejected", label: t("filters.rejected") },
       { value: "cancelled", label: t("filters.cancelled") },
     ],
@@ -249,62 +235,6 @@ export default function AdminBookingsPage() {
     router.push(`/dashboard/admin/customer/bookings/${bookingId}`);
   }, [router]);
 
-  const openBookingEdit = useCallback(async (id: number) => {
-    setEditOpen(true);
-    setEditLoading(true);
-    setEditData(null);
-    try {
-      const res = await fetchAdminBooking(id);
-      setEditData((res as { data: BookingDetail }).data);
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : t("toasts.editLoadFailed"));
-      setEditOpen(false);
-    } finally {
-      setEditLoading(false);
-    }
-  }, []);
-
-  const submitDetailEdit = useCallback(async (payload: {
-    departure_date: string | null;
-    cargo_description: string | null;
-    shipper_name: string | null;
-    shipper_address: string | null;
-    shipper_phone: string | null;
-    consignee_name: string | null;
-    consignee_address: string | null;
-    consignee_phone: string | null;
-  }) => {
-    if (!detailData?.id) return;
-    setDetailSaving(true);
-    try {
-      const res = await updateAdminBooking(detailData.id, payload);
-      setDetailData((res as { data: BookingDetail }).data);
-      await reloadAll();
-      toast.success(t("toasts.detailUpdated"));
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
-      throw e;
-    } finally {
-      setDetailSaving(false);
-    }
-  }, [detailData?.id, reloadAll]);
-
-  const submitBookingEdit = useCallback(async (payload: FormData) => {
-    if (!editData?.id) return;
-    setEditSaving(true);
-    try {
-      const res = await updateAdminBooking(editData.id, payload);
-      setEditData((res as { data: BookingDetail }).data);
-      await reloadAll();
-      toast.success(t("toasts.updated"));
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
-      throw e;
-    } finally {
-      setEditSaving(false);
-    }
-  }, [editData?.id, reloadAll]);
-
   useEffect(() => {
     setPage(1);
   }, [
@@ -326,13 +256,6 @@ export default function AdminBookingsPage() {
     if (status) setStatusFilter(status);
     if (from) setDateFrom(from);
     if (to) setDateTo(to);
-  }, [searchParams]);
-
-  useEffect(() => {
-    const editId = searchParams.get("edit");
-    if (!editId) return;
-    const n = Number(editId);
-    if (Number.isFinite(n) && n > 0) void openBookingEdit(n);
   }, [searchParams]);
 
   useEffect(() => {
@@ -494,8 +417,7 @@ export default function AdminBookingsPage() {
                     <TableHead className="w-14">{tc("table.no")}</TableHead>
                     <TableHead className="w-[120px]">{t("columns.bookingNo")}</TableHead>
                     <TableHead>{t("columns.customer")}</TableHead>
-                    <TableHead>{t("columns.origin")}</TableHead>
-                    <TableHead>{t("columns.destination")}</TableHead>
+                    <TableHead>{t("columns.route")}</TableHead>
                     <TableHead>{t("columns.service")}</TableHead>
                     <TableHead>{t("columns.coverage")}</TableHead>
                     <TableHead>{t("columns.bookingDate")}</TableHead>
@@ -513,8 +435,9 @@ export default function AdminBookingsPage() {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{booking.booking_number}</TableCell>
                       <TableCell className="font-medium">{booking.company?.name ?? "—"}</TableCell>
-                      <TableCell>{booking.origin_location?.name ?? "—"}</TableCell>
-                      <TableCell>{booking.destination_location?.name ?? "—"}</TableCell>
+                      <TableCell className="text-xs">
+                        {booking.origin_location?.name ?? "—"} → {booking.destination_location?.name ?? "—"}
+                      </TableCell>
                       <TableCell>{booking.service_type?.name ?? booking.service_type?.code ?? "—"}</TableCell>
                       <TableCell className="text-xs">
                         {coverageLabel(booking.shipment_coverage)}
@@ -533,7 +456,6 @@ export default function AdminBookingsPage() {
                             booking={booking}
                             canProcessOperations={canProcessOperations}
                             onOpenDetail={openBookingDetail}
-                            onOpenEdit={openBookingEdit}
                             onOpenReject={(id) => {
                               setRejectId(id);
                               setRejectOpen(true);
@@ -563,25 +485,6 @@ export default function AdminBookingsPage() {
           )}
         </CardContent>
       </Card>
-
-      <BookingDetailDialog
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        loading={detailLoading}
-        data={detailData}
-        canEdit={false}
-        saving={detailSaving}
-        onSave={submitDetailEdit}
-      />
-
-      <BookingEditDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        data={editData}
-        loading={editLoading}
-        saving={editSaving}
-        onSave={submitBookingEdit}
-      />
 
       <BookingRejectDialog
         open={rejectOpen}

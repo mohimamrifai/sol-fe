@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
 import { cn } from "@/lib/utils";
 import type { BookingDetail } from "./types";
+import { useTranslations } from "next-intl";
 
 type Props = {
   data: BookingDetail | null;
@@ -22,10 +23,10 @@ type Breakdown = {
 };
 
 const TIMELINE_STEPS = [
-  { key: "draft", label: "Draft" },
-  { key: "submitted", label: "Submitted" },
-  { key: "confirmed", label: "Confirmed", statuses: ["approved", "confirmed"] },
-  { key: "converted", label: "Converted to Shipment" },
+  { key: "draft", labelKey: "stats.draft" },
+  { key: "submitted", labelKey: "filters.submitted" },
+  { key: "confirmed", labelKey: "filters.confirmed", statuses: ["approved", "confirmed"] },
+  { key: "converted", labelKey: "stats.converted" },
 ] as const;
 
 function fmtIdr(v: unknown): string {
@@ -34,9 +35,36 @@ function fmtIdr(v: unknown): string {
   return `Rp ${n.toLocaleString("id-ID")}`;
 }
 
-function coverageLabel(v?: string): string {
-  if (!v) return "—";
-  return v.replace(/_/g, " ");
+function snapshotValue(snapshot: Record<string, unknown> | null | undefined, key: string): string {
+  const value = snapshot?.[key];
+  return value != null && String(value).trim() !== "" ? String(value) : "";
+}
+
+function packageVolumeCbm(pkg: Record<string, unknown>): number {
+  const stored = Number(pkg.volume_cbm);
+  if (Number.isFinite(stored) && stored > 0) return stored;
+  const l = Number(pkg.length) || 0;
+  const w = Number(pkg.width) || 0;
+  const h = Number(pkg.height) || 0;
+  const qty = Number(pkg.piece_count) || 1;
+  if (!l || !w || !h) return 0;
+  return ((l * w * h) / 1_000_000) * qty;
+}
+
+function packageChargeableWeight(pkg: Record<string, unknown>): number {
+  const l = Number(pkg.length) || 0;
+  const w = Number(pkg.width) || 0;
+  const h = Number(pkg.height) || 0;
+  const qty = Number(pkg.piece_count) || 1;
+  const actual = Number(pkg.weight_kg) || 0;
+  const volumeWeight = l && w && h ? ((l * w * h) / 5000) * qty : 0;
+  return Math.max(actual, volumeWeight);
+}
+
+function attachmentHref(att: Record<string, unknown>): string | null {
+  const path = String(att.file_path ?? "");
+  if (!path) return null;
+  return `/storage/${path}`;
 }
 
 function stepIndex(data: BookingDetail): number {
@@ -54,11 +82,15 @@ function stepIndex(data: BookingDetail): number {
 }
 
 export function BookingDetailView({ data, loading }: Props) {
+  const t = useTranslations("AdminBookings");
+  const td = useTranslations("AdminBookings.detailPage");
+  const tCoverage = useTranslations("AdminBookings.coverageOptions");
+
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Memuat detail booking…</p>;
+    return <p className="text-sm text-muted-foreground">{td("loading")}</p>;
   }
   if (!data) {
-    return <p className="text-sm text-muted-foreground">Data booking tidak ditemukan.</p>;
+    return <p className="text-sm text-muted-foreground">{t("toasts.loadFailed")}</p>;
   }
 
   const origin = data.origin_location?.name ?? data.originLocation?.name ?? "—";
@@ -66,26 +98,55 @@ export function BookingDetailView({ data, loading }: Props) {
   const service = data.service_type?.name ?? data.serviceType?.name ?? data.service_type?.code ?? "—";
   const breakdown = (data as BookingDetail & { price_breakdown?: Breakdown }).price_breakdown;
   const currentStep = stepIndex(data);
+  const customerLocation =
+    (data as BookingDetail & { shipper_location?: { name?: string }; shipperLocation?: { name?: string } }).shipper_location?.name ??
+    (data as BookingDetail & { shipperLocation?: { name?: string } }).shipperLocation?.name ??
+    "—";
+
+  const coverageLabel = (v?: string | null) => {
+    if (!v) return "—";
+    if ((["port_to_port", "door_to_port", "port_to_door", "door_to_door"] as const).includes(v as "port_to_port")) {
+      return tCoverage(v as "port_to_port");
+    }
+    return v.replace(/_/g, " ");
+  };
+
+  const shipperSnap = (data as BookingDetail & { shipper_snapshot?: Record<string, unknown> }).shipper_snapshot;
+  const consigneeSnap = (data as BookingDetail & { consignee_snapshot?: Record<string, unknown> }).consignee_snapshot;
+  const deliveryNotes = String((data as BookingDetail & { delivery_notes?: string }).delivery_notes ?? "");
+  const activities = data.activities ?? [];
+  const attachmentRows = ((data as BookingDetail & { attachments?: Array<Record<string, unknown>> }).attachments ?? []);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-muted/20 p-4">
         <div>
-          <p className="text-xs text-muted-foreground">Booking No</p>
+          <p className="text-xs text-muted-foreground">{t("columns.bookingNo")}</p>
           <p className="text-lg font-semibold">{data.booking_number}</p>
         </div>
-        <Badge variant="outline" className={bookingStatusBadgeClass(data.status)}>
-          {bookingStatusLabelFromApi(data.status)}
-        </Badge>
+        <div>
+          <p className="text-xs text-muted-foreground">{t("columns.status")}</p>
+          <Badge variant="outline" className={bookingStatusBadgeClass(data.status)}>
+            {bookingStatusLabelFromApi(data.status)}
+          </Badge>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{td("bookingDate")}</p>
+          <p className="text-sm font-medium">{data.created_at ? String(data.created_at).slice(0, 10) : "—"}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{td("customerLocation")}</p>
+          <p className="text-sm font-medium">{customerLocation}</p>
+        </div>
         {data.shipment_id || data.shipment_exists || data.has_shipment ? (
-          <Badge variant="outline">Converted to Shipment</Badge>
+          <Badge variant="outline">{td("convertedBadge")}</Badge>
         ) : null}
       </div>
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Status Timeline</CardTitle>
-          <CardDescription>Draft → Submitted → Confirmed → Converted to Shipment</CardDescription>
+          <CardTitle className="text-base">{td("timelineTitle")}</CardTitle>
+          <CardDescription>{td("timelineDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <ol className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
@@ -104,7 +165,7 @@ export function BookingDetailView({ data, loading }: Props) {
                     {idx + 1}
                   </span>
                   <span className={cn(done ? "font-medium text-foreground" : "text-muted-foreground")}>
-                    {step.label}
+                    {t(step.labelKey as "stats.draft")}
                   </span>
                   {idx < TIMELINE_STEPS.length - 1 ? (
                     <span className="hidden text-muted-foreground sm:inline">→</span>
@@ -116,182 +177,100 @@ export function BookingDetailView({ data, loading }: Props) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Shipment Route</CardTitle>
-            <CardDescription>Origin → Destination</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-1 text-sm">
-            <p>
-              <span className="text-muted-foreground">Customer:</span> {data.company?.name ?? "—"}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Route:</span> {origin} → {destination}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Service:</span> {service}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Coverage:</span> {coverageLabel(data.shipment_coverage)}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Booking Date:</span>{" "}
-              {data.created_at ? String(data.created_at).slice(0, 10) : "—"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Shipper & Consignee</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div>
-              <p className="font-medium">Shipper</p>
-              <p>{data.shipper_name ?? "—"}</p>
-              <p className="text-muted-foreground">{data.shipper_address ?? ""}</p>
-              <p className="text-muted-foreground">{data.shipper_phone ?? ""}</p>
-            </div>
-            <div>
-              <p className="font-medium">Consignee</p>
-              <p>{data.consignee_name ?? "—"}</p>
-              <p className="text-muted-foreground">{data.consignee_address ?? ""}</p>
-              <p className="text-muted-foreground">{data.consignee_phone ?? ""}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Internal Information</CardTitle>
+          <CardTitle className="text-base">{td("routeTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <p>
-            <span className="text-muted-foreground">Sales PIC:</span>{" "}
-            {(data as BookingDetail & { user?: { name?: string } }).user?.name ?? "—"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Booking Date:</span>{" "}
-            {data.created_at ? String(data.created_at).slice(0, 10) : "—"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Pickup Date:</span>{" "}
-            {(data as BookingDetail & { pickup_date?: string }).pickup_date?.slice(0, 10) ??
-              data.departure_date?.slice(0, 10) ??
-              "—"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Pickup Time:</span>{" "}
-            {(data as BookingDetail & { pickup_time?: string }).pickup_time ?? "—"}
-          </p>
-          <p className="sm:col-span-2">
-            <span className="text-muted-foreground">Pickup Notes:</span>{" "}
-            {(data as BookingDetail & { pickup_notes?: string }).pickup_notes ?? "—"}
-          </p>
-          <p className="sm:col-span-2">
-            <span className="text-muted-foreground">Internal Notes:</span> {data.notes ?? "—"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Confirmed By:</span>{" "}
-            {(data as BookingDetail & { approved_by_user?: { name?: string } }).approved_by_user?.name ??
-              (data as BookingDetail & { approvedByUser?: { name?: string } }).approvedByUser?.name ??
-              "—"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Confirmed Date:</span>{" "}
-            {(data as BookingDetail & { approved_at?: string }).approved_at
-              ? String((data as BookingDetail & { approved_at?: string }).approved_at).slice(0, 16).replace("T", " ")
-              : "—"}
-          </p>
-          {(data.shipment_id || data.shipment_exists || data.has_shipment) ? (
-            <>
-              <p>
-                <span className="text-muted-foreground">Converted By:</span>{" "}
-                {(data as BookingDetail & { shipment?: { created_by_user?: { name?: string } } }).shipment?.created_by_user?.name ?? "—"}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Converted Date:</span>{" "}
-                {(data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at
-                  ? String((data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at).slice(0, 16).replace("T", " ")
-                  : "—"}
-              </p>
-            </>
-          ) : null}
+          <p><span className="text-muted-foreground">{t("columns.customer")}:</span> {data.company?.name ?? "—"}</p>
+          <p><span className="text-muted-foreground">{t("columns.route")}:</span> {origin} → {destination}</p>
+          <p><span className="text-muted-foreground">{t("columns.service")}:</span> {service}</p>
+          <p><span className="text-muted-foreground">{t("columns.coverage")}:</span> {coverageLabel(data.shipment_coverage)}</p>
+          <p><span className="text-muted-foreground">{td("pickupDate")}:</span> {(data as BookingDetail & { pickup_date?: string }).pickup_date?.slice(0, 10) ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("pickupTime")}:</span> {(data as BookingDetail & { pickup_time?: string }).pickup_time ?? "—"}</p>
+          <p className="sm:col-span-2"><span className="text-muted-foreground">{td("pickupNotes")}:</span> {(data as BookingDetail & { pickup_notes?: string }).pickup_notes ?? "—"}</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Cost Estimation</CardTitle>
+          <CardTitle className="text-base">{td("partiesTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 text-sm sm:grid-cols-2">
+          <div>
+            <p className="font-medium">{td("shipperLabel")}</p>
+            <p>{data.shipper_name ?? "—"}</p>
+            <p className="text-muted-foreground">{snapshotValue(shipperSnap, "pic_name") || "—"}</p>
+            <p className="text-muted-foreground">{snapshotValue(shipperSnap, "pic_email") || "—"}</p>
+            <p className="text-muted-foreground">{snapshotValue(shipperSnap, "pic_mobile") || data.shipper_phone || "—"}</p>
+            <p className="text-muted-foreground">{data.shipper_address ?? ""}</p>
+          </div>
+          <div>
+            <p className="font-medium">{td("consigneeLabel")}</p>
+            <p>{data.consignee_name ?? "—"}</p>
+            <p className="text-muted-foreground">{snapshotValue(consigneeSnap, "pic_name") || "—"}</p>
+            <p className="text-muted-foreground">{snapshotValue(consigneeSnap, "pic_email") || "—"}</p>
+            <p className="text-muted-foreground">{snapshotValue(consigneeSnap, "pic_mobile") || data.consignee_phone || "—"}</p>
+            <p className="text-muted-foreground">{data.consignee_address ?? ""}</p>
+            {deliveryNotes ? (
+              <p className="text-muted-foreground"><span className="font-medium text-foreground">{td("deliveryNotes")}:</span> {deliveryNotes}</p>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{td("costTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           {breakdown ? (
             <>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Freight</span>
-                <span>{fmtIdr(breakdown.freight)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Pickup</span>
-                <span>{fmtIdr(breakdown.pickup)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Delivery</span>
-                <span>{fmtIdr(breakdown.delivery)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Discount</span>
-                <span>{fmtIdr(breakdown.discount)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Additional Services</span>
-                <span>{fmtIdr(breakdown.additional_services)}</span>
-              </div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("freight")}</span><span>{fmtIdr(breakdown.freight)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("pickup")}</span><span>{fmtIdr(breakdown.pickup)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("delivery")}</span><span>{fmtIdr(breakdown.delivery)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("discount")}</span><span>{fmtIdr(breakdown.discount)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("additionalServices")}</span><span>{fmtIdr(breakdown.additional_services)}</span></div>
               <Separator />
             </>
           ) : data.estimated_price == null ? (
-            <p className="text-muted-foreground">Waiting for cost estimation.</p>
+            <p className="text-muted-foreground">{td("waitingEstimation")}</p>
           ) : null}
           <div className="flex justify-between font-medium">
-            <span>Total Estimation</span>
+            <span>{td("totalEstimation")}</span>
             <span>{data.estimated_price != null ? fmtIdr(breakdown?.total ?? data.estimated_price) : "—"}</span>
           </div>
+          <p className="text-xs text-muted-foreground pt-2">{td("costDisclaimer")}</p>
         </CardContent>
       </Card>
 
       {Array.isArray((data as BookingDetail & { packages?: unknown[] }).packages) &&
       (data as BookingDetail & { packages?: unknown[] }).packages!.length > 0 ? (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Package Details (LCL)</CardTitle>
-          </CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base">{td("packagesTitle")}</CardTitle></CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-foreground">
-                  <th className="py-2 pr-2">Description</th>
-                  <th className="py-2 pr-2">Type</th>
-                  <th className="py-2 pr-2">Qty</th>
-                  <th className="py-2 pr-2">Weight (kg)</th>
-                  <th className="py-2">Dims (cm)</th>
+                  <th className="py-2 pr-2">{td("packageDescription")}</th>
+                  <th className="py-2 pr-2">{td("packageType")}</th>
+                  <th className="py-2 pr-2">{td("packageQty")}</th>
+                  <th className="py-2 pr-2">{td("packageWeight")}</th>
+                  <th className="py-2 pr-2">{td("packageVolume")}</th>
+                  <th className="py-2">{td("packageChargeable")}</th>
                 </tr>
               </thead>
               <tbody>
-                {((data as BookingDetail & { packages?: Array<Record<string, unknown>> }).packages ?? []).map(
-                  (pkg, i) => (
-                    <tr key={i} className="border-b last:border-0">
-                      <td className="py-2 pr-2">{String(pkg.description ?? "—")}</td>
-                      <td className="py-2 pr-2">{String(pkg.package_type ?? "—")}</td>
-                      <td className="py-2 pr-2 tabular-nums">{String(pkg.piece_count ?? "—")}</td>
-                      <td className="py-2 pr-2 tabular-nums">{String(pkg.weight_kg ?? "—")}</td>
-                      <td className="py-2 tabular-nums">
-                        {[pkg.length, pkg.width, pkg.height].filter(Boolean).join(" × ") || "—"}
-                      </td>
-                    </tr>
-                  )
-                )}
+                {((data as BookingDetail & { packages?: Array<Record<string, unknown>> }).packages ?? []).map((pkg, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="py-2 pr-2">{String(pkg.description ?? "—")}</td>
+                    <td className="py-2 pr-2">{String(pkg.package_type ?? "—")}</td>
+                    <td className="py-2 pr-2 tabular-nums">{String(pkg.piece_count ?? "—")}</td>
+                    <td className="py-2 pr-2 tabular-nums">{String(pkg.weight_kg ?? "—")}</td>
+                    <td className="py-2 pr-2 tabular-nums">{packageVolumeCbm(pkg).toFixed(2)}</td>
+                    <td className="py-2 tabular-nums">{packageChargeableWeight(pkg).toFixed(2)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </CardContent>
@@ -301,81 +280,109 @@ export function BookingDetailView({ data, loading }: Props) {
       {Array.isArray((data as BookingDetail & { containers?: unknown[] }).containers) &&
       (data as BookingDetail & { containers?: unknown[] }).containers!.length > 0 ? (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Container Details (FCL)</CardTitle>
-          </CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base">{td("containersTitle")}</CardTitle></CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-foreground">
-                  <th className="py-2 pr-2">Type</th>
-                  <th className="py-2 pr-2">Qty</th>
-                  <th className="py-2 pr-2">Weight (kg)</th>
-                  <th className="py-2">Description</th>
+                  <th className="py-2 pr-2">{td("containerType")}</th>
+                  <th className="py-2 pr-2">{td("containerQty")}</th>
+                  <th className="py-2 pr-2">{td("containerWeight")}</th>
+                  <th className="py-2 pr-2">{td("containerDescription")}</th>
+                  <th className="py-2 pr-2">{td("containerCategory")}</th>
+                  <th className="py-2">{td("containerRemark")}</th>
                 </tr>
               </thead>
               <tbody>
-                {((data as BookingDetail & { containers?: Array<Record<string, unknown>> }).containers ?? []).map(
-                  (ctr, i) => {
-                    const ct = (ctr.container_type ?? ctr.containerType) as { name?: string; size?: string } | undefined;
-                    return (
-                      <tr key={i} className="border-b last:border-0">
-                        <td className="py-2 pr-2">
-                          {ct ? `${ct.name ?? ""} (${ct.size ?? ""})`.trim() : String(ctr.container_type_id ?? "—")}
-                        </td>
-                        <td className="py-2 pr-2 tabular-nums">{String(ctr.quantity ?? "—")}</td>
-                        <td className="py-2 pr-2 tabular-nums">{String(ctr.gross_weight_kg ?? "—")}</td>
-                        <td className="py-2">{String(ctr.cargo_description ?? "—")}</td>
-                      </tr>
-                    );
-                  }
-                )}
+                {((data as BookingDetail & { containers?: Array<Record<string, unknown>> }).containers ?? []).map((ctr, i) => {
+                  const ct = (ctr.container_type ?? ctr.containerType) as { name?: string; size?: string } | undefined;
+                  const cat = (ctr.cargo_category ?? ctr.cargoCategory) as { name?: string } | undefined;
+                  return (
+                    <tr key={i} className="border-b last:border-0">
+                      <td className="py-2 pr-2">{ct ? `${ct.name ?? ""} (${ct.size ?? ""})`.trim() : String(ctr.container_type_id ?? "—")}</td>
+                      <td className="py-2 pr-2 tabular-nums">{String(ctr.quantity ?? "—")}</td>
+                      <td className="py-2 pr-2 tabular-nums">{String(ctr.gross_weight_kg ?? "—")}</td>
+                      <td className="py-2 pr-2">{String(ctr.cargo_description ?? "—")}</td>
+                      <td className="py-2 pr-2">{cat?.name ?? String(ctr.cargo_category_id ?? "—")}</td>
+                      <td className="py-2">{String(ctr.remark ?? "—")}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </CardContent>
         </Card>
       ) : null}
 
-      {Array.isArray((data as BookingDetail & { attachments?: unknown[] }).attachments) &&
-      (data as BookingDetail & { attachments?: unknown[] }).attachments!.length > 0 ? (
+      {attachmentRows.length > 0 ? (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Attachments</CardTitle>
-          </CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base">{td("attachmentsTitle")}</CardTitle></CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
-              {((data as BookingDetail & { attachments?: Array<Record<string, unknown>> }).attachments ?? []).map(
-                (att, i) => (
+              {attachmentRows.map((att, i) => {
+                const href = attachmentHref(att);
+                const label = String(att.original_name ?? att.original_filename ?? att.document_type ?? "File");
+                return (
                   <li key={i} className="flex justify-between gap-4 border-b pb-2 last:border-0">
-                    <span>{String(att.original_filename ?? att.file_name ?? att.document_type ?? "File")}</span>
+                    {href ? (
+                      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        {label}
+                      </a>
+                    ) : (
+                      <span>{label}</span>
+                    )}
                     <span className="text-muted-foreground">{String(att.document_type ?? "—")}</span>
                   </li>
-                )
-              )}
+                );
+              })}
             </ul>
           </CardContent>
         </Card>
       ) : null}
 
-      {data.activities?.length ? (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Activity Log</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              {data.activities.map((act, i) => (
-                <li key={i} className="flex justify-between gap-4 border-b pb-2 last:border-0">
-                  <span>{String(act.description ?? act.event ?? "—")}</span>
-                  <span className="shrink-0 text-muted-foreground">
-                    {act.created_at ? String(act.created_at).slice(0, 16).replace("T", " ") : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-base">{td("internalTitle")}</CardTitle></CardHeader>
+        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
+          <p><span className="text-muted-foreground">{td("salesPic")}:</span> {(data as BookingDetail & { user?: { name?: string } }).user?.name ?? "—"}</p>
+          <p className="sm:col-span-2"><span className="text-muted-foreground">{td("internalNotes")}:</span> {data.notes ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("confirmedBy")}:</span> {(data as BookingDetail & { approved_by_user?: { name?: string } }).approved_by_user?.name ?? (data as BookingDetail & { approvedByUser?: { name?: string } }).approvedByUser?.name ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("confirmedDate")}:</span> {(data as BookingDetail & { approved_at?: string }).approved_at ? String((data as BookingDetail & { approved_at?: string }).approved_at).slice(0, 16).replace("T", " ") : "—"}</p>
+          {(data.shipment_id || data.shipment_exists || data.has_shipment) ? (
+            <>
+              <p><span className="text-muted-foreground">{td("convertedBy")}:</span> {(data as BookingDetail & { shipment?: { created_by_user?: { name?: string } } }).shipment?.created_by_user?.name ?? "—"}</p>
+              <p><span className="text-muted-foreground">{td("convertedDate")}:</span> {(data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at ? String((data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at).slice(0, 16).replace("T", " ") : "—"}</p>
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-base">{td("activityTitle")}</CardTitle></CardHeader>
+        <CardContent className="overflow-x-auto">
+          {activities.length ? (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-muted-foreground">
+                  <th className="py-2 pr-4">{td("activityTime")}</th>
+                  <th className="py-2">{td("activityLabel")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activities.map((act, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="py-2 pr-4 text-muted-foreground whitespace-nowrap">
+                      {act.created_at ? String(act.created_at).slice(0, 16).replace("T", " ") : "—"}
+                    </td>
+                    <td className="py-2">{String(act.description ?? act.event ?? act.title ?? "—")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-sm text-muted-foreground">{td("activityEmpty")}</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

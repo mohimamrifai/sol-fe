@@ -80,3 +80,7 @@ export async function duplicateAdminBooking(id: number) {
     { method: "POST", body: JSON.stringify({}) }
   );
 }
+
+export async function deleteAdminBookingAttachment(bookingId: number, attachmentId: number) {
+  return apiFetch(`/admin/bookings/${bookingId}/attachments/${attachmentId}`, { method: "DELETE" });
+}
