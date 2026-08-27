@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import type { LaravelPaginated } from "@/lib/types-api";
 import {
@@ -22,6 +21,7 @@ import {
   fetchPublicMasterTransportModes,
 } from "@/lib/public-api";
 import { ApiError } from "@/lib/api-client";
+import { DEFAULT_COUNTRY } from "@/lib/countries";
 import type { BookingDetail } from "./types";
 import {
   Combobox,
@@ -31,16 +31,14 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ChevronDown, Package, Truck, Wrench, Settings } from "lucide-react";
-import { DangerousGoodsSection } from "@/components/dashboard/admin/bookings/create/dangerous-goods-section";
 import { deleteAdminBookingAttachment, fetchAdminCompanyLocations } from "@/lib/admin-api";
 import type { AttachmentDraft, CustomerLoc } from "@/hooks/use-booking-form";
 import { ADMIN_SHIPMENT_COVERAGES } from "@/hooks/use-admin-booking-form";
+import {
+  deriveBookingCargoCategoryId,
+  mapContainerRowsForApi,
+  mapPackageRowsForApi,
+} from "@/lib/admin-booking-payload";
 import { PartyInfoSection } from "@/components/dashboard/booking/create/party-info-section";
 import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
 import { AttachmentSection } from "@/components/dashboard/booking/create/attachment-section";
@@ -72,16 +70,8 @@ type ExistingAttachment = {
 
 type ComboOption = { value: string; label: string };
 
-
 const FCL_MANDATORY_CODES = ["FREE_STORAGE_FCL", "LOLO", "CONTAINER_RENT"];
 const LCL_MANDATORY_CODES = ["FREE_STORAGE_LCL"];
-
-const CATEGORIES = [
-  { key: "pickup", label: "Pickup", icon: Truck },
-  { key: "packing", label: "Packing", icon: Package },
-  { key: "handling", label: "Handling", icon: Wrench },
-  { key: "other", label: "Lainnya", icon: Settings },
-];
 
 interface BookingEditDialogProps {
   open: boolean;
@@ -178,9 +168,10 @@ export function BookingEditDialog({
       setLoadingMasters(true);
       setLoadError(null);
       try {
-        const [locRes, mRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
+        const [locRes, mRes, stRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
           fetchPublicMasterLocations(),
           fetchPublicMasterTransportModes(),
+          fetchPublicMasterServiceTypes(),
           fetchPublicMasterContainerTypes(),
           fetchPublicMasterAdditionalServices(),
           fetchPublicMasterCargoCategories(),
@@ -189,6 +180,8 @@ export function BookingEditDialog({
         if (cancelled) return;
         setLocations(((locRes as LaravelPaginated<Loc>).data ?? []) as Loc[]);
         setModes(((mRes as LaravelPaginated<TM>).data ?? []) as TM[]);
+        const allServiceTypes = ((stRes as { data: ST[] }).data ?? []) as ST[];
+        setServiceTypes(allServiceTypes.filter((s) => s.code === "FCL" || s.code === "LCL"));
         setContainerTypes(((ctRes as LaravelPaginated<CT>).data ?? []) as CT[]);
         setAddServices(((asRes as LaravelPaginated<AS>).data ?? []) as AS[]);
         setCargoCats(((ccRes as LaravelPaginated<CC>).data ?? []) as CC[]);
@@ -325,25 +318,13 @@ export function BookingEditDialog({
     };
   }, [open, data?.company_id]);
 
-  useEffect(() => {
-    if (!open || !modeId) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await fetchPublicMasterServiceTypes(Number(modeId));
-        if (cancelled) return;
-        const rows = ((r as { data: ST[] }).data ?? []) as ST[];
-        setServiceTypes(rows);
-      } catch {
-        if (!cancelled) setServiceTypes([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [open, modeId]);
-
   const selectedService = serviceTypes.find((s) => String(s.id) === serviceTypeId);
+
+  useEffect(() => {
+    if (!selectedService?.transport_mode_id) return;
+    setModeId(String(selectedService.transport_mode_id));
+  }, [serviceTypeId, selectedService?.transport_mode_id]);
+
   const isLCL = selectedService?.code === "LCL";
   const isFCL = selectedService?.code === "FCL";
   const selectedCargoCategory = cargoCats.find((c) => String(c.id) === cargoCategoryId);
@@ -353,10 +334,6 @@ export function BookingEditDialog({
   const locationOptions: ComboOption[] = locations.map((l) => ({
     value: String(l.id),
     label: `${l.name}${l.code ? ` (${l.code})` : ""}`,
-  }));
-  const modeOptions: ComboOption[] = modes.map((m) => ({
-    value: String(m.id),
-    label: `${m.name}${m.code ? ` (${m.code})` : ""}`,
   }));
   const serviceOptions: ComboOption[] = serviceTypes.map((s) => ({
     value: String(s.id),
@@ -408,11 +385,13 @@ export function BookingEditDialog({
 
   const submit = async () => {
     setValidationErrors(null);
+    const derivedCargoCategoryId = deriveBookingCargoCategoryId(packages, containers, cargoCategoryId);
     const fd = new FormData();
     fd.append("origin_location_id", originId);
     fd.append("destination_location_id", destId);
     fd.append("transport_mode_id", modeId);
     fd.append("service_type_id", serviceTypeId);
+    if (derivedCargoCategoryId) fd.append("cargo_category_id", derivedCargoCategoryId);
     if (!isLCL && containerTypeId) fd.append("container_type_id", containerTypeId);
     if (!isLCL) fd.append("container_count", containerCount || "1");
     if (weight) fd.append("estimated_weight", weight);
@@ -420,9 +399,6 @@ export function BookingEditDialog({
     if (isLCL && itemLength) fd.append("length", itemLength);
     if (isLCL && itemWidth) fd.append("width", itemWidth);
     if (isLCL && itemHeight) fd.append("height", itemHeight);
-    fd.append("cargo_category_id", cargoCategoryId);
-    if (departureDate) fd.append("departure_date", departureDate);
-    if (cargo) fd.append("cargo_description", cargo);
     if (shipmentCoverage) fd.append("shipment_coverage", shipmentCoverage);
     if (pickupDate) fd.append("pickup_date", pickupDate);
     if (pickupTime) fd.append("pickup_time", pickupTime);
@@ -440,7 +416,7 @@ export function BookingEditDialog({
         pic_name: shipperPicName,
         pic_email: shipperPicEmail,
         pic_mobile: shipperPicMobile,
-        country: "Indonesia",
+        country: DEFAULT_COUNTRY,
         province_id: shipperProvinceId || null,
         city_id: shipperCityId || null,
         district_id: shipperDistrictId || null,
@@ -461,7 +437,7 @@ export function BookingEditDialog({
         pic_name: consigneePicName,
         pic_email: consigneePicEmail,
         pic_mobile: consigneePicMobile,
-        country: "Indonesia",
+        country: DEFAULT_COUNTRY,
         province_id: consigneeProvinceId || null,
         city_id: consigneeCityId || null,
         district_id: consigneeDistrictId || null,
@@ -470,12 +446,6 @@ export function BookingEditDialog({
         phone: consigneePhone,
       })
     );
-    fd.append("is_dangerous_goods", isDg ? "1" : "0");
-    if (isDg && dgClassId) fd.append("dg_class_id", dgClassId);
-    if (isDg && unNumber) fd.append("un_number", unNumber);
-    if (isDg && msdsFile) fd.append("msds_file", msdsFile);
-    if (showProject && equipmentCondition) fd.append("equipment_condition", equipmentCondition);
-    if (showTemp && temperature) fd.append("temperature", temperature);
     fd.append("additional_services", JSON.stringify(selectedAddOns.map((id) => ({ id }))));
     if (isFCL) fd.append("container_responsibility", containerResponsibility);
     attachments.forEach((a, i) => {
@@ -493,52 +463,13 @@ export function BookingEditDialog({
       );
     }
     if (packages.length) {
-      fd.append(
-        "packages",
-        JSON.stringify(
-          packages.map((p) => ({
-            description: p.description || null,
-            package_type: p.package_type || null,
-            piece_count: Number(p.piece_count) || 1,
-            weight_kg: Number(p.weight_kg) || null,
-            length: Number(p.length_cm) || null,
-            width: Number(p.width_cm) || null,
-            height: Number(p.height_cm) || null,
-            remark: p.remark || null,
-            is_dangerous_goods: p.is_dangerous_goods ? 1 : 0,
-            dg_class_id: p.is_dangerous_goods && p.dg_class_id ? Number(p.dg_class_id) : null,
-            un_number: p.is_dangerous_goods ? p.un_number || null : null,
-            packing_group: p.is_dangerous_goods ? p.packing_group || null : null,
-            proper_shipping_name: p.is_dangerous_goods ? p.proper_shipping_name || null : null,
-            flash_point: p.is_dangerous_goods && p.flash_point_c ? Number(p.flash_point_c) : null,
-            dg_remark: p.is_dangerous_goods ? p.dg_remark || null : null,
-          }))
-        )
-      );
+      fd.append("packages", JSON.stringify(mapPackageRowsForApi(packages, cargoCats)));
       packages.forEach((p, i) => {
         if (p.msds_file) fd.append(`packages_msds_files[${i}]`, p.msds_file);
       });
     }
     if (containers.length) {
-      fd.append(
-        "containers",
-        JSON.stringify(
-          containers.map((c) => ({
-            container_type_id: c.container_type_id ? Number(c.container_type_id) : null,
-            quantity: Number(c.quantity) || 1,
-            gross_weight_kg: Number(c.gross_weight_kg) || null,
-            cargo_description: c.cargo_description || null,
-            remark: c.remark || null,
-            is_dangerous_goods: c.is_dangerous_goods ? 1 : 0,
-            dg_class_id: c.is_dangerous_goods && c.dg_class_id ? Number(c.dg_class_id) : null,
-            un_number: c.is_dangerous_goods ? c.un_number || null : null,
-            packing_group: c.is_dangerous_goods ? c.packing_group || null : null,
-            proper_shipping_name: c.is_dangerous_goods ? c.proper_shipping_name || null : null,
-            flash_point: c.is_dangerous_goods && c.flash_point_c ? Number(c.flash_point_c) : null,
-            dg_remark: c.is_dangerous_goods ? c.dg_remark || null : null,
-          }))
-        )
-      );
+      fd.append("containers", JSON.stringify(mapContainerRowsForApi(containers, cargoCats)));
       containers.forEach((c, i) => {
         if (c.msds_file) fd.append(`containers_msds_files[${i}]`, c.msds_file);
       });
@@ -584,33 +515,25 @@ export function BookingEditDialog({
                 <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("routeTitle")}</h3>
                 <div className="grid gap-5 sm:grid-cols-2 bg-white p-5 rounded-xl border shadow-sm">
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Origin</Label>
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">{tForm("originStation")}</Label>
                     <Combobox items={locationOptions} value={locationOptions.find((x) => x.value === originId) ?? null} onValueChange={(next) => setOriginId(next?.value ?? "")}>
-                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.origin_location_id && "[&_input]:border-red-500")} placeholder="Pilih origin..." />
-                      <ComboboxContent><ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty><ComboboxList>{(item: ComboOption) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}</ComboboxList></ComboboxContent>
+                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.origin_location_id && "[&_input]:border-red-500")} placeholder={tForm("originStationPlaceholder")} />
+                      <ComboboxContent><ComboboxEmpty>{tForm("comboboxEmpty")}</ComboboxEmpty><ComboboxList>{(item: ComboOption) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}</ComboboxList></ComboboxContent>
                     </Combobox>
                     {renderError("origin_location_id")}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Destination</Label>
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">{tForm("destinationStation")}</Label>
                     <Combobox items={locationOptions} value={locationOptions.find((x) => x.value === destId) ?? null} onValueChange={(next) => setDestId(next?.value ?? "")}>
-                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.destination_location_id && "[&_input]:border-red-500")} placeholder="Pilih destination..." />
-                      <ComboboxContent><ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty><ComboboxList>{(item: ComboOption) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}</ComboboxList></ComboboxContent>
+                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.destination_location_id && "[&_input]:border-red-500")} placeholder={tForm("destinationStationPlaceholder")} />
+                      <ComboboxContent><ComboboxEmpty>{tForm("comboboxEmpty")}</ComboboxEmpty><ComboboxList>{(item: ComboOption) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}</ComboboxList></ComboboxContent>
                     </Combobox>
                     {renderError("destination_location_id")}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Transport mode</Label>
-                    <Combobox items={modeOptions} value={modeOptions.find((x) => x.value === modeId) ?? null} onValueChange={(next) => setModeId(next?.value ?? "")}>
-                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.transport_mode_id && "[&_input]:border-red-500")} placeholder="Pilih moda..." />
-                      <ComboboxContent><ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty><ComboboxList>{(item: ComboOption) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}</ComboboxList></ComboboxContent>
-                    </Combobox>
-                    {renderError("transport_mode_id")}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">Service type</Label>
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 ml-1">{tForm("serviceType")}</Label>
                     <Combobox items={serviceOptions} value={serviceOptions.find((x) => x.value === serviceTypeId) ?? null} onValueChange={(next) => setServiceTypeId(next?.value ?? "")}>
-                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.service_type_id && "[&_input]:border-red-500")} placeholder="Pilih layanan..." />
+                      <ComboboxInput className={cn("w-full h-10 bg-zinc-50/50", validationErrors?.service_type_id && "[&_input]:border-red-500")} placeholder={tForm("serviceTypePlaceholder")} />
                       <ComboboxContent><ComboboxEmpty>Data tidak ditemukan.</ComboboxEmpty><ComboboxList>{(item: ComboOption) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}</ComboboxList></ComboboxContent>
                     </Combobox>
                     {renderError("service_type_id")}
@@ -749,6 +672,7 @@ export function BookingEditDialog({
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("cargoTitle")}</h3>
                 <CargoDetailSection
+                  adminFsdMode
                   isLCL={isLCL}
                   isFCL={isFCL}
                   containerTypes={containerTypes}
@@ -774,97 +698,6 @@ export function BookingEditDialog({
                   setContainers={setContainers}
                   renderFieldError={(field) => validationErrors?.[field]?.[0] ?? null}
                 />
-
-                <DangerousGoodsSection
-                  isDg={isDg}
-                  dgClassId={dgClassId}
-                  onDgClassIdChange={setDgClassId}
-                  unNumber={unNumber}
-                  onUnNumberChange={setUnNumber}
-                  msdsFile={msdsFile}
-                  onMsdsFileChange={setMsdsFile}
-                  dgClasses={dgClasses}
-                  validationErrors={validationErrors ?? undefined}
-                  renderError={renderError}
-                />
-              </div>
-
-              {/* Section 4: Add-ons */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-200 pb-2">{te("addonsTitle")}</h3>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 bg-white p-5 rounded-xl border shadow-sm">
-                  {CATEGORIES.map((cat) => {
-                    const svcs = addServices.filter((s) => (s.category || "other") === cat.key);
-                    if (svcs.length === 0) return null;
-
-                    const activeCount = svcs.filter((s) => selectedAddOns.includes(s.id)).length;
-                    const activeNames = svcs
-                      .filter((s) => selectedAddOns.includes(s.id))
-                      .map((s) => s.name)
-                      .join(", ");
-
-                    return (
-                      <Popover key={cat.key}>
-                        <PopoverTrigger
-                          render={
-                            <Button
-                              variant="outline"
-                              className="w-full justify-between h-auto py-3 px-4 text-left font-normal border-zinc-200 hover:bg-zinc-50"
-                            >
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
-                                  <cat.icon className="h-4 w-4" />
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-xs font-bold text-zinc-900 leading-tight">{cat.label}</span>
-                                  <span className="text-xs text-zinc-500 leading-tight truncate max-w-[120px]">
-                                    {activeCount > 0 ? activeNames : "Pilih layanan"}
-                                  </span>
-                                </div>
-                              </div>
-                              <ChevronDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
-                            </Button>
-                          }
-                        />
-                        <PopoverContent className="w-72 p-2 shadow-2xl border-zinc-200" align="start">
-                          <div className="flex flex-col gap-1">
-                            {svcs.map((a) => {
-                              const isMandatory =
-                                (isFCL && a.code && FCL_MANDATORY_CODES.includes(a.code)) ||
-                                (isLCL && a.code && LCL_MANDATORY_CODES.includes(a.code));
-                              return (
-                                <label
-                                  key={a.id}
-                                  className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-zinc-100 cursor-pointer text-sm transition-colors"
-                                >
-                                  <Checkbox
-                                    checked={selectedAddOns.includes(a.id)}
-                                    disabled={Boolean(isMandatory)}
-                                    onCheckedChange={(v) => {
-                                      if (isMandatory) return;
-                                      const on = v === true;
-                                      setSelectedAddOns((prev) =>
-                                        on
-                                          ? prev.includes(a.id) ? prev : [...prev, a.id]
-                                          : prev.filter((x) => x !== a.id)
-                                      );
-                                    }}
-                                  />
-                                  <div className="flex flex-col">
-                                    <span className={isMandatory ? "text-zinc-500 font-semibold italic" : "font-normal group-hover:text-zinc-900"}>
-                                      {a.name}
-                                    </span>
-                                    {isMandatory && <span className="text-[10px] text-zinc-400 font-medium">Bawaan (Default Terpilih)</span>}
-                                  </div>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    );
-                  })}
-                </div>
               </div>
 
               <div className="space-y-4">

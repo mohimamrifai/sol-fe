@@ -38,6 +38,7 @@ interface RouteServiceSectionProps {
   pickupNotes: string;
   setPickupNotes: (v: string) => void;
   renderFieldError: (field: string) => string | null;
+  hideTransportMode?: boolean;
 }
 
 type ComboOption = { value: string; label: string };
@@ -64,6 +65,7 @@ export function RouteServiceSection({
   pickupNotes,
   setPickupNotes,
   renderFieldError,
+  hideTransportMode = false,
 }: RouteServiceSectionProps) {
   const tForm = useTranslations("Bookings.create.form");
   const tCommon = useTranslations("Bookings");
@@ -164,39 +166,41 @@ export function RouteServiceSection({
             <p className="text-[11px] font-medium text-red-500">{renderFieldError("destination_location_id")}</p>
           )}
         </div>
-        <div className="space-y-1">
-          <Label>
-            {tForm("transportMode")} <span className="text-red-500">*</span>
-          </Label>
-          <Combobox
-            items={modeOptions}
-            value={modeOptions.find((x) => x.value === modeId) ?? null}
-            onValueChange={(next) => setModeId(next?.value ?? "")}
-          >
-            <ComboboxInput
-              className={cn("w-full", renderFieldError("transport_mode_id") && "[&_input]:border-red-500")}
-              placeholder={tForm("transportModePlaceholder")}
-            />
-            <ComboboxContent>
-              <ComboboxEmpty>{tForm("comboboxEmpty")}</ComboboxEmpty>
-              <ComboboxList>
-                {(item: ComboOption) => (
-                  <ComboboxItem key={item.value} value={item}>
-                    {item.label}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
-          {selectedMode ? (
-            <p className="text-[11px] text-zinc-500">
-              {tForm("selected")}: {selectedMode.name}
-            </p>
-          ) : null}
-          {renderFieldError("transport_mode_id") && (
-            <p className="text-[11px] font-medium text-red-500">{renderFieldError("transport_mode_id")}</p>
-          )}
-        </div>
+        {!hideTransportMode ? (
+          <div className="space-y-1">
+            <Label>
+              {tForm("transportMode")} <span className="text-red-500">*</span>
+            </Label>
+            <Combobox
+              items={modeOptions}
+              value={modeOptions.find((x) => x.value === modeId) ?? null}
+              onValueChange={(next) => setModeId(next?.value ?? "")}
+            >
+              <ComboboxInput
+                className={cn("w-full", renderFieldError("transport_mode_id") && "[&_input]:border-red-500")}
+                placeholder={tForm("transportModePlaceholder")}
+              />
+              <ComboboxContent>
+                <ComboboxEmpty>{tForm("comboboxEmpty")}</ComboboxEmpty>
+                <ComboboxList>
+                  {(item: ComboOption) => (
+                    <ComboboxItem key={item.value} value={item}>
+                      {item.label}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+            {selectedMode ? (
+              <p className="text-[11px] text-zinc-500">
+                {tForm("selected")}: {selectedMode.name}
+              </p>
+            ) : null}
+            {renderFieldError("transport_mode_id") && (
+              <p className="text-[11px] font-medium text-red-500">{renderFieldError("transport_mode_id")}</p>
+            )}
+          </div>
+        ) : null}
         <div className="space-y-1">
           <Label>
             {tForm("serviceType")} <span className="text-red-500">*</span>

@@ -180,12 +180,17 @@ export function BookingActionsMenu({
           </>
         ) : null}
 
-        {displayStatus === "converted" && typeof booking.shipment_id === "number" ? (
+        {displayStatus === "converted" && (typeof booking.shipment_id === "number" || booking.shipment_exists) ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={() => router.push(`/dashboard/admin/customer/shipments/${booking.shipment_id}`)}
+              onClick={() => {
+                if (typeof booking.shipment_id === "number") {
+                  router.push(`/dashboard/admin/customer/shipments/${booking.shipment_id}`);
+                }
+              }}
+              disabled={typeof booking.shipment_id !== "number"}
             >
               <Eye className="h-4 w-4" />
               {t("actions.viewShipment")}

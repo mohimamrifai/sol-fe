@@ -31,7 +31,6 @@ import {
   rejectBooking,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
-import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
@@ -414,7 +413,6 @@ export default function AdminBookingsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-14">{tc("table.no")}</TableHead>
                     <TableHead className="w-[120px]">{t("columns.bookingNo")}</TableHead>
                     <TableHead>{t("columns.customer")}</TableHead>
                     <TableHead>{t("columns.route")}</TableHead>
@@ -428,11 +426,8 @@ export default function AdminBookingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookings.map((booking, index) => (
+                  {bookings.map((booking) => (
                     <TableRow key={booking.id} className="group">
-                      <TableCell className="tabular-nums text-muted-foreground">
-                        {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
-                      </TableCell>
                       <TableCell className="font-mono text-xs">{booking.booking_number}</TableCell>
                       <TableCell className="font-medium">{booking.company?.name ?? "—"}</TableCell>
                       <TableCell className="text-xs">

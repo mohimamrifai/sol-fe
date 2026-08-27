@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardList, Loader2 } from "lucide-react";
-import { createAdminBooking, estimateAdminBookingPrice } from "@/lib/admin-api";
+import { createAdminBooking } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -25,8 +25,8 @@ import { RouteServiceSection } from "@/components/dashboard/booking/create/route
 import { PartyInfoSection } from "@/components/dashboard/booking/create/party-info-section";
 import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
 import { AttachmentSection } from "@/components/dashboard/booking/create/attachment-section";
-import { AddOnServiceSection } from "@/components/dashboard/admin/bookings/create/add-on-service-section";
 import { useAdminBookingForm } from "@/hooks/use-admin-booking-form";
+import { buildIncludedServiceNames } from "@/lib/admin-booking-payload";
 
 function formatNumber(n: number): string {
   return Number.isFinite(n) ? n.toLocaleString("id-ID", { maximumFractionDigits: 2 }) : "—";
@@ -36,7 +36,6 @@ export default function AdminCreateBookingPage() {
   const router = useRouter();
   const t = useTranslations("AdminBookings.create");
   const tForm = useTranslations("Bookings.create.form");
-  const tDetailCost = useTranslations("Bookings.detail.section3");
   const tCommon = useTranslations("Bookings");
   const f = useAdminBookingForm();
   const [draftSubmitting, setDraftSubmitting] = useState(false);
@@ -46,8 +45,8 @@ export default function AdminCreateBookingPage() {
     [f.companies]
   );
 
-  const showDeliveryNotes = f.shipmentCoverage === "port_to_door" || f.shipmentCoverage === "door_to_door";
-  const showPickupFields = f.shipmentCoverage === "door_to_port" || f.shipmentCoverage === "door_to_door";
+  const showDeliveryNotes = f.showDeliveryFields;
+  const showPickupFields = f.showPickupFields;
   const coverageLabel = f.shipmentCoverage ? tCommon(`coverage.${f.shipmentCoverage}`) : "—";
   const originLabel = f.locations.find((x) => String(x.id) === f.originId)?.name ?? "—";
   const destinationLabel = f.locations.find((x) => String(x.id) === f.destId)?.name ?? "—";
@@ -76,53 +75,14 @@ export default function AdminCreateBookingPage() {
     return { totalPackages, totalWeight, totalVolume, totalChargeable };
   }, [f.packages]);
 
-  const includedServices = useMemo(() => {
-    const rows: string[] = [];
-    if (showPickupFields) rows.push(tForm("includedPickup"));
-    rows.push(tForm("includedRail"));
-    rows.push(tForm("includedLiftOnOrigin"));
-    rows.push(tForm("includedLiftOffOrigin"));
-    rows.push(tForm("includedLiftOnDestination"));
-    rows.push(tForm("includedLiftOffDestination"));
-    if (showDeliveryNotes) rows.push(tForm("includedDelivery"));
-    if (f.isFCL) {
-      rows.push(tForm("includedFreeStorageOrigin"));
-      rows.push(tForm("includedFreeStorageDestination"));
-    }
-    return rows;
-  }, [showPickupFields, showDeliveryNotes, f.isFCL, tForm]);
-
-  const onEstimate = async () => {
-    f.setError(null);
-    f.setEstimate(null);
-    f.setEstimateBreakdown(null);
-    try {
-      const r = await estimateAdminBookingPrice({
-        company_id: Number(f.companyId),
-        origin_location_id: Number(f.originId),
-        destination_location_id: Number(f.destId),
-        transport_mode_id: Number(f.modeId),
-        service_type_id: Number(f.serviceTypeId),
-        shipment_coverage: f.shipmentCoverage,
-        container_type_id: !f.isLCL && f.containerTypeId ? Number(f.containerTypeId) : null,
-        container_count: !f.isLCL ? Number(f.containerCount) || 1 : null,
-        estimated_weight: f.weight ? Number(f.weight) : null,
-        estimated_cbm: f.cbm ? Number(f.cbm) : null,
-        additional_services: f.selectedAddOns.map((id) => ({ id })),
-      });
-      const inner = (r as { data?: { estimated_price?: number; breakdown?: typeof f.estimateBreakdown } }).data;
-      f.setEstimate(
-        inner?.estimated_price != null
-          ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(Number(inner.estimated_price))
-          : t("noEstimate")
-      );
-      if (inner?.breakdown) f.setEstimateBreakdown(inner.breakdown);
-    } catch (e) {
-      const msg = e instanceof ApiError ? e.message : t("estimateFailed");
-      f.setError(msg);
-      toast.error(msg);
-    }
-  };
+  const includedServices = useMemo(
+    () =>
+      buildIncludedServiceNames(f.addServices, f.selectedAddOns, {
+        showPickup: showPickupFields,
+        showDelivery: showDeliveryNotes,
+      }),
+    [f.addServices, f.selectedAddOns, showPickupFields, showDeliveryNotes]
+  );
 
   const onSubmit = async (e: React.FormEvent, asDraft = false) => {
     e.preventDefault();
@@ -261,6 +221,7 @@ export default function AdminCreateBookingPage() {
             pickupNotes={f.pickupNotes}
             setPickupNotes={f.setPickupNotes}
             renderFieldError={f.renderFieldError}
+            hideTransportMode
           />
 
           <PartyInfoSection
@@ -323,6 +284,7 @@ export default function AdminCreateBookingPage() {
           />
 
           <CargoDetailSection
+            adminFsdMode
             isLCL={f.isLCL}
             isFCL={f.isFCL}
             containerTypes={f.containerTypes}
@@ -347,14 +309,6 @@ export default function AdminCreateBookingPage() {
             containers={f.containers}
             setContainers={f.setContainers}
             renderFieldError={f.renderFieldError}
-          />
-
-          <AddOnServiceSection
-            isFCL={f.isFCL}
-            isLCL={f.isLCL}
-            addServices={f.addServices}
-            selectedAddOns={f.selectedAddOns}
-            setSelectedAddOns={f.setSelectedAddOns}
           />
 
           <AttachmentSection attachments={f.attachments} setAttachments={f.setAttachments} />
@@ -410,7 +364,31 @@ export default function AdminCreateBookingPage() {
             <div className="border-b px-4 py-3 text-sm font-semibold">{tForm("cargoSummaryTitle")}</div>
             <div className="px-4 py-3 text-sm">
               {f.isLCL ? (
-                <div className="grid gap-3 sm:grid-cols-4">
+                <div className="space-y-4">
+                  {f.packages.length ? (
+                    <div className="space-y-2">
+                      {f.packages.map((p, idx) => {
+                        const l = Number(p.length_cm) || 0;
+                        const w = Number(p.width_cm) || 0;
+                        const h = Number(p.height_cm) || 0;
+                        const qty = Number(p.piece_count) || 1;
+                        const volume = l && w && h ? ((l * w * h) / 1_000_000) * qty : 0;
+                        const volumeWeight = l && w && h ? ((l * w * h) / 5000) * qty : 0;
+                        const chargeable = Math.max(Number(p.weight_kg) || 0, volumeWeight);
+                        return (
+                          <div key={idx} className="flex flex-wrap justify-between gap-2 border-b pb-2 last:border-0">
+                            <span className="text-muted-foreground">{p.description || "—"}</span>
+                            <span className="font-medium tabular-nums">
+                              {qty} · {formatNumber(Number(p.weight_kg) || 0)} kg · {formatNumber(volume)} CBM · {formatNumber(chargeable)} kg
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">{tForm("packagesEmpty")}</p>
+                  )}
+                  <div className="grid gap-3 sm:grid-cols-4 border-t pt-3">
                   <div>
                     <p className="text-xs text-muted-foreground">{tForm("totalPackage")}</p>
                     <p className="font-semibold tabular-nums">{cargoSummaryLcl.totalPackages}</p>
@@ -426,6 +404,7 @@ export default function AdminCreateBookingPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">{tForm("totalChargeableWeight")}</p>
                     <p className="font-semibold tabular-nums">{formatNumber(cargoSummaryLcl.totalChargeable)}</p>
+                  </div>
                   </div>
                 </div>
               ) : (
@@ -469,31 +448,27 @@ export default function AdminCreateBookingPage() {
               {f.estimateBreakdown ? (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{tDetailCost("freight")}</span>
+                    <span className="text-muted-foreground">{t("railFreight")}</span>
                     <span>{formatNumber(Number(f.estimateBreakdown.freight) || 0)}</span>
                   </div>
                   {showPickupFields ? (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{tDetailCost("pickup")}</span>
+                      <span className="text-muted-foreground">{t("pickupTrucking")}</span>
                       <span>{formatNumber(Number(f.estimateBreakdown.pickup) || 0)}</span>
                     </div>
                   ) : null}
                   {showDeliveryNotes ? (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{tDetailCost("delivery")}</span>
+                      <span className="text-muted-foreground">{t("deliveryTrucking")}</span>
                       <span>{formatNumber(Number(f.estimateBreakdown.delivery) || 0)}</span>
                     </div>
                   ) : null}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{tDetailCost("discount")}</span>
-                    <span>{formatNumber(Number(f.estimateBreakdown.discount) || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{tDetailCost("additionalServices")}</span>
+                    <span className="text-muted-foreground">{t("additionalCharge")}</span>
                     <span>{formatNumber(Number(f.estimateBreakdown.additional_services) || 0)}</span>
                   </div>
                   <div className="flex justify-between font-semibold border-t pt-2">
-                    <span>{tDetailCost("total")}</span>
+                    <span>{t("estimatedTotal")}</span>
                     <span>{f.estimate ?? "—"}</span>
                   </div>
                 </>
@@ -524,10 +499,7 @@ export default function AdminCreateBookingPage() {
           </div>
         </div>
 
-        <div className="sticky bottom-0 z-20 flex flex-col-reverse gap-4 rounded-xl border bg-white p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
-          <Button type="button" variant="outline" onClick={() => void onEstimate()} disabled={isAnySubmitting}>
-            {t("estimateButton")}
-          </Button>
+        <div className="sticky bottom-0 z-20 flex flex-col-reverse gap-4 rounded-xl border bg-white p-4 shadow-lg sm:flex-row sm:items-center sm:justify-end">
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" onClick={() => router.push("/dashboard/admin/customer/bookings")} disabled={isAnySubmitting}>
               {t("cancel")}

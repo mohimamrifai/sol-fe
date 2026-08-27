@@ -18,6 +18,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { getAllProvinces, getCitiesForProvince, getDistrictsForCity } from "@/lib/id-regions";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 
 interface PartyProps {
   kind: "shipper" | "consignee";
@@ -391,7 +392,16 @@ export function PartyInfoSection({
           </div>
           <div className="space-y-1">
             <Label>{tForm("postalCodeLabel")}</Label>
-            <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+            <SearchableCombobox
+              value={postalCode}
+              onChange={setPostalCode}
+              options={[]}
+              placeholder={tForm("postalCodePlaceholder")}
+              searchPlaceholder={tForm("postalCodeSearch")}
+              emptyMessage={tForm("postalCodeEmpty")}
+              allowFreeInput
+              aria-label={tForm("postalCodeLabel")}
+            />
           </div>
         </div>
 

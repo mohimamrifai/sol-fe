@@ -12,8 +12,14 @@ import {
   fetchAdminTransportModes,
   fetchAdminCargoCategories,
   fetchAdminDgClasses,
+  estimateAdminBookingPrice,
 } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
+import {
+  deriveBookingCargoCategoryId,
+  mapContainerRowsForApi,
+  mapPackageRowsForApi,
+} from "@/lib/admin-booking-payload";
 
 export type Company = { id: number; name: string; address?: string; phone?: string };
 export type Loc = { id: number; name: string; code?: string };
@@ -48,7 +54,8 @@ export type EstimateBreakdown = {
 const PER_PAGE = 1000;
 const FCL_MANDATORY_CODES = ["FREE_STORAGE_FCL", "LOLO", "CONTAINER_RENT"];
 const LCL_MANDATORY_CODES = ["FREE_STORAGE_LCL"];
-export const ALL_MANDATORY_CODES = [...FCL_MANDATORY_CODES, ...LCL_MANDATORY_CODES];
+const COVERAGE_ADDON_CODES = ["PICKUP", "DELIVERY"] as const;
+export const ALL_MANDATORY_CODES = [...FCL_MANDATORY_CODES, ...LCL_MANDATORY_CODES, ...COVERAGE_ADDON_CODES];
 
 export const ADMIN_SHIPMENT_COVERAGES: Coverage[] = [
   { value: "port_to_port" },
@@ -57,10 +64,13 @@ export const ADMIN_SHIPMENT_COVERAGES: Coverage[] = [
   { value: "door_to_door" },
 ];
 
-function isDgCargoCategory(categories: CC[], id: string): boolean {
-  const cat = categories.find((c) => String(c.id) === id);
-  return cat?.code?.toUpperCase() === "DG";
+const FSD_SERVICE_TYPE_CODES = new Set(["FCL", "LCL"]);
+
+function filterFsdServiceTypes(rows: ST[]): ST[] {
+  return rows.filter((s) => FSD_SERVICE_TYPE_CODES.has(s.code ?? ""));
 }
+
+const DEFAULT_COUNTRY = "Indonesia";
 
 export function useAdminBookingForm() {
   const authHydrated = useAuthPersistHydrated();
@@ -154,10 +164,11 @@ export function useAdminBookingForm() {
     let c = false;
     (async () => {
       try {
-        const [coRes, locRes, mRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
+        const [coRes, locRes, mRes, stRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
           fetchAdminCompanies({ page: 1, perPage: PER_PAGE, status: "active" }),
           fetchAdminLocations({ page: 1, perPage: PER_PAGE, status: "active" }),
           fetchAdminTransportModes({ page: 1, perPage: PER_PAGE, status: "active" }),
+          fetchAdminServiceTypes({ page: 1, perPage: PER_PAGE, status: "active" }),
           fetchAdminContainerTypes({ page: 1, perPage: PER_PAGE, status: "active" }),
           fetchAdminAdditionalServices({ page: 1, perPage: PER_PAGE, status: "active" }),
           fetchAdminCargoCategories({ page: 1, perPage: PER_PAGE, status: "active" }),
@@ -168,7 +179,13 @@ export function useAdminBookingForm() {
         setLocations(((locRes as LaravelPaginated<Loc>).data ?? []) as Loc[]);
         const rawModes = ((mRes as LaravelPaginated<TM>).data ?? []) as TM[];
         const railFirst = rawModes.filter((x) => x.code === "RAIL");
-        setModes(railFirst.length ? railFirst : rawModes);
+        const modeList = railFirst.length ? railFirst : rawModes;
+        setModes(modeList);
+        if (modeList[0]) setModeId(String(modeList[0].id));
+        const rows = filterFsdServiceTypes(((stRes as LaravelPaginated<ST>).data ?? []) as ST[]);
+        setServiceTypes(rows);
+        const defaultSt = rows.find((s) => s.code === "FCL") ?? rows[0];
+        if (defaultSt) setServiceTypeId(String(defaultSt.id));
         setContainerTypes(((ctRes as LaravelPaginated<CT>).data ?? []) as CT[]);
         setAddServices(((asRes as LaravelPaginated<AS>).data ?? []) as AS[]);
         setCargoCats(((ccRes as LaravelPaginated<CC>).data ?? []) as CC[]);
@@ -212,32 +229,13 @@ export function useAdminBookingForm() {
     };
   }, [authHydrated, companyId]);
 
-  useEffect(() => {
-    if (!authHydrated || !modeId) return;
-    let c = false;
-    (async () => {
-      try {
-        const r = await fetchAdminServiceTypes({
-          page: 1,
-          perPage: PER_PAGE,
-          status: "active",
-          transportModeId: Number(modeId),
-        });
-        if (c) return;
-        const rows = ((r as LaravelPaginated<ST>).data ?? []) as ST[];
-        setServiceTypes(rows);
-        const first = rows[0]?.id;
-        if (first) setServiceTypeId(String(first));
-      } catch {
-        setServiceTypes([]);
-      }
-    })();
-    return () => {
-      c = true;
-    };
-  }, [authHydrated, modeId]);
-
   const selectedST = serviceTypes.find((s) => String(s.id) === serviceTypeId);
+
+  useEffect(() => {
+    if (!selectedST?.transport_mode_id) return;
+    setModeId(String(selectedST.transport_mode_id));
+  }, [serviceTypeId, selectedST?.transport_mode_id]);
+
   const isFCL = selectedST?.code === "FCL";
   const isLCL = selectedST?.code === "LCL";
   const selectedContainerType = containerTypes.find((c) => String(c.id) === containerTypeId);
@@ -269,7 +267,11 @@ export function useAdminBookingForm() {
 
   useEffect(() => {
     if (addServices.length > 0 && serviceTypeId) {
-      const codes = isFCL ? FCL_MANDATORY_CODES : isLCL ? LCL_MANDATORY_CODES : [];
+      const codes = [
+        ...(isFCL ? FCL_MANDATORY_CODES : isLCL ? LCL_MANDATORY_CODES : []),
+        ...(shipmentCoverage === "door_to_port" || shipmentCoverage === "door_to_door" ? ["PICKUP"] : []),
+        ...(shipmentCoverage === "port_to_door" || shipmentCoverage === "door_to_door" ? ["DELIVERY"] : []),
+      ];
       const mandatoryIds = addServices.filter((s) => s.code != null && codes.includes(s.code)).map((s) => s.id);
       setSelectedAddOns((prev) => {
         const others = prev.filter(
@@ -278,7 +280,88 @@ export function useAdminBookingForm() {
         return Array.from(new Set([...others, ...mandatoryIds]));
       });
     }
-  }, [serviceTypeId, addServices, isFCL, isLCL]);
+  }, [serviceTypeId, addServices, isFCL, isLCL, shipmentCoverage]);
+
+  const showPickupFields = shipmentCoverage === "door_to_port" || shipmentCoverage === "door_to_door";
+  const showDeliveryFields = shipmentCoverage === "port_to_door" || shipmentCoverage === "door_to_door";
+
+  useEffect(() => {
+    if (!authHydrated || loading || !companyId || !originId || !destId || !modeId || !serviceTypeId) {
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const pkgTotalWeight = packages.reduce((acc, p) => acc + (Number(p.weight_kg) || 0), 0);
+          const pkgTotalCbm = packages.reduce((acc, p) => {
+            const qty = Number(p.piece_count) || 1;
+            const l = Number(p.length_cm) || 0;
+            const w = Number(p.width_cm) || 0;
+            const h = Number(p.height_cm) || 0;
+            if (!l || !w || !h) return acc;
+            return acc + ((l * w * h) / 1_000_000) * qty;
+          }, 0);
+          const ctrTotalQty = containers.reduce((acc, c) => acc + (Number(c.quantity) || 1), 0);
+          const ctrFirstType = containers[0]?.container_type_id;
+          const derivedCategory = deriveBookingCargoCategoryId(packages, containers, cargoCategoryId);
+
+          const r = await estimateAdminBookingPrice({
+            company_id: Number(companyId),
+            origin_location_id: Number(originId),
+            destination_location_id: Number(destId),
+            transport_mode_id: Number(modeId),
+            service_type_id: Number(serviceTypeId),
+            shipment_coverage: shipmentCoverage,
+            cargo_category_id: derivedCategory ? Number(derivedCategory) : null,
+            container_type_id: isFCL && ctrFirstType ? Number(ctrFirstType) : !isLCL && containerTypeId ? Number(containerTypeId) : null,
+            container_count: isFCL ? ctrTotalQty : !isLCL ? Number(containerCount) || 1 : null,
+            estimated_weight: isLCL ? pkgTotalWeight || null : weight ? Number(weight) : null,
+            estimated_cbm: isLCL ? pkgTotalCbm || null : cbm ? Number(cbm) : null,
+            additional_services: selectedAddOns.map((id) => ({ id })),
+          });
+          if (cancelled) return;
+          const inner = (r as { data?: { estimated_price?: number; breakdown?: EstimateBreakdown } }).data;
+          setEstimate(
+            inner?.estimated_price != null
+              ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(Number(inner.estimated_price))
+              : null
+          );
+          setEstimateBreakdown(inner?.breakdown ?? null);
+        } catch {
+          if (!cancelled) {
+            setEstimate(null);
+            setEstimateBreakdown(null);
+          }
+        }
+      })();
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    authHydrated,
+    loading,
+    companyId,
+    originId,
+    destId,
+    modeId,
+    serviceTypeId,
+    shipmentCoverage,
+    isFCL,
+    isLCL,
+    containerTypeId,
+    containerCount,
+    weight,
+    cbm,
+    packages,
+    containers,
+    selectedAddOns,
+    cargoCategoryId,
+  ]);
 
   const renderFieldError = useCallback(
     (field: string): string | null => validationErrors?.[field]?.[0] ?? null,
@@ -287,46 +370,9 @@ export function useAdminBookingForm() {
 
   const buildFormData = useCallback(
     (asDraft: boolean): FormData => {
-      const pkgRows = packages.map((p) => {
-        const isItemDg = isDgCargoCategory(cargoCats, p.cargo_category_id);
-        return {
-          description: p.description || null,
-          package_type: p.package_type || null,
-          piece_count: Number(p.piece_count) || 1,
-          weight_kg: Number(p.weight_kg) || null,
-          length: Number(p.length_cm) || null,
-          width: Number(p.width_cm) || null,
-          height: Number(p.height_cm) || null,
-          remark: p.remark || null,
-          cargo_category_id: p.cargo_category_id ? Number(p.cargo_category_id) : null,
-          is_dangerous_goods: isItemDg ? 1 : 0,
-          dg_class_id: isItemDg && p.dg_class_id ? Number(p.dg_class_id) : null,
-          un_number: isItemDg ? p.un_number || null : null,
-          packing_group: isItemDg ? p.packing_group || null : null,
-          proper_shipping_name: isItemDg ? p.proper_shipping_name || null : null,
-          flash_point: isItemDg && p.flash_point_c ? Number(p.flash_point_c) : null,
-          dg_remark: isItemDg ? p.dg_remark || null : null,
-        };
-      });
-
-      const ctrRows = containers.map((c) => {
-        const isItemDg = isDgCargoCategory(cargoCats, c.cargo_category_id);
-        return {
-          container_type_id: c.container_type_id ? Number(c.container_type_id) : null,
-          quantity: Number(c.quantity) || 1,
-          gross_weight_kg: Number(c.gross_weight_kg) || null,
-          cargo_description: c.cargo_description || null,
-          remark: c.remark || null,
-          cargo_category_id: c.cargo_category_id ? Number(c.cargo_category_id) : null,
-          is_dangerous_goods: isItemDg ? 1 : 0,
-          dg_class_id: isItemDg && c.dg_class_id ? Number(c.dg_class_id) : null,
-          un_number: isItemDg ? c.un_number || null : null,
-          packing_group: isItemDg ? c.packing_group || null : null,
-          proper_shipping_name: isItemDg ? c.proper_shipping_name || null : null,
-          flash_point: isItemDg && c.flash_point_c ? Number(c.flash_point_c) : null,
-          dg_remark: isItemDg ? c.dg_remark || null : null,
-        };
-      });
+      const pkgRows = mapPackageRowsForApi(packages, cargoCats);
+      const ctrRows = mapContainerRowsForApi(containers, cargoCats);
+      const derivedCargoCategoryId = deriveBookingCargoCategoryId(packages, containers, cargoCategoryId);
 
       const pkgTotalCbm = packages.reduce((acc, p) => {
         const qty = Number(p.piece_count) || 1;
@@ -339,9 +385,6 @@ export function useAdminBookingForm() {
       const pkgTotalWeight = packages.reduce((acc, p) => acc + (Number(p.weight_kg) || 0), 0);
       const ctrTotalQty = containers.reduce((acc, c) => acc + (Number(c.quantity) || 1), 0);
       const ctrFirstType = containers[0]?.container_type_id;
-      const anyItemDg =
-        packages.some((p) => isDgCargoCategory(cargoCats, p.cargo_category_id)) ||
-        containers.some((c) => isDgCargoCategory(cargoCats, c.cargo_category_id));
 
       const payload: Record<string, unknown> = {
         company_id: companyId ? Number(companyId) : null,
@@ -361,9 +404,7 @@ export function useAdminBookingForm() {
         container_count: isFCL ? ctrTotalQty : !isLCL ? Number(containerCount) || 1 : null,
         estimated_weight: isLCL ? pkgTotalWeight || null : weight ? Number(weight) : null,
         estimated_cbm: isLCL ? pkgTotalCbm || null : cbm ? Number(cbm) : null,
-        cargo_category_id: cargoCategoryId ? Number(cargoCategoryId) : null,
-        departure_date: departureDate || pickupDate || null,
-        cargo_description: cargo || null,
+        cargo_category_id: derivedCargoCategoryId ? Number(derivedCargoCategoryId) : null,
         shipper_name: shipperName || null,
         shipper_address: shipperAddress || null,
         shipper_phone: shipperPhone || null,
@@ -373,7 +414,7 @@ export function useAdminBookingForm() {
           pic_name: shipperPicName || null,
           pic_email: shipperPicEmail || null,
           pic_mobile: shipperPicMobile || null,
-          country: "Indonesia",
+          country: DEFAULT_COUNTRY,
           province_id: shipperProvinceId || null,
           city_id: shipperCityId || null,
           district_id: shipperDistrictId || null,
@@ -392,7 +433,7 @@ export function useAdminBookingForm() {
           pic_name: consigneePicName || null,
           pic_email: consigneePicEmail || null,
           pic_mobile: consigneePicMobile || null,
-          country: "Indonesia",
+          country: DEFAULT_COUNTRY,
           province_id: consigneeProvinceId || null,
           city_id: consigneeCityId || null,
           district_id: consigneeDistrictId || null,
@@ -400,11 +441,6 @@ export function useAdminBookingForm() {
           address: consigneeAddress || null,
           phone: consigneePhone || null,
         },
-        is_dangerous_goods: anyItemDg ? 1 : 0,
-        dg_class_id: isDg && dgClassId ? Number(dgClassId) : null,
-        un_number: isDg ? unNumber || null : null,
-        equipment_condition: showProject && equipmentCondition ? equipmentCondition : null,
-        temperature: showTemp && temperature ? Number(temperature) : null,
         packages: pkgRows.length ? pkgRows : null,
         containers: ctrRows.length ? ctrRows : null,
         additional_services: selectedAddOns.map((id) => ({ id })),
@@ -439,7 +475,6 @@ export function useAdminBookingForm() {
           )
         );
       }
-      if (isDg && msdsFile) fd.append("msds_file", msdsFile);
 
       return fd;
     },
@@ -464,9 +499,6 @@ export function useAdminBookingForm() {
       containerCount,
       weight,
       cbm,
-      cargoCategoryId,
-      departureDate,
-      cargo,
       shipperName,
       shipperAddress,
       shipperPhone,
@@ -490,16 +522,9 @@ export function useAdminBookingForm() {
       consigneeCityId,
       consigneeDistrictId,
       consigneePostalCode,
-      isDg,
-      dgClassId,
-      unNumber,
-      showProject,
-      equipmentCondition,
-      showTemp,
-      temperature,
+      cargoCategoryId,
       selectedAddOns,
       attachments,
-      msdsFile,
     ]
   );
 
@@ -644,6 +669,8 @@ export function useAdminBookingForm() {
     selectedCargoCategory,
     showTemp,
     showProject,
+    showPickupFields,
+    showDeliveryFields,
     renderFieldError,
     buildFormData,
   };

@@ -230,7 +230,6 @@ export function BookingDetailView({ data, loading }: Props) {
               <div className="flex justify-between"><span className="text-muted-foreground">{td("pickup")}</span><span>{fmtIdr(breakdown.pickup)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">{td("delivery")}</span><span>{fmtIdr(breakdown.delivery)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">{td("discount")}</span><span>{fmtIdr(breakdown.discount)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{td("additionalServices")}</span><span>{fmtIdr(breakdown.additional_services)}</span></div>
               <Separator />
             </>
           ) : data.estimated_price == null ? (
@@ -343,7 +342,7 @@ export function BookingDetailView({ data, loading }: Props) {
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-base">{td("internalTitle")}</CardTitle></CardHeader>
         <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <p><span className="text-muted-foreground">{td("salesPic")}:</span> {(data as BookingDetail & { user?: { name?: string } }).user?.name ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("salesPic")}:</span> {data.company?.salesPic?.name ?? data.company?.sales_pic?.name ?? "—"}</p>
           <p className="sm:col-span-2"><span className="text-muted-foreground">{td("internalNotes")}:</span> {data.notes ?? "—"}</p>
           <p><span className="text-muted-foreground">{td("confirmedBy")}:</span> {(data as BookingDetail & { approved_by_user?: { name?: string } }).approved_by_user?.name ?? (data as BookingDetail & { approvedByUser?: { name?: string } }).approvedByUser?.name ?? "—"}</p>
           <p><span className="text-muted-foreground">{td("confirmedDate")}:</span> {(data as BookingDetail & { approved_at?: string }).approved_at ? String((data as BookingDetail & { approved_at?: string }).approved_at).slice(0, 16).replace("T", " ") : "—"}</p>
@@ -371,7 +370,11 @@ export function BookingDetailView({ data, loading }: Props) {
                 {activities.map((act, i) => (
                   <tr key={i} className="border-b last:border-0">
                     <td className="py-2 pr-4 text-muted-foreground whitespace-nowrap">
-                      {act.created_at ? String(act.created_at).slice(0, 16).replace("T", " ") : "—"}
+                      {act.occurred_at
+                        ? String(act.occurred_at).slice(0, 16).replace("T", " ")
+                        : act.created_at
+                          ? String(act.created_at).slice(0, 16).replace("T", " ")
+                          : "—"}
                     </td>
                     <td className="py-2">{String(act.description ?? act.event ?? act.title ?? "—")}</td>
                   </tr>

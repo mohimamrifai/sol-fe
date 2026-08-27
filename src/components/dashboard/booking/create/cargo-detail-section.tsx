@@ -50,6 +50,7 @@ interface CargoDetailSectionProps {
   containers: ContainerRow[];
   setContainers: (v: ContainerRow[]) => void;
   renderFieldError: (field: string) => string | null;
+  adminFsdMode?: boolean;
 }
 
 export function CargoDetailSection({
@@ -77,6 +78,7 @@ export function CargoDetailSection({
   containers,
   setContainers,
   renderFieldError,
+  adminFsdMode = false,
 }: CargoDetailSectionProps) {
   const t = useTranslations("Bookings.create.form");
 
@@ -160,88 +162,96 @@ export function CargoDetailSection({
         <CardDescription>{t("cargoSubtitle")}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6 sm:grid-cols-2">
-        <div className="space-y-1">
-          <Label>{t("departureDate")}</Label>
-          <Input
-            type="date"
-            value={departureDate}
-            onChange={(e) => setDepartureDate(e.target.value)}
-            className={cn(renderFieldError("departure_date") && "border-red-500")}
-          />
-          {renderFieldError("departure_date") && (
-            <p className="text-[11px] font-medium text-red-500">{renderFieldError("departure_date")}</p>
-          )}
-        </div>
+        {!adminFsdMode ? (
+          <>
+            <div className="space-y-1">
+              <Label>{t("departureDate")}</Label>
+              <Input
+                type="date"
+                value={departureDate}
+                onChange={(e) => setDepartureDate(e.target.value)}
+                className={cn(renderFieldError("departure_date") && "border-red-500")}
+              />
+              {renderFieldError("departure_date") && (
+                <p className="text-[11px] font-medium text-red-500">{renderFieldError("departure_date")}</p>
+              )}
+            </div>
 
-        <div className="space-y-1">
-          <Label>
-            {t("cargoCategory")} <span className="text-red-500">*</span>
-          </Label>
-          <Combobox
-            items={cargoCategoryOptions}
-            value={cargoCategoryOptions.find((x) => x.value === cargoCategoryId) ?? null}
-            onValueChange={(next) => setCargoCategoryId(next?.value ?? "")}
-          >
-            <ComboboxInput
-              className={cn("w-full", renderFieldError("cargo_category_id") && "[&_input]:border-red-500")}
-              placeholder={t("cargoCategoryPlaceholder")}
-            />
-            <ComboboxContent>
-              <ComboboxEmpty>{t("comboboxEmpty")}</ComboboxEmpty>
-              <ComboboxList>
-                {(item: ComboOption) => (
-                  <ComboboxItem key={item.value} value={item}>
-                    {item.label}
-                  </ComboboxItem>
+            <div className="space-y-1">
+              <Label>
+                {t("cargoCategory")} <span className="text-red-500">*</span>
+              </Label>
+              <Combobox
+                items={cargoCategoryOptions}
+                value={cargoCategoryOptions.find((x) => x.value === cargoCategoryId) ?? null}
+                onValueChange={(next) => setCargoCategoryId(next?.value ?? "")}
+              >
+                <ComboboxInput
+                  className={cn("w-full", renderFieldError("cargo_category_id") && "[&_input]:border-red-500")}
+                  placeholder={t("cargoCategoryPlaceholder")}
+                />
+                <ComboboxContent>
+                  <ComboboxEmpty>{t("comboboxEmpty")}</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item: ComboOption) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+              {selectedCargoCategory ? (
+                <p className="text-[11px] text-zinc-500">
+                  {t("selected")}: {selectedCargoCategory.name}
+                </p>
+              ) : null}
+              {renderFieldError("cargo_category_id") && (
+                <p className="text-[11px] font-medium text-red-500">{renderFieldError("cargo_category_id")}</p>
+              )}
+            </div>
+
+            {showTemp ? (
+              <div className="space-y-1">
+                <Label>
+                  {t("temperature")} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  value={temperature}
+                  onChange={(e) => setTemperature(e.target.value)}
+                  className={cn(renderFieldError("temperature") && "border-red-500")}
+                />
+                {renderFieldError("temperature") && (
+                  <p className="text-[11px] font-medium text-red-500">{renderFieldError("temperature")}</p>
                 )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
-          {selectedCargoCategory ? (
-            <p className="text-[11px] text-zinc-500">
-              {t("selected")}: {selectedCargoCategory.name}
-            </p>
-          ) : null}
-          {renderFieldError("cargo_category_id") && (
-            <p className="text-[11px] font-medium text-red-500">{renderFieldError("cargo_category_id")}</p>
-          )}
-        </div>
+              </div>
+            ) : null}
 
-        {showTemp ? (
-          <div className="space-y-1">
-            <Label>
-              {t("temperature")} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              type="number"
-              value={temperature}
-              onChange={(e) => setTemperature(e.target.value)}
-              className={cn(renderFieldError("temperature") && "border-red-500")}
-            />
-            {renderFieldError("temperature") && (
-              <p className="text-[11px] font-medium text-red-500">{renderFieldError("temperature")}</p>
-            )}
-          </div>
+            {showProject ? (
+              <div className="space-y-1">
+                <Label>
+                  {t("equipmentCondition")} <span className="text-red-500">*</span>
+                </Label>
+                <Select value={equipmentCondition} onValueChange={(v) => setEquipmentCondition(v ?? "")}>
+                  <SelectTrigger className={cn("h-10 w-full", renderFieldError("equipment_condition") && "border-red-500")}>
+                    <SelectValue placeholder={t("equipmentConditionPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CLEAN">{t("equipmentConditionClean")}</SelectItem>
+                    <SelectItem value="RESIDUAL">{t("equipmentConditionResidual")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {renderFieldError("equipment_condition") && (
+                  <p className="text-[11px] font-medium text-red-500">{renderFieldError("equipment_condition")}</p>
+                )}
+              </div>
+            ) : null}
+          </>
         ) : null}
 
-        {showProject ? (
-          <div className="space-y-1">
-            <Label>
-              {t("equipmentCondition")} <span className="text-red-500">*</span>
-            </Label>
-            <Select value={equipmentCondition} onValueChange={(v) => setEquipmentCondition(v ?? "")}>
-              <SelectTrigger className={cn("h-10 w-full", renderFieldError("equipment_condition") && "border-red-500")}>
-                <SelectValue placeholder={t("equipmentConditionPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CLEAN">{t("equipmentConditionClean")}</SelectItem>
-                <SelectItem value="RESIDUAL">{t("equipmentConditionResidual")}</SelectItem>
-              </SelectContent>
-            </Select>
-            {renderFieldError("equipment_condition") && (
-              <p className="text-[11px] font-medium text-red-500">{renderFieldError("equipment_condition")}</p>
-            )}
-          </div>
+        {adminFsdMode && !isLCL && !isFCL ? (
+          <p className="sm:col-span-2 text-sm text-muted-foreground">{t("selectServiceTypeHint")}</p>
         ) : null}
 
         {isLCL ? (
@@ -456,19 +466,21 @@ export function CargoDetailSection({
           </div>
         ) : null}
 
-        <div className="sm:col-span-2 space-y-1">
-          <Label>{t("cargoDescription")}</Label>
-          <Textarea
-            value={cargo}
-            onChange={(e) => setCargo(e.target.value)}
-            rows={3}
-            placeholder={t("cargoDescriptionPlaceholder")}
-            className={cn(renderFieldError("cargo_description") && "border-red-500 ring-2 ring-red-500/20")}
-          />
-          {renderFieldError("cargo_description") && (
-            <p className="text-[11px] font-medium text-red-500">{renderFieldError("cargo_description")}</p>
-          )}
-        </div>
+        {!adminFsdMode ? (
+          <div className="sm:col-span-2 space-y-1">
+            <Label>{t("cargoDescription")}</Label>
+            <Textarea
+              value={cargo}
+              onChange={(e) => setCargo(e.target.value)}
+              rows={3}
+              placeholder={t("cargoDescriptionPlaceholder")}
+              className={cn(renderFieldError("cargo_description") && "border-red-500 ring-2 ring-red-500/20")}
+            />
+            {renderFieldError("cargo_description") && (
+              <p className="text-[11px] font-medium text-red-500">{renderFieldError("cargo_description")}</p>
+            )}
+          </div>
+        ) : null}
       </CardContent>
 
       <Dialog open={packageOpen} onOpenChange={setPackageOpen}>
