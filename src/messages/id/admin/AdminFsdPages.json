@@ -2,7 +2,7 @@
   "AdminFsdContainers": {
     "pageTitle": "Kontainer",
     "pageSubtitle": "Kelola kontainer perusahaan dan vendor, serta pantau utilisasi.",
-    "addContainer": "Tambah Kontainer",
+    "addContainer": "Tambah Kontainer Perusahaan",
     "createSuccess": "Kontainer berhasil dibuat.",
     "updateSuccess": "Kontainer diperbarui.",
     "listTitle": "Daftar Kontainer",
@@ -59,16 +59,47 @@
       "general": "Informasi Umum",
       "assignment": "Assignment Aktif",
       "noAssignment": "Tidak ada shipment aktif.",
-      "utilization": "Utilisasi",
+      "utilization": "Utilisasi Kapasitas",
       "fclDedicated": "Dedicated untuk satu shipment FCL.",
       "maintenance": "Riwayat Maintenance",
-      "movements": "Riwayat Movement"
+      "movements": "Riwayat Movement",
+      "activityLog": "Log Aktivitas",
+      "emptyMovements": "Belum ada riwayat movement.",
+      "emptyMaintenance": "Belum ada riwayat maintenance.",
+      "emptyActivity": "Belum ada aktivitas tercatat.",
+      "lclBreakdown": "Detail per Shipment (LCL)",
+      "totals": "Total"
+    },
+    "movements": {
+      "registered": "Registered",
+      "assigned": "Assigned",
+      "loaded": "Loaded",
+      "arrived": "Arrived",
+      "released": "Released",
+      "train_departed": "Train Departed",
+      "arrived_yard": "Arrived Yard",
+      "returned": "Returned"
+    },
+    "maintenanceTypes": {
+      "repair": "Repair",
+      "inspection": "Inspection",
+      "cleaning": "Cleaning"
+    },
+    "maintenanceStatuses": {
+      "scheduled": "Terjadwal",
+      "in_progress": "Berjalan",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
     },
     "movement": {
       "occurredAt": "Waktu",
       "activity": "Aktivitas",
+      "from": "Dari",
+      "to": "Ke",
       "route": "Lokasi",
-      "createdBy": "Oleh"
+      "createdBy": "Oleh",
+      "empty": "Belum ada data movement.",
+      "filterTitle": "Filter"
     }
   },
   "AdminFsdOperations": {

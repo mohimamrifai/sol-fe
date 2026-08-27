@@ -2,7 +2,7 @@
   "AdminFsdContainers": {
     "pageTitle": "Company Containers",
     "pageSubtitle": "Manage company-owned containers and monitor utilization.",
-    "addContainer": "Add Container",
+    "addContainer": "Add Company Container",
     "createSuccess": "Container created successfully.",
     "updateSuccess": "Container updated.",
     "listTitle": "Container List",
@@ -57,18 +57,49 @@
     },
     "detail": {
       "general": "General Information",
-      "assignment": "Active Assignment",
+      "assignment": "Current Assignment",
       "noAssignment": "No active shipment.",
-      "utilization": "Utilization",
+      "utilization": "Capacity Utilization",
       "fclDedicated": "Dedicated to a single FCL shipment.",
       "maintenance": "Maintenance History",
-      "movements": "Movement History"
+      "movements": "Movement History",
+      "activityLog": "Activity Log",
+      "emptyMovements": "No movement history yet.",
+      "emptyMaintenance": "No maintenance history yet.",
+      "emptyActivity": "No activity recorded yet.",
+      "lclBreakdown": "Per Shipment (LCL)",
+      "totals": "Total"
+    },
+    "movements": {
+      "registered": "Registered",
+      "assigned": "Assigned",
+      "loaded": "Loaded",
+      "arrived": "Arrived",
+      "released": "Released",
+      "train_departed": "Train Departed",
+      "arrived_yard": "Arrived Yard",
+      "returned": "Returned"
+    },
+    "maintenanceTypes": {
+      "repair": "Repair",
+      "inspection": "Inspection",
+      "cleaning": "Cleaning"
+    },
+    "maintenanceStatuses": {
+      "scheduled": "Scheduled",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
     },
     "movement": {
-      "occurredAt": "Occurred At",
+      "occurredAt": "Date",
       "activity": "Activity",
+      "from": "From",
+      "to": "To",
       "route": "Location",
-      "createdBy": "By"
+      "createdBy": "Created By",
+      "empty": "No movement records yet.",
+      "filterTitle": "Filter"
     }
   },
   "AdminFsdOperations": {

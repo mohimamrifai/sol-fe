@@ -11,13 +11,13 @@ import { SearchableCombobox } from "@/components/searchable-combobox";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
-import { fetchAdminContainerMovements, fetchAdminContainers, fetchAdminYards } from "@/lib/admin-api";
-import { rowNumber } from "@/lib/list-query";
+import { fetchAdminContainerMovements, fetchAdminContainers, fetchAdminShipments, fetchAdminYards } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ArrowRightLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const PER_PAGE = 20;
+const MOVEMENT_ACTIVITIES = ["registered", "assigned", "loaded", "arrived", "released"] as const;
 
 export default function AdminContainerMovementPage() {
   const authHydrated = useAuthPersistHydrated();
@@ -28,13 +28,26 @@ export default function AdminContainerMovementPage() {
   const [meta, setMeta] = useState<LaravelPaginated<Record<string, unknown>> | null>(null);
   const [yards, setYards] = useState<{ id: number; label: string }[]>([]);
   const [containers, setContainers] = useState<{ id: number; label: string }[]>([]);
+  const [shipments, setShipments] = useState<{ id: number; label: string }[]>([]);
   const [page, setPage] = useState(1);
   const [containerFilter, setContainerFilter] = useState("all");
+  const [shipmentFilter, setShipmentFilter] = useState("all");
   const [yardFilter, setYardFilter] = useState("all");
   const [activityFilter, setActivityFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const activityLabel = useCallback(
+    (value: string) => {
+      const key = value.toLowerCase();
+      if (t.has(`movements.${key}` as "movements.registered")) {
+        return t(`movements.${key}` as "movements.registered");
+      }
+      return value;
+    },
+    [t]
+  );
 
   const containerFilterOptions = useMemo(
     () => [
@@ -42,6 +55,14 @@ export default function AdminContainerMovementPage() {
       ...containers.map((x) => ({ value: String(x.id), label: x.label })),
     ],
     [t, containers]
+  );
+
+  const shipmentFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.all") },
+      ...shipments.map((x) => ({ value: String(x.id), label: x.label })),
+    ],
+    [tc, shipments]
   );
 
   const yardFilterOptions = useMemo(
@@ -52,9 +73,20 @@ export default function AdminContainerMovementPage() {
     [t, yards]
   );
 
+  const activityFilterOptions = useMemo(
+    () => [
+      { value: "all", label: tc("filters.all") },
+      ...MOVEMENT_ACTIVITIES.map((key) => ({
+        value: key,
+        label: activityLabel(key),
+      })),
+    ],
+    [tc, activityLabel]
+  );
+
   useEffect(() => {
     setPage(1);
-  }, [containerFilter, yardFilter, activityFilter, dateFrom, dateTo]);
+  }, [containerFilter, shipmentFilter, yardFilter, activityFilter, dateFrom, dateTo]);
 
   const load = useCallback(async () => {
     if (!authHydrated) return;
@@ -64,6 +96,7 @@ export default function AdminContainerMovementPage() {
         page,
         perPage: PER_PAGE,
         container_asset_id: containerFilter === "all" ? undefined : containerFilter,
+        shipment_id: shipmentFilter === "all" ? undefined : shipmentFilter,
         yard_id: yardFilter === "all" ? undefined : yardFilter,
         activity: activityFilter === "all" ? undefined : activityFilter,
         date_from: dateFrom || undefined,
@@ -77,7 +110,7 @@ export default function AdminContainerMovementPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, containerFilter, yardFilter, activityFilter, dateFrom, dateTo]);
+  }, [authHydrated, page, containerFilter, shipmentFilter, yardFilter, activityFilter, dateFrom, dateTo]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -86,7 +119,8 @@ export default function AdminContainerMovementPage() {
     void Promise.all([
       fetchAdminYards({ perPage: 200 }),
       fetchAdminContainers({ perPage: 500 }),
-    ]).then(([yardRes, containerRes]) => {
+      fetchAdminShipments({ perPage: 500 }),
+    ]).then(([yardRes, containerRes, shipmentRes]) => {
       setYards(((yardRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
         id: Number(r.id),
         label: `${r.code ?? ""} · ${r.name ?? r.id}`.trim(),
@@ -95,15 +129,27 @@ export default function AdminContainerMovementPage() {
         id: Number(r.id),
         label: String(r.container_number ?? r.id),
       })));
+      setShipments(((shipmentRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+        id: Number(r.id),
+        label: String(r.shipment_number ?? r.id),
+      })));
     });
   }, [authHydrated]);
+
+  const formatDate = (value: unknown) => {
+    if (!value) return "—";
+    const date = new Date(String(value));
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  };
 
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
       <AdminPageHeader icon={ArrowRightLeft} title={t("movementTitle")} description={t("movementSubtitle")} />
 
       <Card className="min-w-0 overflow-hidden">
-        <CardHeader><CardTitle>{t("movementListTitle")}</CardTitle></CardHeader>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{t("movement.filterTitle")}</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex w-52 flex-col gap-1.5">
@@ -119,6 +165,18 @@ export default function AdminContainerMovementPage() {
               />
             </div>
             <div className="flex w-52 flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">{t("columns.shipment")}</Label>
+              <SearchableCombobox
+                value={shipmentFilter}
+                onChange={setShipmentFilter}
+                options={shipmentFilterOptions}
+                placeholder={tc("filters.all")}
+                searchPlaceholder={t("searchPlaceholder")}
+                className="h-9"
+                aria-label={t("columns.shipment")}
+              />
+            </div>
+            <div className="flex w-52 flex-col gap-1.5">
               <Label className="text-xs text-muted-foreground">{t("columns.yard")}</Label>
               <SearchableCombobox
                 value={yardFilter}
@@ -130,21 +188,19 @@ export default function AdminContainerMovementPage() {
                 aria-label={t("columns.yard")}
               />
             </div>
-            <Select value={activityFilter} onValueChange={(v) => v && setActivityFilter(v)}>
-              <SelectTrigger className="h-9 w-44">
-                <SelectValue placeholder="Activity">
-                  {activityFilter === "all" ? tc("filters.all") : activityFilter}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tc("filters.all")}</SelectItem>
-                <SelectItem value="registered">Registered</SelectItem>
-                <SelectItem value="assigned">Assigned</SelectItem>
-                <SelectItem value="loaded">Loaded</SelectItem>
-                <SelectItem value="arrived">Arrived</SelectItem>
-                <SelectItem value="released">Released</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex w-44 flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">{t("movement.activity")}</Label>
+              <Select value={activityFilter} onValueChange={(v) => v && setActivityFilter(v)}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder={t("movement.activity")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {activityFilterOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-end gap-2">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">{tc("filters.from")}</Label>
@@ -156,7 +212,12 @@ export default function AdminContainerMovementPage() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader><CardTitle>{t("movementListTitle")}</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
           {loading ? (
             <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>
           ) : (
@@ -164,33 +225,42 @@ export default function AdminContainerMovementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-14">{tc("table.no")}</TableHead>
                     <TableHead>{t("movement.occurredAt")}</TableHead>
                     <TableHead>{t("columns.containerNo")}</TableHead>
                     <TableHead>{t("columns.shipment")}</TableHead>
+                    <TableHead>{t("movement.from")}</TableHead>
+                    <TableHead>{t("movement.to")}</TableHead>
                     <TableHead>{t("movement.activity")}</TableHead>
-                    <TableHead>{t("movement.route")}</TableHead>
-                    <TableHead>{t("columns.yard")}</TableHead>
                     <TableHead>{t("movement.createdBy")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r, i) => (
+                  {rows.map((r) => (
                     <TableRow key={String(r.id)}>
-                      <TableCell className="tabular-nums text-muted-foreground">{rowNumber(meta?.current_page ?? page, PER_PAGE, i)}</TableCell>
-                      <TableCell>{r.occurred_at ? new Date(String(r.occurred_at)).toLocaleString("id-ID") : "—"}</TableCell>
+                      <TableCell>{formatDate(r.occurred_at)}</TableCell>
                       <TableCell className="font-mono text-xs">{String(r.container_number ?? "—")}</TableCell>
-                      <TableCell>{String(r.shipment_number ?? "—")}</TableCell>
-                      <TableCell>{String(r.activity ?? "—")}</TableCell>
-                      <TableCell>{String(r.location_from ?? "—")} → {String(r.location_to ?? "—")}</TableCell>
-                      <TableCell>{String(r.yard ?? "—")}</TableCell>
+                      <TableCell className="font-mono text-xs">{String(r.shipment_number ?? "—")}</TableCell>
+                      <TableCell>{String(r.location_from ?? "—")}</TableCell>
+                      <TableCell>{String(r.location_to ?? "—")}</TableCell>
+                      <TableCell>{activityLabel(String(r.activity ?? "—"))}</TableCell>
                       <TableCell>{String(r.created_by ?? "—")}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
-                {rows.length === 0 ? <TableCaption className="text-xs">{t("empty")}</TableCaption> : null}
+                {rows.length === 0 ? (
+                  <TableCaption className="text-xs">{t("movement.empty")}</TableCaption>
+                ) : null}
               </Table>
-              {meta ? <PaginationBar currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} from={meta.from} to={meta.to} onPageChange={setPage} /> : null}
+              {meta ? (
+                <PaginationBar
+                  currentPage={meta.current_page}
+                  lastPage={meta.last_page}
+                  total={meta.total}
+                  from={meta.from}
+                  to={meta.to}
+                  onPageChange={setPage}
+                />
+              ) : null}
             </>
           )}
         </CardContent>

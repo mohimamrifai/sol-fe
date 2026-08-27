@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
@@ -31,6 +31,7 @@ const OWNERSHIP_OPTIONS = ["company", "vendor"] as const;
 export default function AdminContainersPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = String(params?.locale ?? "id");
   const basePath = `/${locale}/dashboard/admin/container/containers`;
   const authHydrated = useAuthPersistHydrated();
@@ -53,6 +54,17 @@ export default function AdminContainersPage() {
   const [vendorFilter, setVendorFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const storageExceeded = searchParams.get("storage_exceeded");
+    if (status) setStatusFilter(status);
+    if (storageExceeded === "1") {
+      setOwnershipFilter("all");
+    }
+  }, [searchParams]);
+
+  const storageExceededFilter = searchParams.get("storage_exceeded") === "1";
 
   const ownershipLabel = useCallback(
     (value: string) => {
@@ -180,7 +192,7 @@ export default function AdminContainersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, ownershipFilter, statusFilter, typeFilter, yardFilter, vendorFilter]);
+  }, [debouncedSearch, ownershipFilter, statusFilter, typeFilter, yardFilter, vendorFilter, storageExceededFilter]);
 
   useEffect(() => {
     if (ownershipFilter !== "vendor") setVendorFilter("all");
@@ -200,6 +212,7 @@ export default function AdminContainersPage() {
           container_type_id: typeFilter === "all" ? undefined : typeFilter,
           current_yard_id: yardFilter === "all" ? undefined : yardFilter,
           vendor_id: vendorFilter === "all" ? undefined : vendorFilter,
+          storage_exceeded: storageExceededFilter ? "1" : undefined,
         }),
         fetchAdminContainerStats(),
       ]);
@@ -212,7 +225,7 @@ export default function AdminContainersPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, ownershipFilter, statusFilter, typeFilter, yardFilter, vendorFilter]);
+  }, [authHydrated, page, debouncedSearch, ownershipFilter, statusFilter, typeFilter, yardFilter, vendorFilter, storageExceededFilter]);
 
   useEffect(() => { void load(); }, [load]);
 
