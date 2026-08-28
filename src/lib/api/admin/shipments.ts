@@ -72,8 +72,26 @@ export async function deleteAdminShipmentItem(itemId: number) {
   return apiFetch(`/admin/shipment-items/${itemId}`, { method: "DELETE" });
 }
 
+export async function fetchAdminShipmentOptions() {
+  return apiFetch<{ data: { vehicle_types: string[]; tracking_statuses: string[] } }>(
+    `/admin/shipments/options`,
+    { method: "GET" }
+  );
+}
+
+export async function generateAdminConsignmentNote(id: number) {
+  return apiFetch<{ data: { waybill_number: string } }>(
+    `/admin/shipments/${id}/generate-consignment-note`,
+    { method: "POST", body: JSON.stringify({}) }
+  );
+}
+
 export async function downloadAdminConsignmentNotePdf(shipmentId: number) {
   return apiFetchBlob(`/admin/shipments/${shipmentId}/consignment-note-pdf`, { method: "GET" });
+}
+
+export async function viewAdminConsignmentNotePdf(shipmentId: number) {
+  return apiFetchBlob(`/admin/shipments/${shipmentId}/consignment-note-pdf?view=1`, { method: "GET" });
 }
 
 export async function downloadAdminWaybillPdf(shipmentId: number) {
@@ -129,4 +147,26 @@ export async function registerAdminVendorContainer(shipmentId: number, body: Rec
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+export async function uploadAdminShipmentDocument(shipmentId: number, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetch(`/admin/shipments/${shipmentId}/documents`, { method: "POST", body: formData });
+}
+
+export async function downloadAdminShipmentDocument(
+  shipmentId: number,
+  documentId: number,
+  filename?: string
+) {
+  const blob = await apiFetchBlob(`/admin/shipments/${shipmentId}/documents/${documentId}`, {
+    method: "GET",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename ?? `shipment-document-${documentId}`;
+  a.click();
+  URL.revokeObjectURL(url);
 }

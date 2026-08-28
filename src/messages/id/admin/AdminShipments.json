@@ -4,7 +4,7 @@
     "pageSubtitle": "Shipment pelanggan dan pelacakan operasional.",
     "listTitle": "Daftar Shipment",
     "filterTitle": "Filter",
-    "searchPlaceholder": "Cari nomor shipment atau CN…",
+    "searchPlaceholder": "Cari No. Shipment, No. CN, No. Booking, atau Customer…",
     "filterStatus": "Status",
     "columns": {
       "shipmentNo": "No. Shipment",
@@ -34,6 +34,7 @@
     },
     "table": {
       "viewDetail": "Lihat detail shipment",
+      "detail": "Detail",
       "cnActionsMenu": "Menu aksi CN",
       "cnActionsMenuWithNumber": "Menu aksi CN {number}",
       "service": "Layanan",

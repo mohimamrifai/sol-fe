@@ -4,12 +4,6 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Table,
   TableBody,
   TableCaption,
@@ -18,11 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { shipmentStatusBadgeClass } from "@/lib/shipment-status";
+import { fsdShipmentStatusBadgeClass } from "@/lib/shipment-status";
+import { resolveFsdShipmentStatus } from "@/lib/shipment-fsd-status";
 import { cn } from "@/lib/utils";
-import { Eye, MoreHorizontal } from "lucide-react";
-import { useRouter } from "@/i18n/routing";
-import { rowNumber } from "@/lib/list-query";
+import { Eye } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useShipmentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
@@ -31,8 +25,10 @@ interface ShipmentTableProps {
   rows: Array<{
     id?: number | string;
     status?: string;
+    fsd_status?: string;
     waybill_number?: string;
     shipment_number?: string;
+    display_number?: string;
     booking?: { booking_number?: string };
     company?: { name?: string };
     Company?: { name?: string };
@@ -49,39 +45,12 @@ interface ShipmentTableProps {
 }
 
 const actionsHeadClass =
-  "w-12 max-md:sticky max-md:right-0 max-md:z-20 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] md:static md:z-auto md:border-l-0 md:bg-transparent md:shadow-none text-right";
+  "w-24 max-md:sticky max-md:right-0 max-md:z-20 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] md:static md:z-auto md:border-l-0 md:bg-transparent md:shadow-none text-right";
 
 const actionsCellClass =
   "max-md:sticky max-md:right-0 max-md:z-10 max-md:border-l max-md:border-border max-md:bg-card max-md:shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.08)] max-md:group-hover:bg-muted/50 md:static md:z-auto md:border-l-0 md:shadow-none md:group-hover:bg-transparent";
 
-function ShipmentActionsMenu({ shipmentId, cnNumber }: { shipmentId: number; cnNumber: string }) {
-  const router = useRouter();
-  const t = useTranslations("AdminShipments");
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "shrink-0")}
-      >
-        <MoreHorizontal className="h-4 w-4" />
-        <span className="sr-only">
-          {cnNumber ? t("table.cnActionsMenuWithNumber", { number: cnNumber }) : t("table.cnActionsMenu")}
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-52">
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(`/dashboard/admin/customer/shipments/${shipmentId}`)}
-        >
-          <Eye className="h-4 w-4" />
-          {t("table.viewDetail")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTableProps) {
+export function ShipmentTable({ rows, perPage, loading }: ShipmentTableProps) {
   const t = useTranslations("AdminShipments");
   const tc = useTranslations("AdminCommon");
   const shipmentStatusLabel = useShipmentStatusLabel();
@@ -90,20 +59,22 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
     () =>
       rows.map((shipment) => {
         const st = String(shipment.status ?? "");
+        const fsdStatus = resolveFsdShipmentStatus(st, shipment.fsd_status);
         const company = (shipment.company ?? shipment.Company) as { name?: string } | undefined;
         const origin = (shipment.origin_location ?? shipment.originLocation) as { name?: string } | undefined;
         const dest = (shipment.destination_location ?? shipment.destinationLocation) as
           | { name?: string }
           | undefined;
         const svc = (shipment.service_type ?? shipment.serviceType) as { name?: string } | undefined;
-        const cnNum = String(shipment.waybill_number ?? shipment.shipment_number ?? "");
-        const shpNum = String(shipment.shipment_number ?? "");
+        const cnNum = String(shipment.waybill_number ?? "");
+        const shpNum = String(shipment.display_number ?? shipment.shipment_number ?? "");
         const bookingNo = String(shipment.booking?.booking_number ?? "");
         const route = [origin?.name, dest?.name].filter(Boolean).join(" → ") || "—";
 
         return {
           shipment,
           st,
+          fsdStatus,
           company,
           svc,
           cnNum,
@@ -135,44 +106,42 @@ export function ShipmentTable({ rows, meta, perPage, loading }: ShipmentTablePro
     <Table>
       <TableHeader>
         <TableRow className="bg-zinc-50/50">
-          <TableHead className="w-14 pl-4">{tc("table.no")}</TableHead>
-          <TableHead className="w-[120px]">{t("columns.shipmentNo")}</TableHead>
+          <TableHead className="w-[120px] pl-4">{t("columns.shipmentNo")}</TableHead>
+          <TableHead className="w-[140px]">{t("columns.cnNumber")}</TableHead>
           <TableHead className="w-[120px]">{t("columns.bookingNo")}</TableHead>
-          <TableHead className="w-[180px]">{t("columns.cnNumber")}</TableHead>
           <TableHead>{tc("table.customer")}</TableHead>
-          <TableHead>{t("table.service")}</TableHead>
           <TableHead>{t("table.route")}</TableHead>
+          <TableHead>{t("table.service")}</TableHead>
           <TableHead>{tc("table.status")}</TableHead>
-          <TableHead className={actionsHeadClass}>
-            <span className="max-md:sr-only">{tc("actions.actions")}</span>
-          </TableHead>
+          <TableHead className={cn(actionsHeadClass, "pr-4")}>{tc("actions.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {preparedRows.map(({ shipment, st, company, svc, cnNum, shpNum, bookingNo, route }, index) => {
+        {preparedRows.map(({ shipment, st, fsdStatus, company, svc, cnNum, shpNum, bookingNo, route }) => {
           return (
-            <TableRow key={cnNum || String(shipment.id)} className="group">
-              <TableCell className="tabular-nums text-muted-foreground pl-4">
-                {rowNumber(meta?.current_page ?? 1, perPage, index)}
-              </TableCell>
-              <TableCell className="font-mono text-xs">{shpNum || "—"}</TableCell>
+            <TableRow key={String(shipment.id ?? cnNum ?? shpNum)} className="group">
+              <TableCell className="font-mono text-xs pl-4">{shpNum || "—"}</TableCell>
+              <TableCell className="font-mono text-xs font-medium text-zinc-900">{cnNum || "—"}</TableCell>
               <TableCell className="font-mono text-xs">{bookingNo || "—"}</TableCell>
-              <TableCell className="font-mono text-xs font-bold text-zinc-900">{cnNum}</TableCell>
               <TableCell className="font-medium">{company?.name ?? "—"}</TableCell>
-              <TableCell>{svc?.name ?? "—"}</TableCell>
               <TableCell className="text-xs">{route}</TableCell>
+              <TableCell>{svc?.name ?? "—"}</TableCell>
               <TableCell>
-                <Badge variant="outline" className={cn("font-normal", shipmentStatusBadgeClass(st))}>
-                  {shipmentStatusLabel(st)}
+                <Badge
+                  variant="outline"
+                  className={cn("font-normal", fsdShipmentStatusBadgeClass(st, fsdStatus))}
+                >
+                  {shipmentStatusLabel(fsdStatus)}
                 </Badge>
               </TableCell>
               <TableCell className={cn(actionsCellClass, "p-2 text-right pr-4")}>
-                <div className="flex justify-end">
-                  <ShipmentActionsMenu
-                    shipmentId={Number(shipment.id)}
-                    cnNumber={cnNum}
-                  />
-                </div>
+                <Link
+                  href={`/dashboard/admin/customer/shipments/${shipment.id}`}
+                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-8 gap-1.5 px-2")}
+                >
+                  <Eye className="h-4 w-4" />
+                  {t("table.detail")}
+                </Link>
               </TableCell>
             </TableRow>
           );

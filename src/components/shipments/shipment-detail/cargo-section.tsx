@@ -18,6 +18,7 @@ export interface CargoItem {
   quantity?: number;
   cargo_weight_kg?: number;
   cargo_description?: string;
+  chargeable_weight_kg?: number;
   cargo_category?: string;
   container_responsibility?: string;
 }
@@ -80,34 +81,28 @@ export function CargoSection({ data }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-200 text-left text-[11px] uppercase tracking-wider text-zinc-500">
-                  <th className="px-3 py-2 font-semibold">{tCol("containerNo")}</th>
                   <th className="px-3 py-2 font-semibold">{tCol("containerType")}</th>
-                  <th className="px-3 py-2 font-semibold">{tCol("cargoCategory")}</th>
+                  <th className="px-3 py-2 text-right font-semibold">{tCol("qty")}</th>
                   <th className="px-3 py-2 text-right font-semibold">{tCol("cargoWeight")}</th>
-                  <th className="px-3 py-2 font-semibold">{tCol("containerResponsibility")}</th>
+                  <th className="px-3 py-2 font-semibold">Cargo Description</th>
                 </tr>
               </thead>
               <tbody>
                 {containers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-3 py-6 text-center text-sm text-zinc-500">
+                    <td colSpan={4} className="px-3 py-6 text-center text-sm text-zinc-500">
                       {t("noItems")}
                     </td>
                   </tr>
                 ) : (
                   containers.map((c) => (
                     <tr key={c.id} className="border-b border-zinc-100 last:border-0">
-                      <td className="px-3 py-2 font-mono text-xs text-zinc-900">
-                        {c.container_number ?? "—"}
-                      </td>
                       <td className="px-3 py-2 text-zinc-700">{c.container_type ?? "—"}</td>
-                      <td className="px-3 py-2 text-zinc-700">{c.cargo_category ?? "—"}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{c.quantity ?? 1}</td>
                       <td className="px-3 py-2 text-right tabular-nums text-zinc-900">
                         {fmtNum(c.cargo_weight_kg)}
                       </td>
-                      <td className="px-3 py-2 text-zinc-700">
-                        {c.container_responsibility ?? "—"}
-                      </td>
+                      <td className="px-3 py-2 text-zinc-700">{c.cargo_description ?? "—"}</td>
                     </tr>
                   ))
                 )}
@@ -120,7 +115,6 @@ export function CargoSection({ data }: Props) {
               <thead>
                 <tr className="border-b border-zinc-200 text-left text-[11px] uppercase tracking-wider text-zinc-500">
                   <th className="px-3 py-2 font-semibold">{tCol("packageDescription")}</th>
-                  <th className="px-3 py-2 font-semibold">{tCol("packageType")}</th>
                   <th className="px-3 py-2 text-right font-semibold">{tCol("qty")}</th>
                   <th className="px-3 py-2 text-right font-semibold">{tCol("weight")}</th>
                   <th className="px-3 py-2 text-right font-semibold">{tCol("volume")}</th>
@@ -130,7 +124,7 @@ export function CargoSection({ data }: Props) {
               <tbody>
                 {packages.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-sm text-zinc-500">
+                    <td colSpan={5} className="px-3 py-6 text-center text-sm text-zinc-500">
                       {t("noItems")}
                     </td>
                   </tr>
@@ -138,12 +132,14 @@ export function CargoSection({ data }: Props) {
                   packages.map((p) => (
                     <tr key={p.id} className="border-b border-zinc-100 last:border-0">
                       <td className="px-3 py-2 text-zinc-900">{p.description ?? "—"}</td>
-                      <td className="px-3 py-2 text-zinc-700">{p.package_type ?? "—"}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{p.piece_count ?? 0}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{fmtNum(p.weight_kg)}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{fmtNum(p.volume_cbm)}</td>
                       <td className="px-3 py-2 text-right tabular-nums">
-                        {fmtNum((p.weight_kg ?? 0) > (p.volume_cbm ?? 0) * 1000 ? p.weight_kg : p.volume_cbm ? p.volume_cbm * 1000 : 0)}
+                        {fmtNum(
+                          p.chargeable_weight_kg ??
+                            Math.max(p.weight_kg ?? 0, (p.volume_cbm ?? 0) * 1000)
+                        )}
                       </td>
                     </tr>
                   ))

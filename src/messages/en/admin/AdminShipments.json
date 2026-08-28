@@ -4,7 +4,7 @@
     "pageSubtitle": "Real-time shipment, container, and rack monitoring.",
     "listTitle": "Shipment List",
     "filterTitle": "Filters",
-    "searchPlaceholder": "Search shipment number or CN…",
+    "searchPlaceholder": "Search Shipment No, CN No, Booking No, or Customer…",
     "filterStatus": "Filter Status",
     "columns": {
       "shipmentNo": "Shipment No",
@@ -34,6 +34,7 @@
     },
     "table": {
       "viewDetail": "View Shipment Detail",
+      "detail": "Detail",
       "cnActionsMenu": "CN actions menu",
       "cnActionsMenuWithNumber": "CN {number} actions menu",
       "service": "Service",

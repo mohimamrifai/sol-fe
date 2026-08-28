@@ -14,14 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchAdminVendors, updateAdminShipment } from "@/lib/admin-api";
+import { fetchAdminVendorVehicleTypes, fetchAdminVendors, updateAdminShipment } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { toast } from "sonner";
 
 type VendorOption = { id: number; name: string; code?: string };
 
-const VEHICLE_TYPES = ["pickup", "box", "fuso", "trailer", "wing_box"];
+const VEHICLE_TYPE_FALLBACK = ["pickup", "box", "fuso", "trailer", "wing_box"];
 
 type Props = {
   shipmentId: number;
@@ -63,6 +63,8 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
   const tc = useTranslations("AdminCommon");
 
   const [vendors, setVendors] = useState<VendorOption[]>([]);
+  const [pickupVehicleTypes, setPickupVehicleTypes] = useState<string[]>(VEHICLE_TYPE_FALLBACK);
+  const [deliveryVehicleTypes, setDeliveryVehicleTypes] = useState<string[]>(VEHICLE_TYPE_FALLBACK);
   const [saving, setSaving] = useState(false);
 
   const [pickupVendorId, setPickupVendorId] = useState("");
@@ -91,6 +93,26 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
       })
       .catch(() => setVendors([]));
   }, []);
+
+  useEffect(() => {
+    if (!pickupVendorId) {
+      setPickupVehicleTypes(VEHICLE_TYPE_FALLBACK);
+      return;
+    }
+    void fetchAdminVendorVehicleTypes(Number(pickupVendorId))
+      .then((res) => setPickupVehicleTypes(res.data?.length ? res.data : VEHICLE_TYPE_FALLBACK))
+      .catch(() => setPickupVehicleTypes(VEHICLE_TYPE_FALLBACK));
+  }, [pickupVendorId]);
+
+  useEffect(() => {
+    if (!deliveryVendorId) {
+      setDeliveryVehicleTypes(VEHICLE_TYPE_FALLBACK);
+      return;
+    }
+    void fetchAdminVendorVehicleTypes(Number(deliveryVendorId))
+      .then((res) => setDeliveryVehicleTypes(res.data?.length ? res.data : VEHICLE_TYPE_FALLBACK))
+      .catch(() => setDeliveryVehicleTypes(VEHICLE_TYPE_FALLBACK));
+  }, [deliveryVendorId]);
 
   useEffect(() => {
     setPickupVendorId(data.pickup_vendor_id != null ? String(data.pickup_vendor_id) : "");
@@ -168,7 +190,8 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
     setScheduled: (v: string) => void,
     remark: string,
     setRemark: (v: string) => void,
-    vendorRelKey: string
+    vendorRelKey: string,
+    vendorVehicleTypes: string[]
   ) => (
     <div className="space-y-3 rounded-lg border p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -179,7 +202,7 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>{t("transport.vendor")}</Label>
+          <Label>{t("transport.vendor")} *</Label>
           {canEdit ? (
             <Select value={vendorId || "none"} onValueChange={(v) => setVendorId(!v || v === "none" ? "" : v)}>
               <SelectTrigger className="h-9 w-full">
@@ -203,7 +226,7 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
               <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">—</SelectItem>
-                {VEHICLE_TYPES.map((vt) => (
+                {vendorVehicleTypes.map((vt) => (
                   <SelectItem key={vt} value={vt}>{vt.replace(/_/g, " ")}</SelectItem>
                 ))}
               </SelectContent>
@@ -290,7 +313,8 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
               setPickupScheduled,
               pickupRemark,
               setPickupRemark,
-              "pickup_vendor"
+              "pickup_vendor",
+              pickupVehicleTypes
             )
           : null}
         {showDestination(coverage)
@@ -312,7 +336,8 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
               setDeliveryScheduled,
               deliveryRemark,
               setDeliveryRemark,
-              "delivery_vendor"
+              "delivery_vendor",
+              deliveryVehicleTypes
             )
           : null}
         {canEdit ? (

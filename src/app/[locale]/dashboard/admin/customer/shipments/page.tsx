@@ -57,15 +57,12 @@ export default function AdminShipmentsPage() {
   const [destinationFilter, setDestinationFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [activeOnly, setActiveOnly] = useState(false);
 
   useEffect(() => {
     const status = searchParams.get("status");
-    const active = searchParams.get("active");
     const from = searchParams.get("date_from");
     const to = searchParams.get("date_to");
     if (status) setStatusFilter(status);
-    if (active === "1") setActiveOnly(true);
     if (from) setDateFrom(from);
     if (to) setDateTo(to);
   }, [searchParams]);
@@ -105,7 +102,6 @@ export default function AdminShipmentsPage() {
     destinationFilter,
     dateFrom,
     dateTo,
-    activeOnly,
   ]);
 
   const statusParam = statusFilter === "all" ? undefined : statusFilter;
@@ -137,7 +133,6 @@ export default function AdminShipmentsPage() {
         destinationLocationId: paramFromFilter(destinationFilter),
         dateFrom: dateParamFromFilter(dateFrom),
         dateTo: dateParamFromFilter(dateTo),
-        active: activeOnly ? "1" : undefined,
       });
       const paginated = res as LaravelPaginated<ShipRow>;
       setRows(paginated.data ?? []);
@@ -161,7 +156,6 @@ export default function AdminShipmentsPage() {
     destinationFilter,
     dateFrom,
     dateTo,
-    activeOnly,
     t,
   ]);
 

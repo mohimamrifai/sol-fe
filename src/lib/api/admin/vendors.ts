@@ -31,6 +31,10 @@ export async function fetchAdminVendor(id: number) {
   return apiFetch<{ data: Record<string, unknown> }>(`/admin/vendors/${id}`, { method: "GET" });
 }
 
+export async function fetchAdminVendorVehicleTypes(vendorId: number) {
+  return apiFetch<{ data: string[] }>(`/admin/vendors/${vendorId}/vehicle-types`, { method: "GET" });
+}
+
 export async function createAdminVendor(body: Record<string, unknown>) {
   return apiFetch(`/admin/vendors`, { method: "POST", body: JSON.stringify(body) });
 }
