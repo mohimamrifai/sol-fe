@@ -73,8 +73,8 @@ export function InvoiceGenerateDialog({
     if (selected.size === 0) return;
     setSaving(true);
     try {
-        for (const shipId of selected) {
-        await generateAdminInvoiceFromShipment(shipId, { status: "draft" });
+      for (const shipId of selected) {
+        await generateAdminInvoiceFromShipment(shipId);
       }
       toast.success(t("generateDialog.success", { count: selected.size }));
       onOpenChange(false);
@@ -100,7 +100,7 @@ export function InvoiceGenerateDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10" />
+                  <TableHead className="w-10">{t("generateDialog.columns.select")}</TableHead>
                   <TableHead>{t("generateDialog.columns.shipmentNo")}</TableHead>
                   <TableHead>{t("generateDialog.columns.cnNo")}</TableHead>
                   <TableHead>{t("generateDialog.columns.customer")}</TableHead>
@@ -130,7 +130,11 @@ export function InvoiceGenerateDialog({
                         <TableCell className="font-mono text-xs">{String(row.waybill_number ?? "—")}</TableCell>
                         <TableCell>{company?.name ?? "—"}</TableCell>
                         <TableCell>{service?.name ?? "—"}</TableCell>
-                        <TableCell>{row.updated_at ? String(row.updated_at).slice(0, 10) : "—"}</TableCell>
+                        <TableCell>
+                          {row.completion_date
+                            ? String(row.completion_date).slice(0, 10)
+                            : "—"}
+                        </TableCell>
                         <TableCell className="text-right tabular-nums">{fmtIdr(row.estimated_amount)}</TableCell>
                       </TableRow>
                     );

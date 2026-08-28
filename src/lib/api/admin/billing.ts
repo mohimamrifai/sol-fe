@@ -5,7 +5,7 @@ import type { LaravelPaginated } from "../../types-api";
 export async function generateAdminInvoiceFromShipment(shipmentId: number, body?: Record<string, unknown>) {
   return apiFetch<{ message: string; data: Record<string, unknown> }>(
     `/admin/shipments/${shipmentId}/generate-invoice`,
-    { method: "POST", body: JSON.stringify(body ?? { status: "draft" }) }
+    { method: "POST", body: JSON.stringify(body ?? {}) }
   );
 }
 
@@ -35,8 +35,8 @@ export async function updateAdminInvoice(id: number, body: Record<string, unknow
   return apiFetch(`/admin/invoices/${id}`, { method: "PUT", body: JSON.stringify(body) });
 }
 
-export async function deleteAdminInvoice(id: number) {
-  return apiFetch(`/admin/invoices/${id}`, { method: "DELETE" });
+export async function cancelAdminInvoice(id: number) {
+  return apiFetch(`/admin/invoices/${id}/cancel`, { method: "POST", body: JSON.stringify({}) });
 }
 
 export async function downloadAdminInvoicePdf(
@@ -47,6 +47,35 @@ export async function downloadAdminInvoicePdf(
     method: "GET",
     onProgress: opts?.onProgress,
   });
+}
+
+export async function viewAdminInvoicePdf(invoiceId: number) {
+  return apiFetchBlob(`/admin/invoices/${invoiceId}/pdf?view=1`, { method: "GET" });
+}
+
+export async function uploadAdminInvoiceDocument(
+  invoiceId: number,
+  kind: "tax_invoice" | "supporting",
+  file: File
+) {
+  const body = new FormData();
+  body.append("kind", kind);
+  body.append("file", file);
+  return apiFetch<{ message: string; data: Record<string, unknown> }>(
+    `/admin/invoices/${invoiceId}/documents`,
+    { method: "POST", body }
+  );
+}
+
+export async function downloadAdminInvoiceDocument(
+  invoiceId: number,
+  documentId: number,
+  view = false
+) {
+  return apiFetchBlob(
+    `/admin/invoices/${invoiceId}/documents/${documentId}${view ? "?view=1" : ""}`,
+    { method: "GET" }
+  );
 }
 
 export async function fetchAdminPayments(input?: number | ListQueryParams) {

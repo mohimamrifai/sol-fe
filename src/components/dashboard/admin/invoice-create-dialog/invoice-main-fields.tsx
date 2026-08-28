@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 
 interface InvoiceMainFieldsProps {
   shipments: { id: number; label: string; company_id?: number }[];
@@ -18,8 +19,7 @@ interface InvoiceMainFieldsProps {
   values: {
     shipmentId: string;
     companyId: string;
-    issuedDate: string;
-    dueDate: string;
+    invoiceDate: string;
     notes: string;
   };
   onChange: (key: string, value: string) => void;
@@ -34,17 +34,18 @@ export function InvoiceMainFields({
   onChange,
   onShipmentPick,
 }: InvoiceMainFieldsProps) {
+  const t = useTranslations("AdminInvoices");
   return (
     <div className="grid gap-4">
       <div className="space-y-2">
-        <Label className="text-sm font-semibold">Shipment</Label>
+        <Label className="text-sm font-semibold">{t("detail.shipmentNo")}</Label>
         <Select
           value={values.shipmentId}
           onValueChange={(v) => v && onShipmentPick(v)}
           disabled={listsLoading}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={listsLoading ? "Memuat…" : "Pilih shipment"} />
+            <SelectValue placeholder={listsLoading ? t("generateDialog.loading") : t("create.selectShipment")} />
           </SelectTrigger>
           <SelectContent>
             {shipments.map((s) => (
@@ -57,14 +58,14 @@ export function InvoiceMainFields({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-semibold">Pilih Perusahaan</Label>
+        <Label className="text-sm font-semibold">{t("detail.customer")}</Label>
         <Select
           value={values.companyId}
           onValueChange={(v) => v && onChange("companyId", v)}
           disabled={listsLoading}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={listsLoading ? "Memuat…" : "Pilih perusahaan"} />
+            <SelectValue placeholder={listsLoading ? t("generateDialog.loading") : t("create.selectCustomer")} />
           </SelectTrigger>
           <SelectContent>
             {companies.map((c) => (
@@ -76,35 +77,24 @@ export function InvoiceMainFields({
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="inv-issued" className="text-sm font-semibold">Tanggal Terbit</Label>
-          <Input
-            id="inv-issued"
-            type="date"
-            value={values.issuedDate}
-            onChange={(e) => onChange("issuedDate", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="inv-due" className="text-sm font-semibold">Jatuh Tempo</Label>
-          <Input
-            id="inv-due"
-            type="date"
-            value={values.dueDate}
-            onChange={(e) => onChange("dueDate", e.target.value)}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="inv-date" className="text-sm font-semibold">{t("detail.invoiceDate")}</Label>
+        <Input
+          id="inv-date"
+          type="date"
+          value={values.invoiceDate}
+          onChange={(e) => onChange("invoiceDate", e.target.value)}
+        />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="inv-notes" className="text-sm font-semibold">Catatan Invoice</Label>
+        <Label htmlFor="inv-notes" className="text-sm font-semibold">{t("detail.remark")}</Label>
         <Textarea
           id="inv-notes"
           value={values.notes}
           onChange={(e) => onChange("notes", e.target.value)}
           rows={2}
-          placeholder="Opsional (akan muncul di PDF)"
+          placeholder={t("create.remarkPlaceholder")}
           className="resize-none"
         />
       </div>

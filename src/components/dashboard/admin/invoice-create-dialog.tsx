@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import {
   createAdminInvoice,
-  fetchAdminCompanies,
-  fetchAdminShipments,
+  fetchAdminEligibleShipments,
+  fetchAdminSystemSettings,
+  previewAdminInvoiceLineItems,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
@@ -21,6 +22,8 @@ import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 import { toast } from "sonner";
 import { InvoiceItemForm, type ItemLine, newLine } from "./invoice-create-dialog/invoice-item-form";
 import { InvoiceMainFields } from "./invoice-create-dialog/invoice-main-fields";
+import { useTranslations } from "next-intl";
+import { withDiscountLine } from "@/lib/admin-invoice-calculation";
 
 export function InvoiceCreateDialog({
   open,
@@ -31,6 +34,8 @@ export function InvoiceCreateDialog({
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
 }) {
+  const t = useTranslations("AdminInvoices");
+  const tc = useTranslations("AdminCommon");
   const [shipments, setShipments] = useState<{ id: number; label: string; company_id?: number }[]>([]);
   const [companies, setCompanies] = useState<{ id: number; name: string }[]>([]);
   const [listsLoading, setListsLoading] = useState(false);
@@ -38,11 +43,12 @@ export function InvoiceCreateDialog({
   const [formValues, setFormValues] = useState({
     shipmentId: "",
     companyId: "",
-    issuedDate: "",
-    dueDate: "",
+    invoiceDate: "",
     notes: "",
   });
   const [items, setItems] = useState<ItemLine[]>([newLine()]);
+  const [discount, setDiscount] = useState("0");
+  const [taxRate, setTaxRate] = useState(0.11);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,22 +58,24 @@ export function InvoiceCreateDialog({
     setFormValues({
       shipmentId: "",
       companyId: "",
-      issuedDate: "",
-      dueDate: "",
+      invoiceDate: "",
       notes: "",
     });
     setItems([newLine()]);
+    setDiscount("0");
+    void fetchAdminSystemSettings()
+      .then((response) => {
+        const percent = Number(response.data.values.default_tax_rate);
+        if (Number.isFinite(percent)) setTaxRate(Math.max(0, percent / 100));
+      })
+      .catch(() => undefined);
     let cancelled = false;
     void (async () => {
       setListsLoading(true);
       try {
-        const [shipRes, compRes] = await Promise.all([
-          fetchAdminShipments({ perPage: 200 }),
-          fetchAdminCompanies({ perPage: 500 }),
-        ]);
+        const shipRes = await fetchAdminEligibleShipments({ perPage: 200 });
         if (cancelled) return;
         const shipData = (shipRes as LaravelPaginated<Record<string, unknown>>).data ?? [];
-        const compData = (compRes as LaravelPaginated<Record<string, unknown>>).data ?? [];
         setShipments(
           shipData.map((r) => ({
             id: Number(r.id),
@@ -76,10 +84,17 @@ export function InvoiceCreateDialog({
           }))
         );
         setCompanies(
-          compData.map((r) => ({
-            id: Number(r.id),
-            name: String(r.name ?? r.id),
-          }))
+          Array.from(
+            new Map(
+              shipData.map((r) => {
+                const company = r.company as { id?: number; name?: string } | undefined;
+                return [Number(company?.id ?? r.company_id), {
+                  id: Number(company?.id ?? r.company_id),
+                  name: String(company?.name ?? "—"),
+                }];
+              })
+            ).values()
+          )
         );
       } catch {
         if (!cancelled) {
@@ -105,6 +120,15 @@ export function InvoiceCreateDialog({
     if (row?.company_id != null && Number.isFinite(row.company_id)) {
       updateField("companyId", String(row.company_id));
     }
+    void previewAdminInvoiceLineItems(Number(value))
+      .then((response) => {
+        const subtotal = Number(response.data.subtotal);
+        const tax = Number(response.data.tax_amount);
+        if (subtotal > 0 && Number.isFinite(tax)) {
+          setTaxRate(Math.max(0, tax / subtotal));
+        }
+      })
+      .catch(() => undefined);
   };
 
   const save = async () => {
@@ -114,21 +138,23 @@ export function InvoiceCreateDialog({
       const body = {
         shipment_id: Number(formValues.shipmentId),
         company_id: Number(formValues.companyId),
-        issued_date: formValues.issuedDate,
-        due_date: formValues.dueDate,
-        notes: formValues.notes.trim() || null,
-        items: items.map((it) => ({
-          description: it.description.trim(),
-          quantity: Number(it.quantity),
-          unit_price: Number(it.unit_price),
-        })),
+        invoice_date: formValues.invoiceDate,
+        remark: formValues.notes.trim() || null,
+        items: withDiscountLine(
+          items.map((it) => ({
+            description: it.description.trim(),
+            quantity: Number(it.quantity),
+            unit_price: Number(it.unit_price),
+          })),
+          Number(discount)
+        ),
       };
       await createAdminInvoice(body);
-      toast.success("Invoice berhasil dibuat.");
+      toast.success(t("toasts.created"));
       onOpenChange(false);
       onCreated();
     } catch (e) {
-      const msg = e instanceof ApiError ? firstLaravelError(e.body) ?? e.message : "Gagal membuat invoice.";
+      const msg = e instanceof ApiError ? firstLaravelError(e.body) ?? e.message : t("toasts.createFailed");
       setError(msg);
       toast.error(msg);
     } finally {
@@ -137,14 +163,18 @@ export function InvoiceCreateDialog({
   };
 
   const validItems = items.every(
-    (it) => it.description.trim().length > 0 && Number(it.quantity) >= 1 && Number(it.unit_price) >= 0
+    (it) =>
+      it.description.trim().length > 0 &&
+      !it.description.toLowerCase().includes("discount") &&
+      Number(it.quantity) >= 1 &&
+      Number(it.unit_price) >= 0
   );
 
   const disabled =
     !formValues.shipmentId ||
     !formValues.companyId ||
-    !formValues.issuedDate ||
-    !formValues.dueDate ||
+    !formValues.invoiceDate ||
+    Number(discount) < 0 ||
     !validItems ||
     saving ||
     listsLoading;
@@ -153,7 +183,7 @@ export function InvoiceCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader className={DIALOG_CREATE_HEADER_CLASS}>
-          <DialogTitle>Buat Invoice Baru</DialogTitle>
+          <DialogTitle>{t("create.title")}</DialogTitle>
         </DialogHeader>
         
         {error && (
@@ -172,15 +202,21 @@ export function InvoiceCreateDialog({
             onShipmentPick={onShipmentPick}
           />
 
-          <InvoiceItemForm items={items} onItemsChange={setItems} />
+          <InvoiceItemForm
+            items={items}
+            onItemsChange={setItems}
+            discount={discount}
+            onDiscountChange={setDiscount}
+            taxRate={taxRate}
+          />
         </div>
 
         <DialogFooter className="mt-4">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Batal
+            {tc("actions.cancel")}
           </Button>
           <Button type="button" disabled={disabled} onClick={() => void save()}>
-            {saving ? "Menyimpan…" : "Buat Invoice"}
+            {saving ? tc("actions.saving") : t("create.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -152,6 +152,8 @@ export async function apiFetchBlob(
     return blob;
   }
 
+  const contentType =
+    res.headers.get("content-type")?.split(";")[0]?.trim() || "application/octet-stream";
   const len = res.headers.get("content-length");
   const parsed = len != null && len !== "" ? Number(len) : NaN;
   const total = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
@@ -170,5 +172,5 @@ export async function apiFetchBlob(
     }
   }
 
-  return new Blob(chunks);
+  return new Blob(chunks, { type: contentType });
 }
