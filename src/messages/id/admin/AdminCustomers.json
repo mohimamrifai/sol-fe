@@ -7,7 +7,7 @@
     "editCustomer": "Edit Customer",
     "editDescription": "Perbarui data perusahaan customer.",
     "listTitle": "Daftar Customer",
-    "searchPlaceholder": "Cari nama, NPWP, NIB, atau email…",
+    "searchPlaceholder": "Cari nama, NPWP, atau email…",
     "accessDenied": "Akses ditolak",
     "accessDeniedDescription": "Role Anda tidak memiliki izin edit customer.",
     "columns": {
@@ -29,6 +29,13 @@
       "pending": "Menunggu",
       "inactive": "Nonaktif"
     },
+    "statusOptions": {
+      "pending": "Pending Review",
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive",
+      "rejected": "Rejected"
+    },
     "tabs": {
       "company": "Informasi Perusahaan",
       "locations": "Locations",
@@ -46,6 +53,8 @@
       "customerCodeHint": "3 huruf A–Z, unik global. Terkunci setelah aktif.",
       "rejectionReason": "Alasan penolakan registrasi",
       "businessEntity": "Business Entity",
+      "businessEntityOther": "Business Entity (Other)",
+      "customerStatus": "Customer Status",
       "website": "Website",
       "companyEmail": "Email Perusahaan",
       "companyPhone": "Telepon Perusahaan",
@@ -65,12 +74,13 @@
       "province": "Provinsi",
       "postalCode": "Kode pos",
       "pic": "PIC",
-      "email": "Email",
-      "phone": "Telepon",
+      "email": "Email Perusahaan",
+      "phone": "Telepon Perusahaan",
       "prepaid": "Prepaid",
       "postpaid": "Postpaid",
       "standard": "Standard",
       "discount": "Discount",
+      "requiredFields": "Lengkapi seluruh field wajib sesuai FSD.",
       "phoneFormatError": "Format telepon harus diawali 0 atau 62 tanpa tanda +."
     },
     "locations": {
@@ -78,6 +88,7 @@
       "type": "Location Type",
       "name": "Location Name",
       "code": "Code",
+      "codeAuto": "Dibuat otomatis saat disimpan",
       "address": "Address",
       "city": "Kota",
       "province": "Provinsi",

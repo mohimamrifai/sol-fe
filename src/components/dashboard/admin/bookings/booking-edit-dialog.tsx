@@ -18,7 +18,6 @@ import {
   fetchPublicMasterDgClasses,
   fetchPublicMasterLocations,
   fetchPublicMasterServiceTypes,
-  fetchPublicMasterTransportModes,
 } from "@/lib/public-api";
 import { ApiError } from "@/lib/api-client";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
@@ -49,7 +48,6 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 
 type Loc = { id: number; name: string; code?: string };
-type TM = { id: number; name: string; code?: string };
 type ST = { id: number; name: string; code?: string; transport_mode_id: number };
 type CT = { id: number; name: string; size: string };
 type AS = { id: number; name: string; category: string; code?: string | null };
@@ -94,7 +92,6 @@ export function BookingEditDialog({
   const tCommon = useTranslations("Bookings");
   const te = useTranslations("AdminBookings.editDialog");
   const [locations, setLocations] = useState<Loc[]>([]);
-  const [modes, setModes] = useState<TM[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ST[]>([]);
   const [containerTypes, setContainerTypes] = useState<CT[]>([]);
   const [addServices, setAddServices] = useState<AS[]>([]);
@@ -143,10 +140,6 @@ export function BookingEditDialog({
   const [pickupTime, setPickupTime] = useState("");
   const [pickupNotes, setPickupNotes] = useState("");
   const [customerLocations, setCustomerLocations] = useState<CustomerLoc[]>([]);
-  const [isDg, setIsDg] = useState(false);
-  const [dgClassId, setDgClassId] = useState("");
-  const [unNumber, setUnNumber] = useState("");
-  const [msdsFile, setMsdsFile] = useState<File | null>(null);
   const [selectedAddOns, setSelectedAddOns] = useState<number[]>([]);
   const [equipmentCondition, setEquipmentCondition] = useState("");
   const [temperature, setTemperature] = useState("");
@@ -168,9 +161,8 @@ export function BookingEditDialog({
       setLoadingMasters(true);
       setLoadError(null);
       try {
-        const [locRes, mRes, stRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
+        const [locRes, stRes, ctRes, asRes, ccRes, dgRes] = await Promise.all([
           fetchPublicMasterLocations(),
-          fetchPublicMasterTransportModes(),
           fetchPublicMasterServiceTypes(),
           fetchPublicMasterContainerTypes(),
           fetchPublicMasterAdditionalServices(),
@@ -179,7 +171,6 @@ export function BookingEditDialog({
         ]);
         if (cancelled) return;
         setLocations(((locRes as LaravelPaginated<Loc>).data ?? []) as Loc[]);
-        setModes(((mRes as LaravelPaginated<TM>).data ?? []) as TM[]);
         const allServiceTypes = ((stRes as { data: ST[] }).data ?? []) as ST[];
         setServiceTypes(allServiceTypes.filter((s) => s.code === "FCL" || s.code === "LCL"));
         setContainerTypes(((ctRes as LaravelPaginated<CT>).data ?? []) as CT[]);
@@ -243,9 +234,6 @@ export function BookingEditDialog({
     setPickupDate((data as BookingDetail & { pickup_date?: string }).pickup_date ? String((data as BookingDetail & { pickup_date?: string }).pickup_date).slice(0, 10) : "");
     setPickupTime(String((data as BookingDetail & { pickup_time?: string }).pickup_time ?? ""));
     setPickupNotes(String((data as BookingDetail & { pickup_notes?: string }).pickup_notes ?? ""));
-    setIsDg(Boolean(data.is_dangerous_goods));
-    setDgClassId(data.dg_class_id ? String(data.dg_class_id) : (data.dgClass?.id ? String(data.dgClass.id) : (data.dg_class?.id ? String(data.dg_class.id) : "")));
-    setUnNumber(data.un_number ?? "");
     setEquipmentCondition(data.equipment_condition ?? "");
     setTemperature(data.temperature != null ? String(data.temperature) : "");
     setSelectedAddOns((data.additional_services ?? []).map((s) => Number(s.id)).filter(Boolean));
@@ -289,7 +277,6 @@ export function BookingEditDialog({
         msds_file: null,
       }))
     );
-    setMsdsFile(null);
     setNotes(String(data.notes ?? ""));
     setAttachments([]);
     setExistingAttachments(
@@ -344,19 +331,6 @@ export function BookingEditDialog({
     label: tCommon(`coverage.${c.value}`),
   }));
   const showPickupFields = shipmentCoverage === "door_to_port" || shipmentCoverage === "door_to_door";
-  const cargoCategoryOptions: ComboOption[] = cargoCats.map((c) => ({ value: String(c.id), label: c.name }));
-
-  // Sync isDg
-  useEffect(() => {
-    if (cargoCategoryOptions.length > 0) {
-      const selectedCat = cargoCats.find((c) => String(c.id) === cargoCategoryId);
-      if (selectedCat?.code === "DG" || equipmentCondition === "RESIDUAL") {
-        setIsDg(true);
-      } else {
-        setIsDg(false);
-      }
-    }
-  }, [cargoCategoryId, equipmentCondition, cargoCats, cargoCategoryOptions.length]);
 
   // Sync mandatory add-ons
   useEffect(() => {

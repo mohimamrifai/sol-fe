@@ -14,6 +14,22 @@ export async function fetchAdminCompany(id: number) {
   return apiFetch<{ data: Record<string, unknown> }>(`/admin/companies/${id}`, { method: "GET" });
 }
 
+export async function fetchAdminPostalCodes(input: {
+  province?: string;
+  city: string;
+  district?: string;
+}) {
+  const query = new URLSearchParams();
+  if (input.province) query.set("province", input.province);
+  query.set("city", input.city);
+  if (input.district) query.set("district", input.district);
+
+  return apiFetch<{ data: Array<{ value: string; label: string }> }>(
+    `/admin/customer-postal-codes?${query.toString()}`,
+    { method: "GET" },
+  );
+}
+
 export async function createAdminCompany(body: Record<string, unknown>) {
   return apiFetch<{ data: Record<string, unknown>; message?: string }>(`/admin/companies`, {
     method: "POST",

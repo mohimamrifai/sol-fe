@@ -7,7 +7,7 @@
     "editCustomer": "Edit Customer",
     "editDescription": "Update customer company data.",
     "listTitle": "Customer List",
-    "searchPlaceholder": "Search name, NPWP, NIB, or email…",
+    "searchPlaceholder": "Search name, NPWP, or email…",
     "accessDenied": "Access denied",
     "accessDeniedDescription": "Your role does not have permission to edit customers.",
     "columns": {
@@ -29,6 +29,13 @@
       "pending": "Pending",
       "inactive": "Inactive"
     },
+    "statusOptions": {
+      "pending": "Pending Review",
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive",
+      "rejected": "Rejected"
+    },
     "tabs": {
       "company": "Company Information",
       "locations": "Locations",
@@ -46,6 +53,8 @@
       "customerCodeHint": "3 letters A–Z, unique globally. Locked after activation.",
       "rejectionReason": "Registration rejection reason",
       "businessEntity": "Business Entity",
+      "businessEntityOther": "Business Entity (Other)",
+      "customerStatus": "Customer Status",
       "website": "Website",
       "companyEmail": "Company Email",
       "companyPhone": "Company Phone",
@@ -65,12 +74,13 @@
       "province": "Province",
       "postalCode": "Postal Code",
       "pic": "PIC",
-      "email": "Email",
-      "phone": "Phone",
+      "email": "Company Email",
+      "phone": "Company Phone",
       "prepaid": "Prepaid",
       "postpaid": "Postpaid",
       "standard": "Standard",
       "discount": "Discount",
+      "requiredFields": "Complete all fields required by the FSD.",
       "phoneFormatError": "Phone must start with 0 or 62 without + sign."
     },
     "locations": {
@@ -78,6 +88,7 @@
       "type": "Location Type",
       "name": "Location Name",
       "code": "Code",
+      "codeAuto": "Generated automatically when saved",
       "address": "Address",
       "city": "City",
       "province": "Province",

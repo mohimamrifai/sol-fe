@@ -156,7 +156,9 @@
       "searchCountry": "Search country",
       "searchProvince": "Search province",
       "searchCity": "Search city / regency",
-      "searchDistrict": "Search district"
+      "searchDistrict": "Search district",
+      "selectPostalCode": "Select postal code",
+      "searchPostalCode": "Search postal code"
     }
   }
 }

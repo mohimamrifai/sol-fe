@@ -21,11 +21,15 @@ import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useAdminPostalCodeOptions } from "@/hooks/use-admin-postal-code-options";
 import { toast } from "sonner";
 import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 import { CustomerOperationalFields } from "@/components/dashboard/admin/customers/customer-operational-fields";
-
-const BUSINESS_ENTITY_OPTIONS = ["PT", "CV", "UD", "Koperasi", "Yayasan", "Firma", "Perorangan", "Lainnya"];
+import { BusinessEntityField } from "@/components/dashboard/admin/customers/business-entity-field";
+import {
+  CUSTOMER_STATUS_OPTIONS,
+  DEFAULT_COUNTRY,
+} from "@/lib/customer-form-options";
 
 export default function AdminCustomerCreatePage() {
   const t = useTranslations("AdminCustomers");
@@ -41,6 +45,8 @@ export default function AdminCustomerCreatePage() {
   const canCreate = authHydrated && caps.canCreateCustomer;
 
   const [businessEntityType, setBusinessEntityType] = useState("PT");
+  const [businessEntityOther, setBusinessEntityOther] = useState("");
+  const [customerStatus, setCustomerStatus] = useState("pending");
   const [companyCode, setCompanyCode] = useState("");
   const [codeTouched, setCodeTouched] = useState(false);
   const [name, setName] = useState("");
@@ -49,7 +55,7 @@ export default function AdminCustomerCreatePage() {
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
-  const [country, setCountry] = useState("Indonesia");
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [postalCode, setPostalCode] = useState("");
   const [website, setWebsite] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
@@ -63,6 +69,11 @@ export default function AdminCustomerCreatePage() {
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { postalCodeOptions, loadingPostalCodes } = useAdminPostalCodeOptions(
+    province,
+    city,
+    district,
+  );
 
   const derivedCompanyCode = useMemo(() => {
     const raw = name.trim();
@@ -85,15 +96,45 @@ export default function AdminCustomerCreatePage() {
     if (!codeTouched) setCompanyCode(derivedCompanyCode);
   }, [derivedCompanyCode, codeTouched]);
 
+  const requiredFieldsComplete = Boolean(
+    businessEntityType
+      && (businessEntityType !== "Lainnya" || businessEntityOther.trim())
+      && name.trim()
+      && companyCode.trim()
+      && npwp.trim()
+      && email.trim()
+      && phone.trim()
+      && country.trim()
+      && province.trim()
+      && city.trim()
+      && district.trim()
+      && postalCode.trim()
+      && address.trim()
+      && businessCategory
+      && (businessCategory !== "others" || businessCategoryOther.trim())
+      && monthlyShipmentEstimate
+      && contactPerson.trim()
+      && picEmail.trim()
+      && picPhone.trim()
+      && password.length >= 8,
+  );
+
   const save = async () => {
     if (!canCreate) return;
     setSaving(true);
     setError(null);
     try {
+      if (!requiredFieldsComplete) {
+        setError(t("form.requiredFields"));
+        return;
+      }
       const cleanedPhone = phone.trim();
       if (cleanedPhone && !/^(0|62)\d+$/.test(cleanedPhone)) {
         setError(t("form.phoneFormatError"));
-        setSaving(false);
+        return;
+      }
+      if (!/^(0|62)\d+$/.test(picPhone.trim())) {
+        setError(t("form.phoneFormatError"));
         return;
       }
       const code = companyCode.trim().toUpperCase();
@@ -105,6 +146,7 @@ export default function AdminCustomerCreatePage() {
 
       await createAdminCompany({
         business_entity_type: businessEntityType,
+        business_entity_other: businessEntityType === "Lainnya" ? businessEntityOther.trim() || null : null,
         name: name.trim(),
         company_code: code || undefined,
         npwp: npwp.trim() || null,
@@ -125,7 +167,7 @@ export default function AdminCustomerCreatePage() {
         pic_email: picEmail.trim() || null,
         pic_phone: picPhone.trim() || null,
         password: password || undefined,
-        status: "pending",
+        status: customerStatus,
       });
       toast.success(t("create.saved"));
       router.push(backPath);
@@ -173,13 +215,23 @@ export default function AdminCustomerCreatePage() {
         <section className="space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-2">{t("create.sectionCompany")}</h3>
           <div className="grid gap-4 md:grid-cols-2">
+            <BusinessEntityField
+              value={businessEntityType}
+              otherValue={businessEntityOther}
+              onChange={setBusinessEntityType}
+              onOtherChange={setBusinessEntityOther}
+              entityLabel={t("form.businessEntity")}
+              otherLabel={t("form.businessEntityOther")}
+            />
             <div className="space-y-2">
-              <Label>{t("form.businessEntity")}</Label>
-              <Select value={businessEntityType} onValueChange={(v) => v && setBusinessEntityType(v)}>
+              <Label>{t("form.customerStatus")}</Label>
+              <Select value={customerStatus} onValueChange={(v) => v && setCustomerStatus(v)}>
                 <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {BUSINESS_ENTITY_OPTIONS.map((e) => (
-                    <SelectItem key={e} value={e}>{e}</SelectItem>
+                  {CUSTOMER_STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {t(`statusOptions.${s.labelKey}` as Parameters<typeof t>[0])}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -203,7 +255,7 @@ export default function AdminCustomerCreatePage() {
             </div>
             <div className="space-y-2">
               <Label>{t("form.npwp")}</Label>
-              <Input value={npwp} onChange={(e) => setNpwp(e.target.value)} maxLength={16} />
+              <Input value={npwp} onChange={(e) => setNpwp(e.target.value.replace(/\D/g, ""))} maxLength={16} inputMode="numeric" />
             </div>
             <div className="space-y-2">
               <Label>{t("form.companyEmail")}</Label>
@@ -223,10 +275,6 @@ export default function AdminCustomerCreatePage() {
         <section className="space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-2">{t("create.sectionAddress")}</h3>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <Label>{t("form.address")}</Label>
-              <Textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} />
-            </div>
             <ControlledAddressRegionFields
               className="md:col-span-2"
               idPrefix="create-co"
@@ -240,12 +288,18 @@ export default function AdminCustomerCreatePage() {
               }}
               showCountry
               showDistrict
+              postalCodeOptions={postalCodeOptions}
+              loadingPostalCodes={loadingPostalCodes}
               labels={{
                 province: t("form.province"),
                 city: t("form.city"),
                 postalCode: t("form.postalCode"),
               }}
             />
+            <div className="space-y-2 md:col-span-2">
+              <Label>{t("form.address")}</Label>
+              <Textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} />
+            </div>
           </div>
         </section>
 
@@ -288,7 +342,7 @@ export default function AdminCustomerCreatePage() {
           <Button variant="outline" onClick={() => router.push(backPath)} disabled={saving}>
             {tc("actions.cancel")}
           </Button>
-          <Button onClick={() => void save()} disabled={saving || !name.trim()}>
+          <Button onClick={() => void save()} disabled={saving || !requiredFieldsComplete}>
             {saving ? tc("actions.saving") : tc("actions.save")}
           </Button>
         </div>

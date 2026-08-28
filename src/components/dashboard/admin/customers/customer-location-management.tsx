@@ -31,6 +31,8 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
 import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
+import { DEFAULT_COUNTRY } from "@/lib/customer-form-options";
+import { useAdminPostalCodeOptions } from "@/hooks/use-admin-postal-code-options";
 
 type Props = {
   companyId: number;
@@ -41,10 +43,10 @@ const EMPTY_FORM = {
   type: "head_office",
   name: "",
   phone: "",
-  country: "Indonesia",
+  status: "active",
+  country: DEFAULT_COUNTRY,
   province: "",
   city: "",
-  district: "",
   postal_code: "",
   address: "",
   pic_name: "",
@@ -60,7 +62,12 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [editCode, setEditCode] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
+  const { postalCodeOptions, loadingPostalCodes } = useAdminPostalCodeOptions(
+    form.province,
+    form.city,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -81,6 +88,7 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
   const resetForm = () => {
     setForm(EMPTY_FORM);
     setEditId(null);
+    setEditCode("");
     setShowForm(false);
   };
 
@@ -91,14 +99,15 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
 
   const openEdit = (row: Record<string, unknown>) => {
     setEditId(Number(row.id));
+    setEditCode(String(row.code ?? ""));
     setForm({
       type: String(row.type ?? "head_office"),
       name: String(row.name ?? ""),
       phone: String(row.phone ?? ""),
-      country: String(row.country ?? "Indonesia"),
+      status: String(row.status ?? "active"),
+      country: String(row.country ?? DEFAULT_COUNTRY),
       province: String(row.province ?? ""),
       city: String(row.city ?? ""),
-      district: String(row.district ?? ""),
       postal_code: String(row.postal_code ?? ""),
       address: String(row.address ?? ""),
       pic_name: String(row.pic_name ?? ""),
@@ -144,6 +153,19 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
 
   const typeLabel = (type: string) =>
     t(`locationTypes.${type}` as Parameters<typeof t>[0]);
+  const formComplete = Boolean(
+    form.type
+      && form.name.trim()
+      && form.status
+      && form.country.trim()
+      && form.province.trim()
+      && form.city.trim()
+      && form.postal_code.trim()
+      && form.address.trim()
+      && form.pic_name.trim()
+      && form.pic_email.trim()
+      && form.pic_mobile.trim(),
+  );
 
   return (
     <div className="space-y-4">
@@ -176,12 +198,27 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
             <Input className="h-9" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
           </div>
           <div className="space-y-2">
+            <Label>{t("locations.code")}</Label>
+            <Input
+              className="h-9 font-mono"
+              value={editCode}
+              placeholder={t("locations.codeAuto")}
+              disabled
+            />
+          </div>
+          <div className="space-y-2">
             <Label>{t("locations.phone")}</Label>
             <Input className="h-9" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
           </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label>{t("locations.address")}</Label>
-            <Textarea value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+          <div className="space-y-2">
+            <Label>{tc("table.status")}</Label>
+            <Select value={form.status} onValueChange={(v) => v && setForm((f) => ({ ...f, status: v }))}>
+              <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">{tc("status.customer.active")}</SelectItem>
+                <SelectItem value="inactive">{tc("status.customer.inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <ControlledAddressRegionFields
             className="md:col-span-2"
@@ -190,21 +227,24 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
               country: form.country,
               province: form.province,
               city: form.city,
-              district: form.district,
               postal_code: form.postal_code,
             }}
             onChange={(patch) => setForm((f) => ({ ...f, ...patch }))}
             showCountry
-            showDistrict
             showPostalCode
+            postalCodeOptions={postalCodeOptions}
+            loadingPostalCodes={loadingPostalCodes}
             labels={{
               country: t("locations.country"),
               province: t("locations.province"),
               city: t("locations.city"),
-              district: t("locations.district"),
               postalCode: t("locations.postalCode"),
             }}
           />
+          <div className="space-y-2 md:col-span-2">
+            <Label>{t("locations.address")}</Label>
+            <Textarea value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+          </div>
           <div className="space-y-2">
             <Label>{t("locations.picName")}</Label>
             <Input className="h-9" value={form.pic_name} onChange={(e) => setForm((f) => ({ ...f, pic_name: e.target.value }))} />
@@ -213,8 +253,17 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
             <Label>{t("locations.picEmail")}</Label>
             <Input className="h-9" type="email" value={form.pic_email} onChange={(e) => setForm((f) => ({ ...f, pic_email: e.target.value }))} />
           </div>
+          <div className="space-y-2">
+            <Label>{t("locations.picPhone")}</Label>
+            <Input
+              className="h-9"
+              value={form.pic_mobile}
+              onChange={(e) => setForm((f) => ({ ...f, pic_mobile: e.target.value.replace(/\D/g, "") }))}
+              inputMode="numeric"
+            />
+          </div>
           <div className="flex gap-2 md:col-span-2">
-            <Button size="sm" onClick={() => void save()} disabled={saving}>
+            <Button size="sm" onClick={() => void save()} disabled={saving || !formComplete}>
               {saving ? tc("actions.saving") : tc("actions.save")}
             </Button>
             <Button size="sm" variant="outline" onClick={resetForm}>
@@ -263,7 +312,7 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
                         {tc("actions.edit")}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => void toggleStatus(row)}>
-                        {t("actions.deactivate")}
+                        {String(row.status ?? "") === "active" ? t("actions.deactivate") : t("actions.activate")}
                       </Button>
                     </TableCell>
                   ) : null}

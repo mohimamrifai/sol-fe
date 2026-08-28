@@ -156,7 +156,9 @@
       "searchCountry": "Cari negara",
       "searchProvince": "Cari provinsi",
       "searchCity": "Cari kota / kabupaten",
-      "searchDistrict": "Cari kecamatan"
+      "searchDistrict": "Cari kecamatan",
+      "selectPostalCode": "Pilih kode pos",
+      "searchPostalCode": "Cari kode pos"
     }
   }
 }

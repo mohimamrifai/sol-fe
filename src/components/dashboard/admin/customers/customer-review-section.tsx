@@ -5,13 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { fetchAdminUsers, updateAdminCompany } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { useCustomerStatusLabel } from "@/hooks/use-admin-status-labels";
@@ -41,7 +35,7 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void fetchAdminUsers({ perPage: 200 }).then((res) => {
+    void fetchAdminUsers({ perPage: 200, userType: "internal" }).then((res) => {
       setStaff((res.data as Record<string, unknown>[]) ?? []);
     }).catch(() => setStaff([]));
   }, []);
@@ -77,25 +71,24 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
     }
   };
 
+  const staffOptions = staff.map((u) => ({
+    value: String(u.id),
+    label: userLabel(u),
+  }));
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label>{t("review.salesPic")}</Label>
           {canEdit ? (
-            <Select value={salesPicId || "none"} onValueChange={(v) => setSalesPicId(!v || v === "none" ? "" : v)}>
-              <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder={t("review.selectSalesPic")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">—</SelectItem>
-                {staff.map((u) => (
-                  <SelectItem key={String(u.id)} value={String(u.id)}>
-                    {userLabel(u)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableCombobox
+              value={salesPicId}
+              onChange={setSalesPicId}
+              options={staffOptions}
+              placeholder={t("review.selectSalesPic")}
+              className="h-9"
+            />
           ) : (
             <p className="text-sm">{salesPic ? userLabel(salesPic) : "—"}</p>
           )}
@@ -103,22 +96,13 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
         <div className="space-y-2">
           <Label>{t("review.accountManager")}</Label>
           {canEdit ? (
-            <Select
-              value={accountManagerId || "none"}
-              onValueChange={(v) => setAccountManagerId(!v || v === "none" ? "" : v)}
-            >
-              <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder={t("review.selectAccountManager")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">—</SelectItem>
-                {staff.map((u) => (
-                  <SelectItem key={String(u.id)} value={String(u.id)}>
-                    {userLabel(u)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableCombobox
+              value={accountManagerId}
+              onChange={setAccountManagerId}
+              options={staffOptions}
+              placeholder={t("review.selectAccountManager")}
+              className="h-9"
+            />
           ) : (
             <p className="text-sm">{accountManager ? userLabel(accountManager) : "—"}</p>
           )}

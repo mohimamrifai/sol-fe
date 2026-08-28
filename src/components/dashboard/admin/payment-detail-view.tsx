@@ -79,6 +79,7 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
   const tMethod = useTranslations("Payments.paymentMethod");
   const paymentStatusLabel = usePaymentStatusLabel();
   const invoiceStatusLabel = useInvoiceStatusLabel();
+  const [regenerating, setRegenerating] = useState(false);
 
   if (!data) {
     return <p className="text-sm text-muted-foreground">—</p>;
@@ -93,8 +94,6 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
   const supportingDocuments = (data.supporting_documents ?? []) as Array<Record<string, unknown>>;
   const actions = (data.actions ?? {}) as Record<string, unknown>;
   const paymentId = Number(data.id);
-
-  const [regenerating, setRegenerating] = useState(false);
 
   const arStatus = String(data.invoice_ar_status ?? invoice.status ?? "");
   const invoiceId = invoice.id != null ? Number(invoice.id) : null;

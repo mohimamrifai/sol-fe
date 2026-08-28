@@ -36,6 +36,8 @@ type ControlledAddressRegionFieldsProps = {
   comboboxClassName?: string;
   idPrefix?: string;
   labels?: AddressRegionLabels;
+  postalCodeOptions?: Array<{ value: string; label: string }>;
+  loadingPostalCodes?: boolean;
 };
 
 export function ControlledAddressRegionFields({
@@ -49,6 +51,8 @@ export function ControlledAddressRegionFields({
   comboboxClassName = "h-9",
   idPrefix = "addr",
   labels,
+  postalCodeOptions = [],
+  loadingPostalCodes = false,
 }: ControlledAddressRegionFieldsProps) {
   const t = useTranslations("AdminCommon.addressRegion");
   const tc = useTranslations("Company.form");
@@ -169,14 +173,20 @@ export function ControlledAddressRegionFields({
       {showPostalCode ? (
         <div className="space-y-2">
           <Label htmlFor={`${idPrefix}-postal`}>{label.postalCode}</Label>
-          <Input
-            id={`${idPrefix}-postal`}
+          <SearchableCombobox
             value={postalCode}
-            onChange={(e) => onChange({ postal_code: e.target.value.replace(/\D/g, "") })}
-            disabled={disabled}
+            onChange={(next) => onChange({ postal_code: next })}
+            options={
+              postalCode && !postalCodeOptions.some((option) => option.value === postalCode)
+                ? [{ value: postalCode, label: postalCode }, ...postalCodeOptions]
+                : postalCodeOptions
+            }
+            placeholder={city ? t("selectPostalCode") : t("selectCityFirst")}
+            searchPlaceholder={t("searchPostalCode")}
+            loading={loadingPostalCodes}
+            disabled={disabled || !city || loadingPostalCodes}
+            allowFreeInput
             className={comboboxClassName}
-            inputMode="numeric"
-            placeholder="00000"
           />
         </div>
       ) : null}

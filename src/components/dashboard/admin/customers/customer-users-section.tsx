@@ -272,17 +272,6 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
     return locs.map((l) => l.code ?? l.name).filter(Boolean).join(", ");
   };
 
-  const featureAccessLabel = (user: Record<string, unknown>) => {
-    const features = user.feature_access as string[] | undefined;
-    if (!Array.isArray(features) || features.length === 0) return "—";
-    if (features.length <= 3) {
-      return features
-        .map((f) => (FEATURE_KEYS.includes(f) ? tFeature(f as `featureAccess.${string}`) : f))
-        .join(", ");
-    }
-    return t("users.featureCount", { count: features.length });
-  };
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
@@ -301,7 +290,6 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
               <TableHead>{t("users.email")}</TableHead>
               <TableHead>{t("users.role")}</TableHead>
               <TableHead>{t("users.locationAccess")}</TableHead>
-              <TableHead>{t("users.featureAccess")}</TableHead>
               <TableHead>{tc("table.status")}</TableHead>
               {canManage ? <TableHead className="text-right">{t("users.action")}</TableHead> : null}
             </TableRow>
@@ -309,7 +297,7 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canManage ? 7 : 6} className="text-muted-foreground">
+                <TableCell colSpan={canManage ? 6 : 5} className="text-muted-foreground">
                   {t("users.empty")}
                 </TableCell>
               </TableRow>
@@ -322,7 +310,6 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
                     {((user.roles as { name?: string }[]) ?? []).map((r) => r.name).join(", ") || "—"}
                   </TableCell>
                   <TableCell className="text-xs">{locationAccessLabel(user)}</TableCell>
-                  <TableCell className="text-xs">{featureAccessLabel(user)}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{String(user.status ?? "—")}</Badge>
                   </TableCell>
@@ -375,6 +362,16 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
                   {CUSTOMER_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{tc("table.status")}</Label>
+              <Select value={status} onValueChange={(v) => v && setStatus(v)}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">{tc("status.customer.active")}</SelectItem>
+                  <SelectItem value="inactive">{tc("status.customer.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

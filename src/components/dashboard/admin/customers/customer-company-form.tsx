@@ -16,17 +16,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchAdminCompany, updateAdminCompany } from "@/lib/admin-api";
-import { BILLING_CYCLE_OPTIONS, FSD_BILLING_CYCLE_OPTIONS, FSD_PAYMENT_TERM_OPTIONS, billingCycleLabel, paymentTermLabel } from "@/lib/billing-cycle-labels";
+import { FSD_BILLING_CYCLE_OPTIONS, FSD_PAYMENT_TERM_OPTIONS, billingCycleLabel, paymentTermLabel } from "@/lib/billing-cycle-labels";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { useAdminPostalCodeOptions } from "@/hooks/use-admin-postal-code-options";
 import { toast } from "sonner";
-import { DiscountManagement } from "@/components/dashboard/admin/customers/discount-management";
-import { StatusManagerSection } from "@/components/dashboard/admin/customers/status-manager-section";
 import { ControlledAddressRegionFields } from "@/components/shared/controlled-address-region-fields";
 import { CustomerOperationalFields } from "@/components/dashboard/admin/customers/customer-operational-fields";
+import { BusinessEntityField } from "@/components/dashboard/admin/customers/business-entity-field";
+import { CUSTOMER_STATUS_OPTIONS, DEFAULT_COUNTRY } from "@/lib/customer-form-options";
+import { formatIdr } from "@/lib/format";
+
+function normalizeMonthlyEstimate(value: unknown): string {
+  const mapping: Record<string, string> = {
+    "<10": "under_10",
+    "10-50": "10_to_50",
+    "50-100": "50_to_100",
+    ">100": "over_100",
+  };
+  const raw = String(value ?? "");
+  return mapping[raw] ?? raw;
+}
 
 export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations("AdminCustomers");
@@ -41,6 +54,7 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
   const { user } = useAuthStore();
   const caps = useMemo(() => getAdminCustomerCapabilities(user?.roles ?? []), [user?.roles]);
   const canEdit = authHydrated && caps.canEditCompanyData;
+  const readOnly = authHydrated && !canEdit;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,29 +62,34 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
 
   const [name, setName] = useState("");
   const [businessEntity, setBusinessEntity] = useState("PT");
+  const [businessEntityOther, setBusinessEntityOther] = useState("");
+  const [companyCode, setCompanyCode] = useState("");
+  const [customerStatus, setCustomerStatus] = useState("pending");
   const [website, setWebsite] = useState("");
   const [npwp, setNpwp] = useState("");
-  const [nib, setNib] = useState("");
   const [billingType, setBillingType] = useState<"prepaid" | "postpaid">("prepaid");
   const [pricingType, setPricingType] = useState<"standard" | "discount">("standard");
   const [discountPercent, setDiscountPercent] = useState("");
   const [billingCycle, setBillingCycle] = useState("");
   const [paymentTerm, setPaymentTerm] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
-  const [postpaidTermDays, setPostpaidTermDays] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
-  const [country, setCountry] = useState("Indonesia");
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [postalCode, setPostalCode] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
   const [businessCategoryOther, setBusinessCategoryOther] = useState("");
   const [monthlyShipmentEstimate, setMonthlyShipmentEstimate] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
+  const { postalCodeOptions, loadingPostalCodes } = useAdminPostalCodeOptions(
+    province,
+    city,
+    district,
+  );
 
   const refreshData = useCallback(async () => {
     if (!Number.isFinite(id) || id < 1) return;
@@ -80,10 +99,12 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
       setDetail(d);
       setName(String(d.name ?? ""));
       setBusinessEntity(String(d.business_entity_type ?? "PT"));
+      setBusinessEntityOther(String(d.business_entity_other ?? ""));
+      setCompanyCode(String(d.company_code ?? ""));
+      setCustomerStatus(String(d.status ?? "pending"));
       setWebsite(String(d.website ?? ""));
       setNpwp(String(d.npwp ?? ""));
-      setNib(String(d.nib ?? ""));
-      setBillingType(String(d.billing_type ?? d.payment_type ?? "prepaid") === "postpaid" ? "postpaid" : "prepaid");
+      setBillingType(String(d.billing_type ?? "prepaid") === "postpaid" ? "postpaid" : "prepaid");
       setPricingType(String(d.pricing_type ?? "standard") === "discount" ? "discount" : "standard");
       setDiscountPercent(d.discount_percent != null ? String(d.discount_percent) : "");
       setBillingCycle(String(d.billing_cycle || "monthly"));
@@ -97,11 +118,9 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
       setPostalCode(String(d.postal_code ?? ""));
       setBusinessCategory(String(d.business_category ?? ""));
       setBusinessCategoryOther(String(d.business_category_other ?? ""));
-      setMonthlyShipmentEstimate(String(d.monthly_shipment_estimate ?? ""));
-      setContactPerson(String(d.contact_person ?? ""));
+      setMonthlyShipmentEstimate(normalizeMonthlyEstimate(d.monthly_shipment_estimate));
       setEmail(String(d.email ?? ""));
       setPhone(String(d.phone ?? ""));
-      setPostpaidTermDays(d.postpaid_term_days != null ? String(d.postpaid_term_days) : "");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t("toasts.loadFailed"));
     }
@@ -112,11 +131,36 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
     void refreshData().finally(() => setLoading(false));
   }, [refreshData]);
 
+  const requiredFieldsComplete = Boolean(
+    businessEntity
+      && (businessEntity !== "Lainnya" || businessEntityOther.trim())
+      && name.trim()
+      && companyCode.trim()
+      && npwp.trim()
+      && email.trim()
+      && phone.trim()
+      && country.trim()
+      && province.trim()
+      && city.trim()
+      && district.trim()
+      && postalCode.trim()
+      && address.trim()
+      && businessCategory
+      && (businessCategory !== "others" || businessCategoryOther.trim())
+      && monthlyShipmentEstimate
+      && customerStatus
+      && (billingType !== "postpaid" || (billingCycle && paymentTerm)),
+  );
+
   const save = async () => {
     if (!canEdit || !Number.isFinite(id) || id < 1) return;
     setSaving(true);
     setError(null);
     try {
+      if (!requiredFieldsComplete) {
+        setError(t("form.requiredFields"));
+        return;
+      }
       const cleanedPhone = phone.trim();
       if (cleanedPhone && !/^(0|62)\d+$/.test(cleanedPhone)) {
         setError(t("form.phoneFormatError"));
@@ -126,20 +170,17 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
       await updateAdminCompany(id, {
         name: name.trim(),
         business_entity_type: businessEntity,
+        business_entity_other: businessEntity === "Lainnya" ? businessEntityOther.trim() || null : null,
+        company_code: companyCode.trim() || null,
+        status: customerStatus,
         website: website.trim() || null,
         npwp: npwp.trim() || null,
-        nib: nib.trim() || null,
         billing_type: billingType,
         pricing_type: pricingType,
         discount_percent: pricingType === "discount" && discountPercent.trim() ? Number(discountPercent) : null,
         billing_cycle: billingType === "postpaid" ? billingCycle || null : null,
         payment_term: billingType === "postpaid" ? paymentTerm || null : null,
         credit_limit: billingType === "postpaid" && creditLimit.trim() ? Number(creditLimit) : null,
-        payment_type: billingType,
-        postpaid_term_days:
-          billingType === "postpaid" && postpaidTermDays.trim() !== ""
-            ? Number(postpaidTermDays.trim())
-            : null,
         address: address.trim() || null,
         city: city.trim() || null,
         province: province.trim() || null,
@@ -149,7 +190,6 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
         business_category: businessCategory || null,
         business_category_other: businessCategory === "others" ? businessCategoryOther.trim() || null : null,
         monthly_shipment_estimate: monthlyShipmentEstimate || null,
-        contact_person: contactPerson.trim() || null,
         email: email.trim() || null,
         phone: cleanedPhone || null,
       });
@@ -169,7 +209,11 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
     }
   };
 
-  if (!canEdit) {
+  if (!authHydrated) {
+    return <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p>;
+  }
+
+  if (!canEdit && !readOnly) {
     return (
       <Card>
         <CardHeader>
@@ -186,133 +230,82 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
   }
 
   const companyStatus = String(detail?.status ?? "").toLowerCase();
-  const discounts =
-    (detail?.customer_discounts as Record<string, unknown>[] | undefined) ??
-    (detail?.customerDiscounts as Record<string, unknown>[] | undefined) ??
-    [];
+  const codeLocked = companyStatus === "active" || detail?.approved_at != null;
 
   const formBody = (
-    <>
+    <div className="space-y-6">
+      <section className="space-y-4">
+        <h3 className="border-b pb-2 text-sm font-bold uppercase tracking-wider">
+          {t("create.sectionCompany")}
+        </h3>
       <div className="grid gap-4 md:grid-cols-2">
+        <BusinessEntityField
+          value={businessEntity}
+          otherValue={businessEntityOther}
+          onChange={setBusinessEntity}
+          onOtherChange={setBusinessEntityOther}
+          disabled={readOnly}
+          entityLabel={t("form.businessEntity")}
+          otherLabel={t("form.businessEntityOther")}
+        />
         <div className="space-y-2">
           <Label>{t("form.companyName")}</Label>
-          <Input className="h-9" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input className="h-9" value={name} onChange={(e) => setName(e.target.value)} disabled={readOnly} />
         </div>
         <div className="space-y-2">
           <Label>{t("form.customerCode")}</Label>
-          <Input className="h-9" value={String(detail?.company_code ?? "")} disabled />
+          <Input
+            className="h-9 uppercase"
+            value={companyCode}
+            onChange={(e) => setCompanyCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3))}
+            disabled={readOnly || codeLocked}
+            maxLength={3}
+          />
+          <p className="text-xs text-muted-foreground">{t("form.customerCodeHint")}</p>
         </div>
         <div className="space-y-2">
-          <Label>{t("form.businessEntity")}</Label>
-          <Select value={businessEntity} onValueChange={(v) => v && setBusinessEntity(v)}>
+          <Label>{t("form.npwp")}</Label>
+          <Input className="h-9" value={npwp} onChange={(e) => setNpwp(e.target.value.replace(/\D/g, ""))} disabled={readOnly} maxLength={16} inputMode="numeric" />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("form.email")}</Label>
+          <Input className="h-9" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={readOnly} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("form.phone")}</Label>
+          <Input
+            className="h-9"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+            disabled={readOnly}
+            inputMode="numeric"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("form.website")}</Label>
+          <Input className="h-9" value={website} onChange={(e) => setWebsite(e.target.value)} disabled={readOnly} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("form.customerStatus")}</Label>
+          <Select value={customerStatus} onValueChange={(v) => v && setCustomerStatus(v)} disabled={readOnly}>
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {["PT", "CV", "UD", "Koperasi", "Yayasan", "Firma", "Perorangan", "Lainnya"].map((e) => (
-                <SelectItem key={e} value={e}>{e}</SelectItem>
+              {CUSTOMER_STATUS_OPTIONS.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {t(`statusOptions.${s.labelKey}` as Parameters<typeof t>[0])}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label>{t("form.website")}</Label>
-          <Input className="h-9" value={website} onChange={(e) => setWebsite(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label>{t("form.npwp")}</Label>
-          <Input className="h-9" value={npwp} onChange={(e) => setNpwp(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label>{t("form.nib")}</Label>
-          <Input className="h-9" value={nib} onChange={(e) => setNib(e.target.value)} />
-        </div>
       </div>
+      </section>
 
-      <div className="rounded-lg border p-4 space-y-4">
-        <p className="text-sm font-medium">{t("form.billingSection")}</p>
-        <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label>{t("form.billingType")}</Label>
-          <Select value={billingType} onValueChange={(v) => v && setBillingType(v as "prepaid" | "postpaid")}>
-            <SelectTrigger className="h-9 w-full rounded-lg">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="prepaid">{t("form.prepaid")}</SelectItem>
-              <SelectItem value="postpaid">{t("form.postpaid")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>{t("form.pricingType")}</Label>
-          <Select value={pricingType} onValueChange={(v) => v && setPricingType(v as "standard" | "discount")}>
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="standard">{t("form.standard")}</SelectItem>
-              <SelectItem value="discount">{t("form.discount")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {pricingType === "discount" ? (
-          <div className="space-y-2">
-            <Label>{t("form.discountPercent")}</Label>
-            <Input className="h-9" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} />
-          </div>
-        ) : null}
-        {billingType === "postpaid" && (
-          <div className="space-y-2">
-            <Label>{t("form.billingCycle")}</Label>
-            <Select value={billingCycle} onValueChange={(v) => v && setBillingCycle(v)}>
-              <SelectTrigger className="h-9 w-full rounded-lg">
-                <SelectValue>{billingCycleLabel(billingCycle)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {FSD_BILLING_CYCLE_OPTIONS.map((b) => (
-                  <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
-                ))}
-                {BILLING_CYCLE_OPTIONS.map((b) => (
-                  <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-        {billingType === "postpaid" && (
-          <div className="space-y-2">
-            <Label>{t("form.paymentTerm")}</Label>
-            <Select value={paymentTerm} onValueChange={(v) => v && setPaymentTerm(v)}>
-              <SelectTrigger className="h-9 w-full">
-                <SelectValue>{paymentTermLabel(paymentTerm)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {FSD_PAYMENT_TERM_OPTIONS.map((p) => (
-                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-        {billingType === "postpaid" && (
-          <div className="space-y-2">
-            <Label>{t("form.creditLimit")}</Label>
-            <Input className="h-9" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value.replace(/\D/g, ""))} />
-          </div>
-        )}
-        <div className="space-y-2">
-          <Label>{t("form.depositBalance")}</Label>
-          <Input className="h-9" value={String(detail?.current_deposit_balance ?? 0)} disabled />
-        </div>
-        <div className="space-y-2">
-          <Label>{t("form.outstandingBalance")}</Label>
-          <Input className="h-9" value={String(detail?.outstanding_balance ?? 0)} disabled />
-        </div>
-        </div>
-      </div>
-
+      <section className="space-y-4">
+        <h3 className="border-b pb-2 text-sm font-bold uppercase tracking-wider">
+          {t("create.sectionAddress")}
+        </h3>
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2 md:col-span-2">
-          <Label>{t("form.address")}</Label>
-          <Textarea className="min-h-[80px]" value={address} onChange={(e) => setAddress(e.target.value)} rows={3} />
-        </div>
         <ControlledAddressRegionFields
           className="md:col-span-2"
           value={{ country, province, city, district, postal_code: postalCode }}
@@ -323,15 +316,29 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
             if (patch.district !== undefined) setDistrict(patch.district);
             if (patch.postal_code !== undefined) setPostalCode(patch.postal_code);
           }}
-          disabled={!canEdit}
+          disabled={readOnly}
           showCountry
           showDistrict
+          postalCodeOptions={postalCodeOptions}
+          loadingPostalCodes={loadingPostalCodes}
           labels={{
             province: t("form.province"),
             city: t("form.city"),
             postalCode: t("form.postalCode"),
           }}
         />
+        <div className="space-y-2 md:col-span-2">
+          <Label>{t("form.address")}</Label>
+          <Textarea className="min-h-[80px]" value={address} onChange={(e) => setAddress(e.target.value)} rows={3} disabled={readOnly} />
+        </div>
+      </div>
+      </section>
+
+      <section className="space-y-4">
+        <h3 className="border-b pb-2 text-sm font-bold uppercase tracking-wider">
+          {t("create.sectionOperational")}
+        </h3>
+        <div className="grid gap-4 md:grid-cols-2">
         <CustomerOperationalFields
           businessCategory={businessCategory}
           businessCategoryOther={businessCategoryOther}
@@ -339,33 +346,86 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
           onBusinessCategoryChange={setBusinessCategory}
           onBusinessCategoryOtherChange={setBusinessCategoryOther}
           onMonthlyShipmentEstimateChange={setMonthlyShipmentEstimate}
-          disabled={!canEdit}
+          disabled={readOnly}
         />
-        <div className="space-y-2">
-          <Label>{t("form.pic")}</Label>
-          <Input className="h-9" value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label>{t("form.email")}</Label>
-          <Input className="h-9" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label>{t("form.phone")}</Label>
-          <Input
-            className="h-9"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-            inputMode="numeric"
-          />
-        </div>
       </div>
+      </section>
 
-      <DiscountManagement
-        companyId={id}
-        discounts={discounts}
-        canManage={caps.canManageDiscounts}
-        onRefresh={refreshData}
-      />
+      <section className="space-y-4">
+        <h3 className="border-b pb-2 text-sm font-bold uppercase tracking-wider">
+          {t("form.billingSection")}
+        </h3>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>{t("form.billingType")}</Label>
+            <Select value={billingType} onValueChange={(v) => v && setBillingType(v as "prepaid" | "postpaid")} disabled={readOnly}>
+              <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="prepaid">{t("form.prepaid")}</SelectItem>
+                <SelectItem value="postpaid">{t("form.postpaid")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("form.pricingType")}</Label>
+            <Select value={pricingType} onValueChange={(v) => v && setPricingType(v as "standard" | "discount")} disabled={readOnly}>
+              <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="standard">{t("form.standard")}</SelectItem>
+                <SelectItem value="discount">{t("form.discount")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {pricingType === "discount" ? (
+            <div className="space-y-2">
+              <Label>{t("form.discountPercent")}</Label>
+              <Input className="h-9" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} disabled={readOnly} />
+            </div>
+          ) : null}
+          {billingType === "postpaid" ? (
+            <>
+              <div className="space-y-2">
+                <Label>{t("form.billingCycle")}</Label>
+                <Select value={billingCycle} onValueChange={(v) => v && setBillingCycle(v)} disabled={readOnly}>
+                  <SelectTrigger className="h-9 w-full">
+                    <SelectValue>{billingCycleLabel(billingCycle)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FSD_BILLING_CYCLE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("form.paymentTerm")}</Label>
+                <Select value={paymentTerm} onValueChange={(v) => v && setPaymentTerm(v)} disabled={readOnly}>
+                  <SelectTrigger className="h-9 w-full">
+                    <SelectValue>{paymentTermLabel(paymentTerm)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FSD_PAYMENT_TERM_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("form.creditLimit")}</Label>
+                <Input className="h-9" value={creditLimit ? formatIdr(creditLimit) : ""} onChange={(e) => setCreditLimit(e.target.value.replace(/\D/g, ""))} disabled={readOnly} inputMode="numeric" />
+              </div>
+            </>
+          ) : null}
+          <div className="space-y-2">
+            <Label>{t("form.depositBalance")}</Label>
+            <Input className="h-9" value={formatIdr(detail?.current_deposit_balance as number | string | null | undefined)} disabled />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("form.outstandingBalance")}</Label>
+            <Input className="h-9" value={formatIdr(detail?.outstanding_balance as number | string | null | undefined)} disabled />
+          </div>
+        </div>
+      </section>
 
       <div className="flex justify-end gap-2">
         {!embedded ? (
@@ -373,11 +433,13 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
             {tc("actions.cancel")}
           </Button>
         ) : null}
-        <Button onClick={() => void save()} disabled={saving || !name.trim()}>
-          {saving ? tc("actions.saving") : tc("actions.save")}
-        </Button>
+        {canEdit ? (
+          <Button onClick={() => void save()} disabled={saving || !requiredFieldsComplete}>
+            {saving ? tc("actions.saving") : tc("actions.save")}
+          </Button>
+        ) : null}
       </div>
-    </>
+    </div>
   );
 
   const inner = (
@@ -386,23 +448,7 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
         <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       ) : null}
       {loading ? <p className="text-sm text-muted-foreground">{tc("actions.loading")}</p> : null}
-      {!loading && (
-        <>
-          <StatusManagerSection
-            companyId={id}
-            status={companyStatus}
-            canApproveReject={caps.canApproveReject}
-            onRefresh={refreshData}
-          />
-          {companyStatus === "rejected" && detail?.rejection_reason ? (
-            <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
-              <p className="font-medium">{t("form.rejectionReason")}</p>
-              <p className="mt-1 whitespace-pre-wrap">{String(detail.rejection_reason)}</p>
-            </div>
-          ) : null}
-          {formBody}
-        </>
-      )}
+      {!loading ? formBody : null}
     </>
   );
 

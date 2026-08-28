@@ -22,9 +22,10 @@ export const BILLING_CYCLE_OPTIONS = [
   { value: "end_of_month", label: "Akhir bulan" },
 ] as const;
 
-const BILLING_CYCLE_MAP: Record<string, string> = Object.fromEntries(
-  BILLING_CYCLE_OPTIONS.map((o) => [o.value, o.label])
-);
+const BILLING_CYCLE_MAP: Record<string, string> = {
+  ...Object.fromEntries(FSD_BILLING_CYCLE_OPTIONS.map((o) => [o.value, o.label])),
+  ...Object.fromEntries(BILLING_CYCLE_OPTIONS.map((o) => [o.value, o.label])),
+};
 
 const PAYMENT_TERM_MAP: Record<string, string> = Object.fromEntries(
   FSD_PAYMENT_TERM_OPTIONS.map((o) => [o.value, o.label])
