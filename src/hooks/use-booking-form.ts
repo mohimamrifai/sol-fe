@@ -89,6 +89,8 @@ export type PackageRow = {
   flash_point_c: string;
   dg_remark: string;
   msds_file: File | null;
+  /** Path of an MSDS already stored on the server, so editing does not force a re-upload. */
+  msds_file_path?: string | null;
 };
 
 export type ContainerRow = {
@@ -106,6 +108,8 @@ export type ContainerRow = {
   flash_point_c: string;
   dg_remark: string;
   msds_file: File | null;
+  /** Path of an MSDS already stored on the server, so editing does not force a re-upload. */
+  msds_file_path?: string | null;
 };
 
 export type AttachmentDraft = {
@@ -331,6 +335,7 @@ export function useBookingForm(opts?: { editId?: number }) {
                   flash_point_c: p.flash_point != null ? String(p.flash_point) : "",
                   dg_remark: String(p.dg_remark ?? ""),
                   msds_file: null,
+                  msds_file_path: p.msds_file_path != null ? String(p.msds_file_path) : null,
                 }))
               );
             }
@@ -352,6 +357,7 @@ export function useBookingForm(opts?: { editId?: number }) {
                   flash_point_c: c.flash_point != null ? String(c.flash_point) : "",
                   dg_remark: String(c.dg_remark ?? ""),
                   msds_file: null,
+                  msds_file_path: c.msds_file_path != null ? String(c.msds_file_path) : null,
                 }))
               );
             }
@@ -537,6 +543,7 @@ export function useBookingForm(opts?: { editId?: number }) {
         proper_shipping_name: isDg ? (p.proper_shipping_name || null) : null,
         flash_point: isDg && p.flash_point_c ? Number(p.flash_point_c) : null,
         dg_remark: isDg ? (p.dg_remark || null) : null,
+        msds_file_path: isDg ? (p.msds_file_path || null) : null,
       };
     });
 
@@ -556,6 +563,7 @@ export function useBookingForm(opts?: { editId?: number }) {
         proper_shipping_name: isDg ? (c.proper_shipping_name || null) : null,
         flash_point: isDg && c.flash_point_c ? Number(c.flash_point_c) : null,
         dg_remark: isDg ? (c.dg_remark || null) : null,
+        msds_file_path: isDg ? (c.msds_file_path || null) : null,
       };
     });
 

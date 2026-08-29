@@ -20,7 +20,7 @@ import { paymentStatusBadgeClass } from "@/lib/payment-status";
 import { cn } from "@/lib/utils";
 import { useInvoiceStatusLabel, usePaymentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
-import { regenerateAdminPaymentLink } from "@/lib/admin-api";
+import { regenerateAdminPaymentLink, generateAdminMidtransLink } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
 import { PaymentSupportingDocuments } from "@/components/dashboard/admin/payments/payment-supporting-documents";
@@ -80,6 +80,7 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
   const paymentStatusLabel = usePaymentStatusLabel();
   const invoiceStatusLabel = useInvoiceStatusLabel();
   const [regenerating, setRegenerating] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   if (!data) {
     return <p className="text-sm text-muted-foreground">—</p>;
@@ -87,7 +88,8 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
 
   const customerInfo = (data.customer_info ?? {}) as Row;
   const invoice = (data.invoice ?? {}) as Row;
-  const paymentInfo = (data.payment_info ?? {}) as Row;
+  const rawPaymentInfo = data.payment_info;
+  const paymentInfo = rawPaymentInfo != null ? (rawPaymentInfo as Row) : null;
   const onlinePayment = (data.online_payment ?? null) as Row | null;
   const paymentHistory = (data.payment_history ?? []) as Row[];
   const activityTimeline = (data.activity_timeline ?? []) as Row[];
@@ -95,32 +97,48 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
   const actions = (data.actions ?? {}) as Record<string, unknown>;
   const paymentId = Number(data.id);
 
-  const arStatus = String(data.invoice_ar_status ?? invoice.status ?? "");
+  const arStatus = String(data.payment_status ?? data.invoice_ar_status ?? invoice.status ?? "");
   const invoiceId = invoice.id != null ? Number(invoice.id) : null;
+  const paymentMethod = String(paymentInfo?.payment_method ?? data.method ?? data.payment_type ?? "");
+  const isMidtrans = paymentMethod.toLowerCase().includes("midtrans");
+  const showOnlineSection = isMidtrans || Boolean(actions.can_generate_link);
+
+  const formatLinkStatus = (status: unknown) => {
+    const s = String(status ?? "").toLowerCase();
+    if (s === "active") return "Active";
+    if (s === "expired") return "Expired";
+    return status ? String(status) : "—";
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-muted/20 p-4">
-        <div className="space-y-1">
-          <p className="font-mono text-sm font-semibold">{String(data.payment_number ?? data.payment_no ?? "—")}</p>
-          <p className="text-xs text-muted-foreground">{tc("table.customer")}: {String(customerInfo.customer_name ?? "—")}</p>
-          {invoiceId ? (
+      <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
+        {fieldRow(t("columns.paymentNo"), <span className="font-mono text-sm font-semibold">{String(data.payment_number ?? data.payment_no ?? "—")}</span>)}
+        {fieldRow(tc("table.customer"), String(customerInfo.customer_name ?? "—"))}
+        {fieldRow(
+          t("detail.invoiceNo"),
+          invoiceId ? (
             <Link
               href={`/${locale}/dashboard/admin/customer/invoices/${invoiceId}`}
-              className="text-xs text-primary underline-offset-2 hover:underline"
+              className="font-mono text-xs text-primary underline-offset-2 hover:underline"
             >
               {String(invoice.invoice_number ?? "—")}
             </Link>
           ) : (
-            <p className="text-xs">{String(invoice.invoice_number ?? "—")}</p>
-          )}
-          <p className="text-xs text-muted-foreground">{t("detail.recordedAt")}: {fmtDateTime(data.created_at)}</p>
-        </div>
-        {arStatus ? (
-          <Badge variant="outline" className={cn(invoiceStatusBadgeClass(arStatus))}>
-            {invoiceStatusLabel(arStatus)}
-          </Badge>
-        ) : null}
+            <span className="font-mono text-xs">{String(invoice.invoice_number ?? "—")}</span>
+          )
+        )}
+        {fieldRow(
+          t("detail.paymentStatus"),
+          arStatus ? (
+            <Badge variant="outline" className={cn(invoiceStatusBadgeClass(arStatus))}>
+              {invoiceStatusLabel(arStatus)}
+            </Badge>
+          ) : (
+            "—"
+          )
+        )}
+        {fieldRow(t("detail.createdDate"), fmtDateTime(data.created_at))}
       </div>
 
       <div className="space-y-3 rounded-lg border p-4">
@@ -142,22 +160,28 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
 
       <div className="space-y-3 rounded-lg border p-4">
         {sectionTitle(t("detail.sectionPayment"))}
-        {fieldRow(
-          t("detail.method"),
-          resolvePaymentMethodLabel(
-            {
-              method: paymentInfo.payment_method as string | null | undefined,
-              payment_type: data.method as string | null | undefined,
-            },
-            (key) => tMethod(key)
-          )
+        {paymentInfo ? (
+          <>
+            {fieldRow(
+              t("detail.method"),
+              resolvePaymentMethodLabel(
+                {
+                  method: paymentInfo.payment_method as string | null | undefined,
+                  payment_type: data.method as string | null | undefined,
+                },
+                (key) => tMethod(key)
+              )
+            )}
+            {paymentInfo.company_bank ? fieldRow(t("recordDialog.companyBank"), String(paymentInfo.company_bank)) : null}
+            {paymentInfo.account ? fieldRow(t("recordDialog.account"), String(paymentInfo.account)) : null}
+            {fieldRow(t("detail.paidAt"), fmtDate(paymentInfo.payment_date ?? data.paid_at))}
+            {fieldRow(t("detail.amount"), <span className="tabular-nums font-medium">{fmtIdr(paymentInfo.payment_amount ?? data.amount)}</span>)}
+            {fieldRow(t("recordDialog.referenceNo"), String(paymentInfo.payment_reference_no ?? "—"))}
+            {paymentInfo.payment_remark ? fieldRow(t("recordDialog.remark"), String(paymentInfo.payment_remark)) : null}
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">—</p>
         )}
-        {paymentInfo.company_bank ? fieldRow(t("recordDialog.companyBank"), String(paymentInfo.company_bank)) : null}
-        {paymentInfo.account ? fieldRow(t("recordDialog.account"), String(paymentInfo.account)) : null}
-        {fieldRow(t("detail.paidAt"), fmtDate(paymentInfo.payment_date ?? data.paid_at))}
-        {fieldRow(t("detail.amount"), <span className="tabular-nums font-medium">{fmtIdr(paymentInfo.payment_amount ?? data.amount)}</span>)}
-        {fieldRow(t("recordDialog.referenceNo"), String(paymentInfo.payment_reference_no ?? "—"))}
-        {paymentInfo.payment_remark ? fieldRow(t("recordDialog.remark"), String(paymentInfo.payment_remark)) : null}
       </div>
 
       {paymentHistory.length > 0 ? (
@@ -195,32 +219,58 @@ export function PaymentDetailView({ data, locale = "id", canManage = false, onRe
         </div>
       ) : null}
 
-      {onlinePayment ? (
+      {showOnlineSection ? (
         <div className="space-y-3 rounded-lg border p-4">
           {sectionTitle(t("detail.sectionOnline"))}
-          {fieldRow(t("detail.midtransLink"), onlinePayment.payment_link ? (
-            <a href={String(onlinePayment.payment_link)} target="_blank" rel="noopener noreferrer" className="break-all text-sm text-primary underline-offset-2 hover:underline">
-              {String(onlinePayment.payment_link)}
-            </a>
-          ) : "—")}
-          {fieldRow(t("detail.linkStatus"), String(onlinePayment.link_status ?? "—"))}
-          {fieldRow(t("detail.expiredAt"), fmtDateTime(onlinePayment.expired_at))}
-          {fieldRow(t("detail.orderId"), <span className="font-mono text-xs">{String(onlinePayment.midtrans_order_id ?? "—")}</span>)}
-          {fieldRow(t("detail.transactionId"), <span className="font-mono text-xs">{String(onlinePayment.midtrans_transaction_id ?? "—")}</span>)}
-          {fieldRow(t("detail.midtransStatus"), onlinePayment.midtrans_status ? (
-            <Badge variant="outline" className={paymentStatusBadgeClass(String(onlinePayment.midtrans_status))}>
-              {paymentStatusLabel(String(onlinePayment.midtrans_status))}
-            </Badge>
-          ) : "—")}
-          {(actions.can_copy_link || actions.can_regenerate_link) && canManage ? (
+          {onlinePayment ? (
+            <>
+              {fieldRow(t("detail.midtransLink"), onlinePayment.payment_link ? (
+                <a href={String(onlinePayment.payment_link)} target="_blank" rel="noopener noreferrer" className="break-all text-sm text-primary underline-offset-2 hover:underline">
+                  {String(onlinePayment.payment_link)}
+                </a>
+              ) : "—")}
+              {fieldRow(t("detail.linkStatus"), formatLinkStatus(onlinePayment.link_status))}
+              {fieldRow(t("detail.expiredAt"), fmtDateTime(onlinePayment.expired_at))}
+              {fieldRow(t("detail.orderId"), <span className="font-mono text-xs">{String(onlinePayment.midtrans_order_id ?? "—")}</span>)}
+              {fieldRow(t("detail.transactionId"), <span className="font-mono text-xs">{String(onlinePayment.midtrans_transaction_id ?? "—")}</span>)}
+              {fieldRow(t("detail.midtransStatus"), onlinePayment.midtrans_status ? (
+                <Badge variant="outline" className={paymentStatusBadgeClass(String(onlinePayment.midtrans_status))}>
+                  {paymentStatusLabel(String(onlinePayment.midtrans_status))}
+                </Badge>
+              ) : "—")}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">—</p>
+          )}
+          {(actions.can_generate_link || actions.can_copy_link || actions.can_regenerate_link) && canManage ? (
             <div className="flex flex-wrap gap-2 pt-1">
-              {actions.can_copy_link && onlinePayment.payment_link ? (
+              {actions.can_generate_link && invoiceId ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={generating}
+                  onClick={() => {
+                    setGenerating(true);
+                    void generateAdminMidtransLink(invoiceId)
+                      .then((res) => {
+                        toast.success(res.message);
+                        onRefresh?.();
+                      })
+                      .catch((e) => toast.error(e instanceof ApiError ? e.message : t("generateLink.failed")))
+                      .finally(() => setGenerating(false));
+                  }}
+                >
+                  {generating ? t("generateLink.generating") : t("generatePaymentLink")}
+                </Button>
+              ) : null}
+              {actions.can_copy_link && onlinePayment?.payment_link ? (
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    void navigator.clipboard.writeText(String(onlinePayment.payment_link)).then(
+                    void navigator.clipboard.writeText(String(onlinePayment?.payment_link)).then(
                       () => toast.success(t("generateLink.copied")),
                       () => toast.error(t("generateLink.copyFailed"))
                     );

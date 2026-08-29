@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import { fetchAdminUsers, updateAdminCompany } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
-import { useCustomerStatusLabel } from "@/hooks/use-admin-status-labels";
 import { toast } from "sonner";
 
 type Props = {
@@ -27,7 +26,6 @@ function userLabel(u: Record<string, unknown>) {
 export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: Props) {
   const t = useTranslations("AdminCustomers");
   const tc = useTranslations("AdminCommon");
-  const customerStatusLabel = useCustomerStatusLabel();
   const [staff, setStaff] = useState<Record<string, unknown>[]>([]);
   const [salesPicId, setSalesPicId] = useState("");
   const [accountManagerId, setAccountManagerId] = useState("");
@@ -133,10 +131,6 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
         <div>
           <span className="text-muted-foreground">{t("review.approvedBy")}:</span>{" "}
           {approvedBy ? userLabel(approvedBy) : "—"}
-        </div>
-        <div>
-          <span className="text-muted-foreground">{t("review.statusLabel")}:</span>{" "}
-          {detail?.status ? customerStatusLabel(String(detail.status).toLowerCase()) : "—"}
         </div>
       </div>
 

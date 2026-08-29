@@ -38,6 +38,7 @@ export function mapPackageRowsForApi(packages: PackageRow[], cargoCats: CC[]) {
       proper_shipping_name: isItemDg ? p.proper_shipping_name || null : null,
       flash_point: isItemDg && p.flash_point_c ? Number(p.flash_point_c) : null,
       dg_remark: isItemDg ? p.dg_remark || null : null,
+      msds_file_path: isItemDg ? p.msds_file_path || null : null,
     };
   });
 }
@@ -59,6 +60,7 @@ export function mapContainerRowsForApi(containers: ContainerRow[], cargoCats: CC
       proper_shipping_name: isItemDg ? c.proper_shipping_name || null : null,
       flash_point: isItemDg && c.flash_point_c ? Number(c.flash_point_c) : null,
       dg_remark: isItemDg ? c.dg_remark || null : null,
+      msds_file_path: isItemDg ? c.msds_file_path || null : null,
     };
   });
 }

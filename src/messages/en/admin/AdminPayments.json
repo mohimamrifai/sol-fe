@@ -62,6 +62,8 @@
       "amount": "Amount",
       "paidAt": "Paid at",
       "recordedAt": "Recorded at",
+      "paymentStatus": "Payment Status",
+      "createdDate": "Created Date",
       "relatedInvoice": "Related invoice",
       "invoiceNo": "Invoice number",
       "shipment": "Shipment / waybill",
@@ -136,7 +138,8 @@
       "methodMidtrans": "Midtrans",
       "recorded": "Payment recorded.",
       "recordFailed": "Failed to record payment.",
-      "companyBankRequired": "Company bank is required for transfer payments."
+      "companyBankRequired": "Company bank is required for transfer payments.",
+      "accountRequired": "Account is required for manual payments."
     },
     "toasts": {
       "loadFailed": "Failed to load payments.",

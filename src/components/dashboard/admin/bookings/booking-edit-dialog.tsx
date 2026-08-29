@@ -78,6 +78,7 @@ interface BookingEditDialogProps {
   loading?: boolean;
   saving: boolean;
   onSave: (payload: FormData) => void | Promise<void>;
+  inline?: boolean;
 }
 
 export function BookingEditDialog({
@@ -87,6 +88,7 @@ export function BookingEditDialog({
   loading = false,
   saving,
   onSave,
+  inline = false,
 }: BookingEditDialogProps) {
   const tForm = useTranslations("Bookings.create.form");
   const tCommon = useTranslations("Bookings");
@@ -257,6 +259,7 @@ export function BookingEditDialog({
         flash_point_c: p.flash_point != null ? String(p.flash_point) : "",
         dg_remark: String(p.dg_remark ?? p.dg_notes ?? ""),
         msds_file: null,
+        msds_file_path: p.msds_file_path != null ? String(p.msds_file_path) : null,
       }))
     );
     setContainers(
@@ -275,6 +278,7 @@ export function BookingEditDialog({
         flash_point_c: c.flash_point != null ? String(c.flash_point) : "",
         dg_remark: String(c.dg_remark ?? c.dg_notes ?? ""),
         msds_file: null,
+        msds_file_path: c.msds_file_path != null ? String(c.msds_file_path) : null,
       }))
     );
     setNotes(String(data.notes ?? ""));
@@ -463,19 +467,11 @@ export function BookingEditDialog({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl p-0 gap-0">
-        <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <div>
-            <DialogTitle className="text-xl">{te("title")}</DialogTitle>
-            <DialogDescription>
-              {te("description", { bookingNo: data?.booking_number ?? "booking" })}
-            </DialogDescription>
-          </div>
-        </div>
+  if (!inline && !open) return null;
 
-        <div className="px-6 py-6 bg-zinc-50/30">
+  const formBody = (
+    <>
+        <div className={inline ? "px-0 py-0" : "px-6 py-6 bg-zinc-50/30"}>
           {loadError ? <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-4">{loadError}</p> : null}
           
           {loading ? (
@@ -716,14 +712,43 @@ export function BookingEditDialog({
           )}
         </div>
 
-        <div className="sticky bottom-0 z-10 bg-white border-t px-6 py-4 flex items-center justify-end gap-2">
+        <div className={inline ? "flex items-center justify-end gap-2 pt-4" : "sticky bottom-0 z-10 bg-white border-t px-6 py-4 flex items-center justify-end gap-2"}>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             {te("cancel")}
           </Button>
-          <Button onClick={() => void submit()} disabled={saving || loadingMasters} className="bg-black hover:bg-zinc-800 text-white font-semibold">
+          <Button onClick={() => void submit()} disabled={saving || loadingMasters} className={inline ? undefined : "bg-black hover:bg-zinc-800 text-white font-semibold"}>
             {saving ? te("saving") : te("save")}
           </Button>
         </div>
+    </>
+  );
+
+  if (inline) {
+    return (
+      <div className="space-y-4 rounded-lg border p-4">
+        <div>
+          <h2 className="text-lg font-semibold">{te("title")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {te("description", { bookingNo: data?.booking_number ?? "booking" })}
+          </p>
+        </div>
+        {formBody}
+      </div>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl p-0 gap-0">
+        <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
+          <div>
+            <DialogTitle className="text-xl">{te("title")}</DialogTitle>
+            <DialogDescription>
+              {te("description", { bookingNo: data?.booking_number ?? "booking" })}
+            </DialogDescription>
+          </div>
+        </div>
+        {formBody}
       </DialogContent>
     </Dialog>
   );

@@ -19,7 +19,11 @@ import {
 } from "@/components/ui/table";
 import { PaginationBar } from "@/components/data-table/pagination-bar";
 import { TableToolbar } from "@/components/data-table/table-toolbar";
-import { bookingFsdStatCount, bookingStatusBadgeClass } from "@/lib/booking-status";
+import {
+  bookingFsdStatCount,
+  bookingStatusBadgeClass,
+  resolveBookingDisplayStatus,
+} from "@/lib/booking-status";
 import { useBookingStatusLabel } from "@/hooks/use-admin-status-labels";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -426,7 +430,9 @@ export default function AdminBookingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookings.map((booking) => (
+                  {bookings.map((booking) => {
+                    const displayStatus = resolveBookingDisplayStatus(booking);
+                    return (
                     <TableRow key={booking.id} className="group">
                       <TableCell className="font-mono text-xs">{booking.booking_number}</TableCell>
                       <TableCell className="font-medium">{booking.company?.name ?? "—"}</TableCell>
@@ -441,8 +447,8 @@ export default function AdminBookingsPage() {
                         {booking.created_at ? String(booking.created_at).slice(0, 10) : "—"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={bookingStatusBadgeClass(booking.status)}>
-                          {bookingStatusLabel(booking.status)}
+                        <Badge variant="outline" className={bookingStatusBadgeClass(displayStatus)}>
+                          {bookingStatusLabel(displayStatus)}
                         </Badge>
                       </TableCell>
                       <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
@@ -460,7 +466,8 @@ export default function AdminBookingsPage() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
                 <TableCaption className="text-xs">
                   {bookings.length === 0 ? tc("table.empty") : tc("table.rowsOnPage")}

@@ -29,6 +29,7 @@ import {
   submitAdminBooking,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
+import { resolveBookingDisplayStatus } from "@/lib/booking-status";
 import { toast } from "sonner";
 
 interface BookingActionsMenuProps {
@@ -56,9 +57,7 @@ export function BookingActionsMenu({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const st = booking.status.toLowerCase();
-  const hasShipment = booking.shipment_exists === true || typeof booking.shipment_id === "number";
-  const isConverted = hasShipment || st === "converted";
-  const displayStatus = isConverted ? "converted" : st;
+  const displayStatus = resolveBookingDisplayStatus(booking);
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -125,7 +124,7 @@ export function BookingActionsMenu({
           </>
         ) : null}
 
-        {canProcessOperations && (st === "submitted" || st === "under_review") ? (
+        {canProcessOperations && st === "submitted" ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -152,7 +151,7 @@ export function BookingActionsMenu({
           </>
         ) : null}
 
-        {canProcessOperations && (st === "approved" || st === "confirmed") && !hasShipment ? (
+        {canProcessOperations && (displayStatus === "approved" || displayStatus === "confirmed") ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -180,7 +179,7 @@ export function BookingActionsMenu({
           </>
         ) : null}
 
-        {displayStatus === "converted" && (typeof booking.shipment_id === "number" || booking.shipment_exists) ? (
+        {displayStatus === "converted" ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem

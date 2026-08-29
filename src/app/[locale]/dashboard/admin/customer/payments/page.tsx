@@ -33,7 +33,6 @@ import {
 } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ApiError } from "@/lib/api-client";
-import { rowNumber } from "@/lib/list-query";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   AdminListFilters,
@@ -45,10 +44,10 @@ import {
 import { PAYMENT_METHOD_OPTIONS, useAdminListMasters } from "@/hooks/use-admin-list-masters";
 
 import { PaymentStats } from "@/components/dashboard/admin/payments/payment-stats";
-import { RecordPaymentDialog } from "@/components/dashboard/admin/payments/record-payment-dialog";
 import { GeneratePaymentLinkDialog } from "@/components/dashboard/admin/payments/generate-payment-link-dialog";
 import { PaymentActionsMenu } from "@/components/dashboard/admin/payments/payment-actions-menu";
 import type { PayRow } from "@/components/dashboard/admin/payments/types";
+import { useRouter } from "@/i18n/routing";
 
 const PER_PAGE = 10;
 
@@ -85,6 +84,7 @@ function formatMethod(method: string, t: ReturnType<typeof useTranslations<"Admi
 
 export default function AdminPaymentsPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
   const invoiceStatusLabel = useInvoiceStatusLabel();
@@ -119,24 +119,20 @@ export default function AdminPaymentsPage() {
   const [methodFilter, setMethodFilter] = useState("all");
   const [paymentDateFrom, setPaymentDateFrom] = useState("");
   const [paymentDateTo, setPaymentDateTo] = useState("");
-  const [linkStatusFilter, setLinkStatusFilter] = useState<string | undefined>();
 
   useEffect(() => {
     const dateFrom = searchParams.get("date_from");
     const dateTo = searchParams.get("date_to");
     const status = searchParams.get("status");
-    const linkStatus = searchParams.get("link_status");
     if (dateFrom) setPaymentDateFrom(dateFrom);
     if (dateTo) setPaymentDateTo(dateTo);
     if (status && status !== "expired") setStatusFilter(status);
-    if (status === "expired" || linkStatus === "expired") {
-      setLinkStatusFilter("expired");
-    }
+    if (status === "overdue") setStatusFilter("overdue");
   }, [searchParams]);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, linkStatusFilter]);
+  }, [debouncedSearch, statusFilter, companyFilter, methodFilter, paymentDateFrom, paymentDateTo]);
 
   const invoiceStatusParam = statusFilter === "all" ? undefined : statusFilter;
 
@@ -161,7 +157,6 @@ export default function AdminPaymentsPage() {
         view: "ar",
         search: debouncedSearch.trim() || undefined,
         invoiceStatus: invoiceStatusParam,
-        linkStatus: linkStatusFilter,
         companyId: paramFromFilter(companyFilter),
         paymentMethod: stringParamFromFilter(methodFilter),
         paymentDateFrom: dateParamFromFilter(paymentDateFrom),
@@ -177,12 +172,7 @@ export default function AdminPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHydrated, page, debouncedSearch, invoiceStatusParam, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, linkStatusFilter, t]);
-
-  const refreshPayments = useCallback(() => {
-    void load();
-    void loadStats();
-  }, [load, loadStats]);
+  }, [authHydrated, page, debouncedSearch, invoiceStatusParam, companyFilter, methodFilter, paymentDateFrom, paymentDateTo, t]);
 
   useEffect(() => {
     void loadStats();
@@ -192,7 +182,6 @@ export default function AdminPaymentsPage() {
     void load();
   }, [load]);
 
-  const [recordOpen, setRecordOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
 
   const arLabel = (status: string) => {
@@ -203,11 +192,6 @@ export default function AdminPaymentsPage() {
 
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6 md:px-2">
-      <RecordPaymentDialog
-        open={recordOpen}
-        onOpenChange={setRecordOpen}
-        onRecorded={refreshPayments}
-      />
       <GeneratePaymentLinkDialog open={linkOpen} onOpenChange={setLinkOpen} />
 
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -225,7 +209,7 @@ export default function AdminPaymentsPage() {
             <Button size="sm" variant="outline" onClick={() => setLinkOpen(true)}>
               {t("generatePaymentLink")}
             </Button>
-            <Button size="sm" onClick={() => setRecordOpen(true)}>
+            <Button size="sm" onClick={() => router.push("/dashboard/admin/customer/payments/record")}>
               {t("recordPayment")}
             </Button>
           </div>
@@ -307,7 +291,6 @@ export default function AdminPaymentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-14">{tc("table.no")}</TableHead>
                     <TableHead className="w-[130px]">{t("columns.paymentNo")}</TableHead>
                     <TableHead>{tc("table.customer")}</TableHead>
                     <TableHead className="w-[130px]">{t("columns.invoiceNo")}</TableHead>
@@ -349,9 +332,6 @@ export default function AdminPaymentsPage() {
                     const key = `${String(payment.invoice_id ?? payment.id ?? paymentNo)}-${index}`;
                     return (
                       <TableRow key={key} className="group">
-                        <TableCell className="tabular-nums text-muted-foreground">
-                          {rowNumber(meta?.current_page ?? page, PER_PAGE, index)}
-                        </TableCell>
                         <TableCell className="font-mono text-xs">{paymentNo}</TableCell>
                         <TableCell className="font-medium">{cust}</TableCell>
                         <TableCell className="font-mono text-xs">{invNo}</TableCell>
@@ -369,12 +349,7 @@ export default function AdminPaymentsPage() {
                         </TableCell>
                         <TableCell className={cn(actionsCellClass, "p-2 text-right")}>
                           <div className="flex justify-end">
-                            <PaymentActionsMenu
-                              payment={payment}
-                              paymentRef={paymentNo}
-                              canManageAR={canManageAR}
-                              onPaymentsChanged={refreshPayments}
-                            />
+                            <PaymentActionsMenu payment={payment} />
                           </div>
                         </TableCell>
                       </TableRow>

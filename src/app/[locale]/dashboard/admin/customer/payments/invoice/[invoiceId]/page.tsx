@@ -1,25 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentDetailView } from "@/components/dashboard/admin/payment-detail-view";
-import { downloadAdminPaymentReceipt, fetchAdminPayment } from "@/lib/admin-api";
-import { ApiError } from "@/lib/api-client";
+import { fetchAdminInvoicePaymentDetail } from "@/lib/admin-api";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { useRouter } from "@/i18n/routing";
 
-export default function AdminPaymentDetailPage() {
+/** FSD §5.3: unpaid invoices open on the payment detail screen, not invoice detail. */
+export default function AdminInvoicePaymentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
   const locale = String(params?.locale ?? "id");
-  const id = Number(params?.id);
+  const invoiceId = Number(params?.invoiceId);
   const authHydrated = useAuthPersistHydrated();
   const { user } = useAuthStore();
   const roles = user?.roles ?? [];
@@ -27,20 +25,19 @@ export default function AdminPaymentDetailPage() {
 
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [printing, setPrinting] = useState(false);
 
   const load = useCallback(async () => {
-    if (!Number.isFinite(id) || id < 1) return;
+    if (!Number.isFinite(invoiceId) || invoiceId < 1) return;
     setLoading(true);
     try {
-      const res = await fetchAdminPayment(id);
+      const res = await fetchAdminInvoicePaymentDetail(invoiceId);
       setData((res as { data: Record<string, unknown> }).data);
     } catch {
       setData(null);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [invoiceId]);
 
   useEffect(() => {
     void load();
@@ -48,42 +45,15 @@ export default function AdminPaymentDetailPage() {
 
   const actions = (data?.actions ?? {}) as Record<string, unknown>;
   const canRecord = Boolean(actions.can_record_payment);
-  const canPrint = Boolean(actions.can_print_receipt);
-
-  const printReceipt = async () => {
-    setPrinting(true);
-    try {
-      const blob = await downloadAdminPaymentReceipt(id, true);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `payment-receipt-${String(data?.payment_number ?? id)}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success(t("detail.receiptDownloaded"));
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : t("detail.receiptFailed"));
-    } finally {
-      setPrinting(false);
-    }
-  };
 
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-        <div>
-          <CardTitle>{t("detail.title")}</CardTitle>
-          <CardDescription>{String(data?.payment_number ?? data?.midtrans_order_id ?? "—")}</CardDescription>
-        </div>
+        <CardTitle>{t("detail.title")}</CardTitle>
         <div className="flex flex-wrap gap-2">
           {canRecord ? (
             <Button size="sm" onClick={() => router.push("/dashboard/admin/customer/payments/record")}>
               {t("recordPayment")}
-            </Button>
-          ) : null}
-          {canPrint ? (
-            <Button size="sm" variant="outline" disabled={printing} onClick={() => void printReceipt()}>
-              {printing ? tc("actions.loading") : t("detail.printReceipt")}
             </Button>
           ) : null}
         </div>
@@ -94,10 +64,7 @@ export default function AdminPaymentDetailPage() {
         ) : (
           <PaymentDetailView data={data} locale={locale} canManage={canManage} onRefresh={() => void load()} />
         )}
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/${locale}/dashboard/admin/customer/payments`)}
-        >
+        <Button variant="outline" onClick={() => router.push(`/${locale}/dashboard/admin/customer/payments`)}>
           {t("detail.back")}
         </Button>
       </CardContent>

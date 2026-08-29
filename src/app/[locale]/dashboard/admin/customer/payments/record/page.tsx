@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +27,7 @@ import { firstLaravelError } from "@/lib/laravel-errors";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 
 type InvRow = {
   id: number;
@@ -42,17 +37,11 @@ type InvRow = {
   outstanding_amount?: number;
 };
 
-export function RecordPaymentDialog({
-  open,
-  onOpenChange,
-  onRecorded,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onRecorded: () => void;
-}) {
+/** FSD Customer/customer-payment.md §5.2 — dedicated Record Payment screen. */
+export default function AdminRecordPaymentPage() {
   const t = useTranslations("AdminPayments");
   const tc = useTranslations("AdminCommon");
+  const router = useRouter();
 
   const methods = [
     { value: "transfer", label: t("recordDialog.methodTransfer") },
@@ -62,7 +51,7 @@ export function RecordPaymentDialog({
   ];
 
   const [rows, setRows] = useState<InvRow[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [invoiceId, setInvoiceId] = useState<number | null>(null);
   const [method, setMethod] = useState("transfer");
@@ -74,29 +63,18 @@ export function RecordPaymentDialog({
   const [remark, setRemark] = useState("");
   const [companyBanks, setCompanyBanks] = useState<string[]>([]);
 
+  const isManualMethod = method !== "midtrans";
+  const selected = rows.find((r) => r.id === invoiceId);
+
   useEffect(() => {
-    if (!open) return;
     void fetchAdminPaymentOptions()
       .then((res) => setCompanyBanks(res.data.company_banks ?? []))
       .catch(() => setCompanyBanks([]));
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    setInvoiceId(null);
-    setAmount("");
-    setReferenceNo("");
-    setRemark("");
-    setLoading(true);
     void fetchAdminEligibleInvoices({ perPage: 100 })
       .then((res) => setRows((res as LaravelPaginated<InvRow>).data ?? []))
       .catch(() => setRows([]))
       .finally(() => setLoading(false));
-  }, [open]);
-
-  const selected = rows.find((r) => r.id === invoiceId);
-  /** FSD Customer/customer-payment.md §5.3: Account is filled by the callback for Midtrans only. */
-  const isManualMethod = method !== "midtrans";
+  }, []);
 
   useEffect(() => {
     if (selected?.outstanding_amount != null) {
@@ -116,7 +94,7 @@ export function RecordPaymentDialog({
     }
     setSaving(true);
     try {
-      await recordAdminPayment(invoiceId, {
+      const res = await recordAdminPayment(invoiceId, {
         payment_method: method,
         company_bank: companyBank.trim() || null,
         account: account.trim() || null,
@@ -126,8 +104,12 @@ export function RecordPaymentDialog({
         payment_remark: remark.trim() || null,
       });
       toast.success(t("recordDialog.recorded"));
-      onOpenChange(false);
-      onRecorded();
+      const paymentId = (res as { data?: { id?: number } })?.data?.id;
+      if (typeof paymentId === "number") {
+        router.push(`/dashboard/admin/customer/payments/${paymentId}`);
+      } else {
+        router.push(`/dashboard/admin/customer/payments/invoice/${invoiceId}`);
+      }
     } catch (e) {
       toast.error(e instanceof ApiError ? firstLaravelError(e.body) ?? e.message : t("recordDialog.recordFailed"));
     } finally {
@@ -136,25 +118,27 @@ export function RecordPaymentDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{t("recordDialog.title")}</DialogTitle>
-        </DialogHeader>
-
+    <Card>
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+        <CardTitle>{t("recordDialog.title")}</CardTitle>
+        <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/admin/customer/payments")}>
+          {t("detail.back")}
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {loading ? (
           <p className="text-sm text-muted-foreground">{t("recordDialog.loadingEligible")}</p>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border max-h-48 overflow-y-auto">
+            <div className="overflow-x-auto rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>{t("recordDialog.select")}</TableHead>
                     <TableHead>{t("columns.invoiceNo")}</TableHead>
                     <TableHead>{tc("table.customer")}</TableHead>
                     <TableHead>{t("recordDialog.dueDate")}</TableHead>
                     <TableHead className="text-right">{t("recordDialog.outstanding")}</TableHead>
-                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -167,16 +151,20 @@ export function RecordPaymentDialog({
                   ) : (
                     rows.map((row) => (
                       <TableRow key={row.id} className={invoiceId === row.id ? "bg-muted/40" : undefined}>
+                        <TableCell>
+                          <input
+                            type="radio"
+                            name="invoice-select"
+                            checked={invoiceId === row.id}
+                            onChange={() => setInvoiceId(row.id)}
+                            aria-label={t("recordDialog.select")}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{row.invoice_number ?? "—"}</TableCell>
                         <TableCell>{row.company?.name ?? "—"}</TableCell>
                         <TableCell>{row.due_date ?? "—"}</TableCell>
                         <TableCell className="text-right tabular-nums">
                           {row.outstanding_amount?.toLocaleString("id-ID") ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Button size="sm" variant={invoiceId === row.id ? "default" : "outline"} onClick={() => setInvoiceId(row.id)}>
-                            {t("recordDialog.select")}
-                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -190,14 +178,10 @@ export function RecordPaymentDialog({
                 <div className="space-y-2">
                   <Label>{t("recordDialog.paymentMethod")}</Label>
                   <Select value={method} onValueChange={(v) => v && setMethod(v)}>
-                    <SelectTrigger className="h-9 w-full">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {methods.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>
-                          {m.label}
-                        </SelectItem>
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -244,18 +228,21 @@ export function RecordPaymentDialog({
                 </div>
               </div>
             ) : null}
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => router.push("/dashboard/admin/customer/payments")}>
+                {tc("actions.cancel")}
+              </Button>
+              <Button
+                disabled={saving || invoiceId == null || !amount || !referenceNo.trim()}
+                onClick={() => void submit()}
+              >
+                {saving ? tc("actions.saving") : t("recordPayment")}
+              </Button>
+            </div>
           </>
         )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {tc("actions.cancel")}
-          </Button>
-          <Button disabled={saving || invoiceId == null || !amount || !referenceNo.trim()} onClick={() => void submit()}>
-            {saving ? tc("actions.saving") : t("recordPayment")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 }

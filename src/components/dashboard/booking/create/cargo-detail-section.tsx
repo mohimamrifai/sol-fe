@@ -748,7 +748,9 @@ export function CargoDetailSection({
               <Input type="number" value={String(draftContainer.gross_weight_kg ?? "")} onChange={(e) => setDraftContainer((c) => ({ ...c, gross_weight_kg: Number(e.target.value) }))} />
             </div>
             <div className="space-y-1">
-              <Label>{t("cargoDescription")}</Label>
+              <Label>
+                {t("cargoDescription")} <span className="text-red-500">*</span>
+              </Label>
               <Input value={draftContainer.cargo_description} onChange={(e) => setDraftContainer((c) => ({ ...c, cargo_description: e.target.value }))} />
             </div>
             <div className="space-y-1 sm:col-span-2">
@@ -848,7 +850,12 @@ export function CargoDetailSection({
                 }
                 setContainerOpen(false);
               }}
-              disabled={!draftContainer.container_type_id || !draftContainer.quantity || !draftContainer.cargo_category_id}
+              disabled={
+                !draftContainer.container_type_id ||
+                !draftContainer.quantity ||
+                !draftContainer.cargo_category_id ||
+                !draftContainer.cargo_description.trim()
+              }
             >
               {t("save")}
             </Button>

@@ -3,7 +3,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import {
+  bookingStatusBadgeClass,
+  bookingStatusLabelFromApi,
+  resolveBookingDisplayStatus,
+} from "@/lib/booking-status";
 import { cn } from "@/lib/utils";
 import type { BookingDetail } from "./types";
 import { useTranslations } from "next-intl";
@@ -61,6 +65,18 @@ function packageChargeableWeight(pkg: Record<string, unknown>): number {
   return Math.max(actual, volumeWeight);
 }
 
+/**
+ * FSD Customer/bookings.md §7 shows the actor inline, e.g. "Booking dibuat oleh Demo Company Admin".
+ */
+function activityText(act: Record<string, unknown>): string {
+  const text = String(act.description ?? act.event ?? act.title ?? "—");
+  const actor = act.actor as { name?: string } | null | undefined;
+  const actorName = String(actor?.name ?? act.actor_name ?? "").trim();
+  if (!actorName || text.includes(actorName)) return text;
+
+  return `${text.replace(/\.$/, "")} oleh ${actorName}`;
+}
+
 function attachmentHref(att: Record<string, unknown>): string | null {
   const path = String(att.file_path ?? "");
   if (!path) return null;
@@ -98,6 +114,7 @@ export function BookingDetailView({ data, loading }: Props) {
   const service = data.service_type?.name ?? data.serviceType?.name ?? data.service_type?.code ?? "—";
   const breakdown = (data as BookingDetail & { price_breakdown?: Breakdown }).price_breakdown;
   const currentStep = stepIndex(data);
+  const displayStatus = resolveBookingDisplayStatus(data);
   const customerLocation =
     (data as BookingDetail & { shipper_location?: { name?: string }; shipperLocation?: { name?: string } }).shipper_location?.name ??
     (data as BookingDetail & { shipperLocation?: { name?: string } }).shipperLocation?.name ??
@@ -126,8 +143,8 @@ export function BookingDetailView({ data, loading }: Props) {
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{t("columns.status")}</p>
-          <Badge variant="outline" className={bookingStatusBadgeClass(data.status)}>
-            {bookingStatusLabelFromApi(data.status)}
+          <Badge variant="outline" className={bookingStatusBadgeClass(displayStatus)}>
+            {bookingStatusLabelFromApi(displayStatus)}
           </Badge>
         </div>
         <div>
@@ -138,44 +155,7 @@ export function BookingDetailView({ data, loading }: Props) {
           <p className="text-xs text-muted-foreground">{td("customerLocation")}</p>
           <p className="text-sm font-medium">{customerLocation}</p>
         </div>
-        {data.shipment_id || data.shipment_exists || data.has_shipment ? (
-          <Badge variant="outline">{td("convertedBadge")}</Badge>
-        ) : null}
       </div>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">{td("timelineTitle")}</CardTitle>
-          <CardDescription>{td("timelineDesc")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ol className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-            {TIMELINE_STEPS.map((step, idx) => {
-              const done = currentStep >= idx;
-              const active = currentStep === idx;
-              return (
-                <li key={step.key} className="flex items-center gap-2 text-sm">
-                  <span
-                    className={cn(
-                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium",
-                      done ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-muted-foreground/30 text-muted-foreground",
-                      active && "ring-2 ring-emerald-500/30"
-                    )}
-                  >
-                    {idx + 1}
-                  </span>
-                  <span className={cn(done ? "font-medium text-foreground" : "text-muted-foreground")}>
-                    {t(step.labelKey as "stats.draft")}
-                  </span>
-                  {idx < TIMELINE_STEPS.length - 1 ? (
-                    <span className="hidden text-muted-foreground sm:inline">→</span>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ol>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader className="pb-2">
@@ -216,30 +196,6 @@ export function BookingDetailView({ data, loading }: Props) {
               <p className="text-muted-foreground"><span className="font-medium text-foreground">{td("deliveryNotes")}:</span> {deliveryNotes}</p>
             ) : null}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">{td("costTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          {breakdown ? (
-            <>
-              <div className="flex justify-between"><span className="text-muted-foreground">{td("freight")}</span><span>{fmtIdr(breakdown.freight)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{td("pickup")}</span><span>{fmtIdr(breakdown.pickup)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{td("delivery")}</span><span>{fmtIdr(breakdown.delivery)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{td("discount")}</span><span>{fmtIdr(breakdown.discount)}</span></div>
-              <Separator />
-            </>
-          ) : data.estimated_price == null ? (
-            <p className="text-muted-foreground">{td("waitingEstimation")}</p>
-          ) : null}
-          <div className="flex justify-between font-medium">
-            <span>{td("totalEstimation")}</span>
-            <span>{data.estimated_price != null ? fmtIdr(breakdown?.total ?? data.estimated_price) : "—"}</span>
-          </div>
-          <p className="text-xs text-muted-foreground pt-2">{td("costDisclaimer")}</p>
         </CardContent>
       </Card>
 
@@ -340,18 +296,60 @@ export function BookingDetailView({ data, loading }: Props) {
       ) : null}
 
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-base">{td("internalTitle")}</CardTitle></CardHeader>
-        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <p><span className="text-muted-foreground">{td("salesPic")}:</span> {data.company?.salesPic?.name ?? data.company?.sales_pic?.name ?? "—"}</p>
-          <p className="sm:col-span-2"><span className="text-muted-foreground">{td("internalNotes")}:</span> {data.notes ?? "—"}</p>
-          <p><span className="text-muted-foreground">{td("confirmedBy")}:</span> {(data as BookingDetail & { approved_by_user?: { name?: string } }).approved_by_user?.name ?? (data as BookingDetail & { approvedByUser?: { name?: string } }).approvedByUser?.name ?? "—"}</p>
-          <p><span className="text-muted-foreground">{td("confirmedDate")}:</span> {(data as BookingDetail & { approved_at?: string }).approved_at ? String((data as BookingDetail & { approved_at?: string }).approved_at).slice(0, 16).replace("T", " ") : "—"}</p>
-          {(data.shipment_id || data.shipment_exists || data.has_shipment) ? (
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{td("costTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {breakdown ? (
             <>
-              <p><span className="text-muted-foreground">{td("convertedBy")}:</span> {(data as BookingDetail & { shipment?: { created_by_user?: { name?: string } } }).shipment?.created_by_user?.name ?? "—"}</p>
-              <p><span className="text-muted-foreground">{td("convertedDate")}:</span> {(data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at ? String((data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at).slice(0, 16).replace("T", " ") : "—"}</p>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("freight")}</span><span>{fmtIdr(breakdown.freight)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("pickup")}</span><span>{fmtIdr(breakdown.pickup)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("delivery")}</span><span>{fmtIdr(breakdown.delivery)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{td("discount")}</span><span>{fmtIdr(breakdown.discount)}</span></div>
+              <Separator />
             </>
+          ) : data.estimated_price == null ? (
+            <p className="text-muted-foreground">{td("waitingEstimation")}</p>
           ) : null}
+          <div className="flex justify-between font-medium">
+            <span>{td("totalEstimation")}</span>
+            <span>{data.estimated_price != null ? fmtIdr(breakdown?.total ?? data.estimated_price) : "—"}</span>
+          </div>
+          <p className="text-xs text-muted-foreground pt-2">{td("costDisclaimer")}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{td("timelineTitle")}</CardTitle>
+          <CardDescription>{td("timelineDesc")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ol className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            {TIMELINE_STEPS.map((step, idx) => {
+              const done = currentStep >= idx;
+              const active = currentStep === idx;
+              return (
+                <li key={step.key} className="flex items-center gap-2 text-sm">
+                  <span
+                    className={cn(
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium",
+                      done ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-muted-foreground/30 text-muted-foreground",
+                      active && "ring-2 ring-emerald-500/30"
+                    )}
+                  >
+                    {idx + 1}
+                  </span>
+                  <span className={cn(done ? "font-medium text-foreground" : "text-muted-foreground")}>
+                    {t(step.labelKey as "stats.draft")}
+                  </span>
+                  {idx < TIMELINE_STEPS.length - 1 ? (
+                    <span className="hidden text-muted-foreground sm:inline">→</span>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ol>
         </CardContent>
       </Card>
 
@@ -376,7 +374,7 @@ export function BookingDetailView({ data, loading }: Props) {
                           ? String(act.created_at).slice(0, 16).replace("T", " ")
                           : "—"}
                     </td>
-                    <td className="py-2">{String(act.description ?? act.event ?? act.title ?? "—")}</td>
+                    <td className="py-2">{activityText(act)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -384,6 +382,22 @@ export function BookingDetailView({ data, loading }: Props) {
           ) : (
             <p className="text-sm text-muted-foreground">{td("activityEmpty")}</p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-base">{td("internalTitle")}</CardTitle></CardHeader>
+        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
+          <p><span className="text-muted-foreground">{td("salesPic")}:</span> {data.company?.salesPic?.name ?? data.company?.sales_pic?.name ?? "—"}</p>
+          <p className="sm:col-span-2"><span className="text-muted-foreground">{td("internalNotes")}:</span> {data.notes ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("confirmedBy")}:</span> {(data as BookingDetail & { approved_by_user?: { name?: string } }).approved_by_user?.name ?? (data as BookingDetail & { approvedByUser?: { name?: string } }).approvedByUser?.name ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("confirmedDate")}:</span> {(data as BookingDetail & { approved_at?: string }).approved_at ? String((data as BookingDetail & { approved_at?: string }).approved_at).slice(0, 16).replace("T", " ") : "—"}</p>
+          {(data.shipment_id || data.shipment_exists || data.has_shipment) ? (
+            <>
+              <p><span className="text-muted-foreground">{td("convertedBy")}:</span> {(data as BookingDetail & { shipment?: { created_by_user?: { name?: string } } }).shipment?.created_by_user?.name ?? "—"}</p>
+              <p><span className="text-muted-foreground">{td("convertedDate")}:</span> {(data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at ? String((data as BookingDetail & { shipment?: { created_at?: string } }).shipment?.created_at).slice(0, 16).replace("T", " ") : "—"}</p>
+            </>
+          ) : null}
         </CardContent>
       </Card>
     </div>

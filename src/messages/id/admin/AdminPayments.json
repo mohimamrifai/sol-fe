@@ -62,6 +62,8 @@
       "amount": "Jumlah",
       "paidAt": "Waktu bayar",
       "recordedAt": "Dicatat",
+      "paymentStatus": "Status Pembayaran",
+      "createdDate": "Tanggal Dibuat",
       "relatedInvoice": "Invoice terkait",
       "invoiceNo": "No. invoice",
       "shipment": "Shipment / waybill",
@@ -136,7 +138,8 @@
       "methodMidtrans": "Midtrans",
       "recorded": "Pembayaran dicatat.",
       "recordFailed": "Gagal mencatat pembayaran.",
-      "companyBankRequired": "Rekening perusahaan wajib diisi untuk metode transfer."
+      "companyBankRequired": "Rekening perusahaan wajib diisi untuk metode transfer.",
+      "accountRequired": "Account wajib diisi untuk pembayaran manual."
     },
     "toasts": {
       "loadFailed": "Gagal memuat pembayaran.",

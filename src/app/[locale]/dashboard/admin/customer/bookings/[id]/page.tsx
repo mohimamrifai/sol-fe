@@ -8,7 +8,6 @@ import {
   confirmAdminBooking,
   convertBookingToShipment,
   deleteAdminBooking,
-  duplicateAdminBooking,
   fetchAdminBooking,
   rejectBooking,
   submitAdminBooking,
@@ -71,7 +70,7 @@ export default function AdminBookingDetailPage() {
     const actions: Array<{ label: string; onClick: () => void; variant?: "outline" | "destructive" }> = [];
     const isRejected = st === "rejected";
     const isCancelled = st === "cancelled";
-    const isSubmitted = st === "submitted" || st === "under_review";
+    const isSubmitted = st === "submitted";
     const isConfirmed = st === "approved" || st === "confirmed";
 
     if (isRejected || isCancelled) return [];
@@ -152,23 +151,6 @@ export default function AdminBookingDetailPage() {
       }];
     }
 
-    if (canProcess && data && !isRejected && !isCancelled && !(hasShipment && data.shipment_id)) {
-      actions.push({
-        label: t("actions.duplicate"),
-        variant: "outline",
-        onClick: () =>
-          void duplicateAdminBooking(id).then((res) => {
-            toast.success(t("toasts.duplicated"));
-            const newId = (res as { data?: { id?: number } })?.data?.id;
-            if (typeof newId === "number") {
-              router.push(`/${locale}/dashboard/admin/customer/bookings/${newId}`);
-            } else {
-              void load();
-            }
-          }).catch((e) => toast.error(e instanceof ApiError ? e.message : t("toasts.duplicateFailed"))),
-      });
-    }
-
     return actions;
   }, [canProcess, data, st, hasShipment, id, load, locale, router, t, tc]);
 
@@ -198,7 +180,33 @@ export default function AdminBookingDetailPage() {
           ) : null}
         </CardHeader>
         <CardContent className="space-y-4">
-          <BookingDetailView data={data} loading={loading} />
+          {editOpen ? (
+            <BookingEditDialog
+              inline
+              open={editOpen}
+              onOpenChange={setEditOpen}
+              data={data}
+              loading={loading}
+              saving={editSaving}
+              onSave={async (payload) => {
+                setEditSaving(true);
+                try {
+                  const res = await updateAdminBooking(id, payload);
+                  setData((res as { data: BookingDetail }).data);
+                  setEditOpen(false);
+                  toast.success(t("toasts.updated"));
+                  void load();
+                } catch (e) {
+                  toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
+                  throw e;
+                } finally {
+                  setEditSaving(false);
+                }
+              }}
+            />
+          ) : (
+            <BookingDetailView data={data} loading={loading} />
+          )}
           <Button variant="outline" onClick={() => router.push(`/${locale}/dashboard/admin/customer/bookings`)}>
             {t("detailPage.back")}
           </Button>
@@ -220,29 +228,6 @@ export default function AdminBookingDetailPage() {
             toast.error(e instanceof ApiError ? e.message : t("toasts.rejectFailed"));
           } finally {
             setRejectSaving(false);
-          }
-        }}
-      />
-
-      <BookingEditDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        data={data}
-        loading={loading}
-        saving={editSaving}
-        onSave={async (payload) => {
-          setEditSaving(true);
-          try {
-            const res = await updateAdminBooking(id, payload);
-            setData((res as { data: BookingDetail }).data);
-            setEditOpen(false);
-            toast.success(t("toasts.updated"));
-            void load();
-          } catch (e) {
-            toast.error(e instanceof ApiError ? e.message : t("toasts.updateFailed"));
-            throw e;
-          } finally {
-            setEditSaving(false);
           }
         }}
       />

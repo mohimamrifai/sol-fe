@@ -64,7 +64,6 @@ export function ShipmentHeader({
   const isPlanning = isFsdPlanningStatus(fsdStatus);
   const showPrint = canPrintConsignmentNote(fsdStatus);
   const showGenerateCn = canGenerateConsignmentNote(fsdStatus, Boolean(cnNumber && cnNumber !== "—"));
-  const showViewDetail = !isPlanning;
   const showAssign = Boolean(canModifyContainer && onAssignContainer);
 
   return (
@@ -110,11 +109,6 @@ export function ShipmentHeader({
             <Button type="button" size="sm" variant="secondary" className="gap-1.5" onClick={onGenerateCn} disabled={generatingCn}>
               <FileText className="h-4 w-4" />
               Generate Consignment Note
-            </Button>
-          ) : null}
-          {showViewDetail ? (
-            <Button type="button" size="sm" variant="outline" disabled>
-              View Detail
             </Button>
           ) : null}
           {showPrint && onPrintCn ? (

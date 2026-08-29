@@ -97,7 +97,6 @@ export default function AdminInvoicesPage() {
     if (issuedTo) setInvoiceDateTo(issuedTo);
     if (dueFrom) setDueDateFrom(dueFrom);
     if (dueTo) setDueDateTo(dueTo);
-    if (searchParams.get("action") === "create") setCreateOpen(true);
   }, [searchParams]);
 
   const invoiceStatusFilters = useMemo(

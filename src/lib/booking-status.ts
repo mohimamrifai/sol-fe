@@ -15,6 +15,27 @@ export function bookingStatusLabelFromApi(status: string): string {
   return BOOKING_LABELS[k] ?? status;
 }
 
+/**
+ * FSD Customer/bookings.md — Dashboard status list treats "Converted to Shipment" as its
+ * own status, but the backend keeps the booking row at `approved`/`confirmed` and signals
+ * conversion through the linked shipment.
+ */
+export function resolveBookingDisplayStatus(booking: {
+  status?: string | null;
+  shipment_exists?: boolean;
+  has_shipment?: boolean;
+  shipment_id?: number | string | null;
+}): string {
+  const status = String(booking.status ?? "").toLowerCase();
+  const normalizedStatus = status === "under_review" ? "submitted" : status;
+  const converted =
+    booking.shipment_exists === true ||
+    booking.has_shipment === true ||
+    booking.shipment_id != null;
+
+  return converted ? "converted" : normalizedStatus;
+}
+
 export function bookingStatusBadgeClass(status: string): string {
   const key = status.toLowerCase().replace(/\s+/g, "_");
   switch (key) {
@@ -32,6 +53,8 @@ export function bookingStatusBadgeClass(status: string): string {
       return "border-red-200/90 bg-red-50 text-red-800 dark:border-red-800/60 dark:bg-red-800/45 dark:text-red-200";
     case "confirmed":
       return "border-violet-200/90 bg-violet-50 text-violet-900 dark:border-violet-800/60 dark:bg-violet-950/45 dark:text-violet-200";
+    case "converted":
+      return "border-sky-200/90 bg-sky-50 text-sky-900 dark:border-sky-800/60 dark:bg-sky-950/45 dark:text-sky-200";
     default:
       return "border-border bg-muted text-muted-foreground";
   }
