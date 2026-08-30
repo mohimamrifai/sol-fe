@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvoiceDetailView } from "@/components/dashboard/admin/invoice-detail-view";
 import { InvoiceEditDialog } from "@/components/dashboard/admin/invoice-edit-dialog";
+import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import {
   cancelAdminInvoice,
   fetchAdminInvoice,
@@ -45,6 +46,7 @@ export default function AdminInvoiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!Number.isFinite(id) || id < 1) return;
@@ -65,12 +67,12 @@ export default function AdminInvoiceDetailPage() {
   }, [load]);
 
   const act = async (action: "issue" | "cancel") => {
-    if (action === "cancel" && !window.confirm(t("confirm.cancelDraft"))) return;
     setActing(true);
     try {
       if (action === "issue") await issueAdminInvoice(id);
       else await cancelAdminInvoice(id);
       toast.success(action === "issue" ? t("toasts.issued") : t("toasts.cancelled"));
+      if (action === "cancel") setCancelOpen(false);
       await load();
     } catch (error) {
       toast.error(
@@ -124,7 +126,7 @@ export default function AdminInvoiceDetailPage() {
                 </Button>
               ) : null}
               {canManage && actions?.can_cancel ? (
-                <Button size="sm" variant="destructive" disabled={acting} onClick={() => void act("cancel")}>
+                <Button size="sm" variant="destructive" disabled={acting} onClick={() => setCancelOpen(true)}>
                   {t("actions.cancel")}
                 </Button>
               ) : null}
@@ -155,6 +157,15 @@ export default function AdminInvoiceDetailPage() {
       <Button variant="outline" onClick={() => router.push(`/${locale}/dashboard/admin/customer/invoices`)}>
         {t("detail.back")}
       </Button>
+
+      <ConfirmDeleteDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        title={t("confirm.cancelTitle")}
+        description={t("confirm.cancelDraft")}
+        loading={acting}
+        onConfirm={() => void act("cancel")}
+      />
     </div>
   );
 }

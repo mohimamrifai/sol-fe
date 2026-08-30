@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchAdminCompany, updateAdminCompany } from "@/lib/admin-api";
-import { FSD_BILLING_CYCLE_OPTIONS, FSD_PAYMENT_TERM_OPTIONS, billingCycleLabel, paymentTermLabel } from "@/lib/billing-cycle-labels";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
@@ -28,7 +27,6 @@ import { ControlledAddressRegionFields } from "@/components/shared/controlled-ad
 import { CustomerOperationalFields } from "@/components/dashboard/admin/customers/customer-operational-fields";
 import { BusinessEntityField } from "@/components/dashboard/admin/customers/business-entity-field";
 import { CUSTOMER_STATUS_OPTIONS, DEFAULT_COUNTRY } from "@/lib/customer-form-options";
-import { formatIdr } from "@/lib/format";
 
 function normalizeMonthlyEstimate(value: unknown): string {
   const mapping: Record<string, string> = {
@@ -67,12 +65,6 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
   const [customerStatus, setCustomerStatus] = useState("pending");
   const [website, setWebsite] = useState("");
   const [npwp, setNpwp] = useState("");
-  const [billingType, setBillingType] = useState<"prepaid" | "postpaid">("prepaid");
-  const [pricingType, setPricingType] = useState<"standard" | "discount">("standard");
-  const [discountPercent, setDiscountPercent] = useState("");
-  const [billingCycle, setBillingCycle] = useState("");
-  const [paymentTerm, setPaymentTerm] = useState("");
-  const [creditLimit, setCreditLimit] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
@@ -104,12 +96,6 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
       setCustomerStatus(String(d.status ?? "pending"));
       setWebsite(String(d.website ?? ""));
       setNpwp(String(d.npwp ?? ""));
-      setBillingType(String(d.billing_type ?? "prepaid") === "postpaid" ? "postpaid" : "prepaid");
-      setPricingType(String(d.pricing_type ?? "standard") === "discount" ? "discount" : "standard");
-      setDiscountPercent(d.discount_percent != null ? String(d.discount_percent) : "");
-      setBillingCycle(String(d.billing_cycle || "monthly"));
-      setPaymentTerm(String(d.payment_term ?? "net_30"));
-      setCreditLimit(d.credit_limit != null ? String(d.credit_limit) : "");
       setAddress(String(d.address ?? ""));
       setCity(String(d.city ?? ""));
       setProvince(String(d.province ?? ""));
@@ -148,8 +134,7 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
       && businessCategory
       && (businessCategory !== "others" || businessCategoryOther.trim())
       && monthlyShipmentEstimate
-      && customerStatus
-      && (billingType !== "postpaid" || (billingCycle && paymentTerm)),
+      && customerStatus,
   );
 
   const save = async () => {
@@ -175,12 +160,6 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
         status: customerStatus,
         website: website.trim() || null,
         npwp: npwp.trim() || null,
-        billing_type: billingType,
-        pricing_type: pricingType,
-        discount_percent: pricingType === "discount" && discountPercent.trim() ? Number(discountPercent) : null,
-        billing_cycle: billingType === "postpaid" ? billingCycle || null : null,
-        payment_term: billingType === "postpaid" ? paymentTerm || null : null,
-        credit_limit: billingType === "postpaid" && creditLimit.trim() ? Number(creditLimit) : null,
         address: address.trim() || null,
         city: city.trim() || null,
         province: province.trim() || null,
@@ -349,82 +328,6 @@ export function CustomerCompanyForm({ embedded = false }: { embedded?: boolean }
           disabled={readOnly}
         />
       </div>
-      </section>
-
-      <section className="space-y-4">
-        <h3 className="border-b pb-2 text-sm font-bold uppercase tracking-wider">
-          {t("form.billingSection")}
-        </h3>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>{t("form.billingType")}</Label>
-            <Select value={billingType} onValueChange={(v) => v && setBillingType(v as "prepaid" | "postpaid")} disabled={readOnly}>
-              <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prepaid">{t("form.prepaid")}</SelectItem>
-                <SelectItem value="postpaid">{t("form.postpaid")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>{t("form.pricingType")}</Label>
-            <Select value={pricingType} onValueChange={(v) => v && setPricingType(v as "standard" | "discount")} disabled={readOnly}>
-              <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="standard">{t("form.standard")}</SelectItem>
-                <SelectItem value="discount">{t("form.discount")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {pricingType === "discount" ? (
-            <div className="space-y-2">
-              <Label>{t("form.discountPercent")}</Label>
-              <Input className="h-9" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} disabled={readOnly} />
-            </div>
-          ) : null}
-          {billingType === "postpaid" ? (
-            <>
-              <div className="space-y-2">
-                <Label>{t("form.billingCycle")}</Label>
-                <Select value={billingCycle} onValueChange={(v) => v && setBillingCycle(v)} disabled={readOnly}>
-                  <SelectTrigger className="h-9 w-full">
-                    <SelectValue>{billingCycleLabel(billingCycle)}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FSD_BILLING_CYCLE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t("form.paymentTerm")}</Label>
-                <Select value={paymentTerm} onValueChange={(v) => v && setPaymentTerm(v)} disabled={readOnly}>
-                  <SelectTrigger className="h-9 w-full">
-                    <SelectValue>{paymentTermLabel(paymentTerm)}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FSD_PAYMENT_TERM_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t("form.creditLimit")}</Label>
-                <Input className="h-9" value={creditLimit ? formatIdr(creditLimit) : ""} onChange={(e) => setCreditLimit(e.target.value.replace(/\D/g, ""))} disabled={readOnly} inputMode="numeric" />
-              </div>
-            </>
-          ) : null}
-          <div className="space-y-2">
-            <Label>{t("form.depositBalance")}</Label>
-            <Input className="h-9" value={formatIdr(detail?.current_deposit_balance as number | string | null | undefined)} disabled />
-          </div>
-          <div className="space-y-2">
-            <Label>{t("form.outstandingBalance")}</Label>
-            <Input className="h-9" value={formatIdr(detail?.outstanding_balance as number | string | null | undefined)} disabled />
-          </div>
-        </div>
       </section>
 
       <div className="flex justify-end gap-2">

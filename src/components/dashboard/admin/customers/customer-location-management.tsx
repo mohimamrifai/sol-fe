@@ -184,7 +184,7 @@ export function CustomerLocationManagement({ companyId, canManage }: Props) {
             <Label>{t("locations.type")}</Label>
             <Select value={form.type} onValueChange={(v) => v && setForm((f) => ({ ...f, type: v }))}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue />
+                <SelectValue>{typeLabel(form.type)}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="head_office">{typeLabel("head_office")}</SelectItem>

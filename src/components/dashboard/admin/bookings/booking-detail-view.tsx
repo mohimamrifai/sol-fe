@@ -39,9 +39,18 @@ function fmtIdr(v: unknown): string {
   return `Rp ${n.toLocaleString("id-ID")}`;
 }
 
-function snapshotValue(snapshot: Record<string, unknown> | null | undefined, key: string): string {
-  const value = snapshot?.[key];
-  return value != null && String(value).trim() !== "" ? String(value) : "";
+function fmtPickupTime(value: unknown): string {
+  if (value == null || String(value).trim() === "") return "—";
+  const raw = String(value);
+  return raw.length >= 5 ? raw.slice(0, 5) : raw;
+}
+
+function partyLine(label: string, value: string): React.ReactNode {
+  return (
+    <p>
+      <span className="text-muted-foreground">{label}:</span> {value || "—"}
+    </p>
+  );
 }
 
 function packageVolumeCbm(pkg: Record<string, unknown>): number {
@@ -167,7 +176,7 @@ export function BookingDetailView({ data, loading }: Props) {
           <p><span className="text-muted-foreground">{t("columns.service")}:</span> {service}</p>
           <p><span className="text-muted-foreground">{t("columns.coverage")}:</span> {coverageLabel(data.shipment_coverage)}</p>
           <p><span className="text-muted-foreground">{td("pickupDate")}:</span> {(data as BookingDetail & { pickup_date?: string }).pickup_date?.slice(0, 10) ?? "—"}</p>
-          <p><span className="text-muted-foreground">{td("pickupTime")}:</span> {(data as BookingDetail & { pickup_time?: string }).pickup_time ?? "—"}</p>
+          <p><span className="text-muted-foreground">{td("pickupTime")}:</span> {fmtPickupTime((data as BookingDetail & { pickup_time?: string }).pickup_time)}</p>
           <p className="sm:col-span-2"><span className="text-muted-foreground">{td("pickupNotes")}:</span> {(data as BookingDetail & { pickup_notes?: string }).pickup_notes ?? "—"}</p>
         </CardContent>
       </Card>
@@ -179,19 +188,19 @@ export function BookingDetailView({ data, loading }: Props) {
         <CardContent className="grid gap-4 text-sm sm:grid-cols-2">
           <div>
             <p className="font-medium">{td("shipperLabel")}</p>
-            <p>{data.shipper_name ?? "—"}</p>
-            <p className="text-muted-foreground">{snapshotValue(shipperSnap, "pic_name") || "—"}</p>
-            <p className="text-muted-foreground">{snapshotValue(shipperSnap, "pic_email") || "—"}</p>
-            <p className="text-muted-foreground">{snapshotValue(shipperSnap, "pic_mobile") || data.shipper_phone || "—"}</p>
-            <p className="text-muted-foreground">{data.shipper_address ?? ""}</p>
+            {partyLine(td("companyName"), data.shipper_name ?? "")}
+            {partyLine(td("picName"), String(shipperSnap?.pic_name ?? ""))}
+            {partyLine(td("picEmail"), String(shipperSnap?.pic_email ?? ""))}
+            {partyLine(td("picMobile"), String(shipperSnap?.pic_mobile ?? data.shipper_phone ?? ""))}
+            {partyLine(td("address"), data.shipper_address ?? "")}
           </div>
           <div>
             <p className="font-medium">{td("consigneeLabel")}</p>
-            <p>{data.consignee_name ?? "—"}</p>
-            <p className="text-muted-foreground">{snapshotValue(consigneeSnap, "pic_name") || "—"}</p>
-            <p className="text-muted-foreground">{snapshotValue(consigneeSnap, "pic_email") || "—"}</p>
-            <p className="text-muted-foreground">{snapshotValue(consigneeSnap, "pic_mobile") || data.consignee_phone || "—"}</p>
-            <p className="text-muted-foreground">{data.consignee_address ?? ""}</p>
+            {partyLine(td("companyName"), data.consignee_name ?? "")}
+            {partyLine(td("picName"), String(consigneeSnap?.pic_name ?? ""))}
+            {partyLine(td("picEmail"), String(consigneeSnap?.pic_email ?? ""))}
+            {partyLine(td("picMobile"), String(consigneeSnap?.pic_mobile ?? data.consignee_phone ?? ""))}
+            {partyLine(td("address"), data.consignee_address ?? "")}
             {deliveryNotes ? (
               <p className="text-muted-foreground"><span className="font-medium text-foreground">{td("deliveryNotes")}:</span> {deliveryNotes}</p>
             ) : null}

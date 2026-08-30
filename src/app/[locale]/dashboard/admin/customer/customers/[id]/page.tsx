@@ -10,6 +10,7 @@ import { fetchAdminCompany } from "@/lib/admin-api";
 import { getAdminCustomerCapabilities } from "@/lib/admin-customer-capabilities";
 import { useAuthStore } from "@/lib/store";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
+import { CustomerCommercialConfigSection } from "@/components/dashboard/admin/customers/customer-commercial-config-section";
 import { CustomerLocationManagement } from "@/components/dashboard/admin/customers/customer-location-management";
 import { CustomerReviewSection } from "@/components/dashboard/admin/customers/customer-review-section";
 import { CustomerUsersSection } from "@/components/dashboard/admin/customers/customer-users-section";
@@ -52,6 +53,7 @@ export default function AdminCustomerDetailPage() {
         <Tabs value={tab} onValueChange={onTabChange}>
           <TabsList className="mb-4 flex h-auto flex-wrap gap-1">
             <TabsTrigger value="company">{t("tabs.company")}</TabsTrigger>
+            <TabsTrigger value="commercial">{t("tabs.commercial")}</TabsTrigger>
             <TabsTrigger value="locations">{t("tabs.locations")}</TabsTrigger>
             <TabsTrigger value="users">{t("tabs.users")}</TabsTrigger>
             <TabsTrigger value="review">{t("tabs.review")}</TabsTrigger>
@@ -59,6 +61,9 @@ export default function AdminCustomerDetailPage() {
 
           <TabsContent value="company">
             <CustomerCompanyForm embedded />
+          </TabsContent>
+          <TabsContent value="commercial">
+            <CustomerCommercialConfigSection companyId={id} />
           </TabsContent>
           <TabsContent value="locations">
             <CustomerLocationManagement companyId={id} canManage={caps.canManageBranches} />

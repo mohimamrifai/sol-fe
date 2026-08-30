@@ -98,7 +98,8 @@
       "submit": "Create Invoice"
     },
     "confirm": {
-      "cancelDraft": "Cancel this draft invoice?"
+      "cancelTitle": "Cancel draft invoice?",
+      "cancelDraft": "This draft invoice will be cancelled. This action cannot be undone."
     },
     "toasts": {
       "loadFailed": "Failed to load invoices.",

@@ -38,6 +38,7 @@ import { SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFr
 import { formatIdr, formatRelative, formatShortDate } from "@/components/dashboard/format";
 import { ApiError } from "@/lib/api-client";
 import { useRouter } from "@/i18n/routing";
+import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 
 type BookingDetail = {
   id: number;
@@ -144,6 +145,7 @@ export default function CustomerBookingDetailPage() {
   const tCommon = useTranslations("Bookings");
 
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [deleteAttachmentId, setDeleteAttachmentId] = useState<number | null>(null);
   const [cancelReason, setCancelReason] = useState<CancelReasonKey | "">("");
   const [cancelOther, setCancelOther] = useState("");
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -226,6 +228,7 @@ export default function CustomerBookingDetailPage() {
     mutationFn: (attachmentId: number) => deleteCustomerBookingAttachment(id, attachmentId),
     onSuccess: () => {
       toast.success("Attachment deleted");
+      setDeleteAttachmentId(null);
       invalidateAll();
     },
     onError: (err: unknown) => {
@@ -432,11 +435,7 @@ export default function CustomerBookingDetailPage() {
           items={data.attachments ?? []}
           t={tSection4}
           locale={locale}
-          onDelete={(attachmentId) => {
-            if (window.confirm(tSection4("deleteConfirm"))) {
-              deleteAttMutation.mutate(attachmentId);
-            }
-          }}
+          onDelete={(attachmentId) => setDeleteAttachmentId(attachmentId)}
           pendingId={deleteAttMutation.variables}
         />
       </DetailSectionCard>
@@ -505,6 +504,17 @@ export default function CustomerBookingDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteAttachmentId != null}
+        onOpenChange={(open) => !open && setDeleteAttachmentId(null)}
+        title={tSection4("deleteDialog.title")}
+        description={tSection4("deleteDialog.description")}
+        loading={deleteAttMutation.isPending}
+        onConfirm={() => {
+          if (deleteAttachmentId != null) deleteAttMutation.mutate(deleteAttachmentId);
+        }}
+      />
     </div>
   );
 }

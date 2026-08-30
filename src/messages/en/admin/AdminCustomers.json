@@ -38,6 +38,7 @@
     },
     "tabs": {
       "company": "Company Information",
+      "commercial": "Commercial Configuration",
       "locations": "Locations",
       "users": "Users",
       "review": "Review Information"
@@ -143,6 +144,10 @@
       "passwordReset": "Password reset successfully.",
       "passwordResetFailed": "Failed to reset password.",
       "deleteConfirm": "Delete this user?",
+      "deleteDialog": {
+        "title": "Delete user?",
+        "description": "This user will be permanently removed from the customer account. This action cannot be undone."
+      },
       "deleted": "User deleted.",
       "deleteFailed": "Failed to delete user."
     },
@@ -164,6 +169,7 @@
       "save": "Save",
       "back": "Back",
       "addLocation": "Add Location",
+      "activate": "Activate",
       "deactivate": "Deactivate",
       "manageCustomer": "Manage Customer",
       "activateCustomer": "Activate Customer",

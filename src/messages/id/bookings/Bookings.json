@@ -342,6 +342,10 @@
         "uploadError": "Gagal mengunggah lampiran.",
         "delete": "Hapus",
         "deleteConfirm": "Hapus lampiran ini?",
+        "deleteDialog": {
+          "title": "Hapus lampiran?",
+          "description": "Lampiran ini akan dihapus permanen dari booking."
+        },
         "fileSize": "Ukuran",
         "uploadedBy": "Diupload oleh",
         "uploadedAt": "Diupload pada"

@@ -98,7 +98,8 @@
       "submit": "Buat Invoice"
     },
     "confirm": {
-      "cancelDraft": "Batalkan invoice draft ini?"
+      "cancelTitle": "Batalkan invoice draft?",
+      "cancelDraft": "Invoice draft ini akan dibatalkan. Tindakan ini tidak dapat dibatalkan."
     },
     "toasts": {
       "loadFailed": "Gagal memuat invoice.",

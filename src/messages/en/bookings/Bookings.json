@@ -342,6 +342,10 @@
         "uploadError": "Failed to upload attachment.",
         "delete": "Delete",
         "deleteConfirm": "Delete this attachment?",
+        "deleteDialog": {
+          "title": "Delete attachment?",
+          "description": "This attachment will be permanently removed from the booking."
+        },
         "fileSize": "Size",
         "uploadedBy": "Uploaded by",
         "uploadedAt": "Uploaded at"

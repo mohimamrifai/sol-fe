@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDeleteDialog } from "@/components/dashboard/admin/confirm-delete-dialog";
 import {
   createAdminUser,
   updateAdminUser,
@@ -39,7 +40,6 @@ import {
   fetchAdminCompanyLocations,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { toast } from "sonner";
 
 const CUSTOMER_ROLES = [
@@ -98,6 +98,7 @@ type Props = {
 export function CustomerUsersSection({ companyId, users, canManage, onRefresh }: Props) {
   const t = useTranslations("AdminCustomers");
   const tFeature = useTranslations("Users.featureAccess");
+  const tRole = useTranslations("Users.role");
   const tc = useTranslations("AdminCommon");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -113,15 +114,23 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
   const [loadingLocations, setLoadingLocations] = useState(false);
   const [useDefaultFeatures, setUseDefaultFeatures] = useState(true);
   const [featureAccess, setFeatureAccess] = useState<string[]>(ROLE_DEFAULT_FEATURES.company_admin);
+  const [deleteUser, setDeleteUser] = useState<Record<string, unknown> | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const roleLabel = (value: string) => {
+    const key = value as "company_admin" | "ops_pic" | "finance_pic" | "viewer";
+    if (tRole.has(key)) return tRole(key);
+    return CUSTOMER_ROLES.find((r) => r.value === value)?.label ?? value;
+  };
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setLoadingLocations(true);
-    void fetchAdminCompanyLocations(companyId, { perPage: 200 })
+    void fetchAdminCompanyLocations(companyId, { perPage: 100 })
       .then((res) => {
         if (cancelled) return;
-        const rows = ((res as LaravelPaginated<Record<string, unknown>>).data ?? []) as Record<string, unknown>[];
+        const rows = (res.data ?? []) as Record<string, unknown>[];
         setLocationOptions(
           rows.map((row) => ({
             id: Number(row.id),
@@ -129,8 +138,11 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
           }))
         );
       })
-      .catch(() => {
-        if (!cancelled) setLocationOptions([]);
+      .catch((e) => {
+        if (!cancelled) {
+          setLocationOptions([]);
+          toast.error(e instanceof ApiError ? e.message : t("locations.loadFailed"));
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadingLocations(false);
@@ -138,7 +150,7 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
     return () => {
       cancelled = true;
     };
-  }, [open, companyId]);
+  }, [open, companyId, t]);
 
   useEffect(() => {
     if (useDefaultFeatures) {
@@ -255,14 +267,18 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
     }
   };
 
-  const removeUser = async (user: Record<string, unknown>) => {
-    if (!confirm(t("users.deleteConfirm"))) return;
+  const removeUser = async () => {
+    if (!deleteUser) return;
+    setDeleting(true);
     try {
-      await deleteAdminUser(Number(user.id));
+      await deleteAdminUser(Number(deleteUser.id));
       toast.success(t("users.deleted"));
+      setDeleteUser(null);
       onRefresh();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t("users.deleteFailed"));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -307,7 +323,9 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
                   <TableCell className="font-medium">{String(user.name ?? "—")}</TableCell>
                   <TableCell>{String(user.email ?? "—")}</TableCell>
                   <TableCell>
-                    {((user.roles as { name?: string }[]) ?? []).map((r) => r.name).join(", ") || "—"}
+                    {((user.roles as { name?: string }[]) ?? [])
+                      .map((r) => roleLabel(String(r.name ?? "")))
+                      .join(", ") || "—"}
                   </TableCell>
                   <TableCell className="text-xs">{locationAccessLabel(user)}</TableCell>
                   <TableCell>
@@ -324,7 +342,7 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
                       <Button size="sm" variant="outline" onClick={() => void toggleStatus(user)}>
                         {String(user.status) === "active" ? t("users.deactivate") : t("users.activate")}
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => void removeUser(user)}>
+                      <Button size="sm" variant="destructive" onClick={() => setDeleteUser(user)}>
                         {tc("actions.delete")}
                       </Button>
                     </TableCell>
@@ -357,10 +375,12 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
             <div className="space-y-2">
               <Label>{t("users.role")}</Label>
               <Select value={role} onValueChange={(v) => v && setRole(v)}>
-                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue>{roleLabel(role)}</SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   {CUSTOMER_ROLES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    <SelectItem key={r.value} value={r.value}>{roleLabel(r.value)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -368,7 +388,11 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
             <div className="space-y-2">
               <Label>{tc("table.status")}</Label>
               <Select value={status} onValueChange={(v) => v && setStatus(v)}>
-                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue>
+                    {status === "active" ? tc("status.customer.active") : tc("status.customer.inactive")}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">{tc("status.customer.active")}</SelectItem>
                   <SelectItem value="inactive">{tc("status.customer.inactive")}</SelectItem>
@@ -437,6 +461,15 @@ export function CustomerUsersSection({ companyId, users, canManage, onRefresh }:
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteUser != null}
+        onOpenChange={(open) => !open && setDeleteUser(null)}
+        title={t("users.deleteDialog.title")}
+        description={t("users.deleteDialog.description")}
+        loading={deleting}
+        onConfirm={() => void removeUser()}
+      />
     </div>
   );
 }

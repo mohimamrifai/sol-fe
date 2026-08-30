@@ -38,6 +38,7 @@
     },
     "tabs": {
       "company": "Informasi Perusahaan",
+      "commercial": "Konfigurasi Komersial",
       "locations": "Locations",
       "users": "Users",
       "review": "Review Information"
@@ -143,6 +144,10 @@
       "passwordReset": "Password berhasil direset.",
       "passwordResetFailed": "Gagal reset password.",
       "deleteConfirm": "Hapus user ini?",
+      "deleteDialog": {
+        "title": "Hapus user?",
+        "description": "User ini akan dihapus permanen dari akun customer. Tindakan ini tidak dapat dibatalkan."
+      },
       "deleted": "User dihapus.",
       "deleteFailed": "Gagal menghapus user."
     },
@@ -164,6 +169,7 @@
       "save": "Simpan",
       "back": "Kembali",
       "addLocation": "Tambah Location",
+      "activate": "Aktifkan",
       "deactivate": "Nonaktifkan",
       "manageCustomer": "Kelola customer",
       "activateCustomer": "Aktifkan customer",
