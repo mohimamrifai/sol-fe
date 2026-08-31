@@ -24,14 +24,14 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   createAdminCustomerPricing,
   deactivateAdminCustomerPricing,
-  fetchAdminAdditionalCharges,
-  fetchAdminCargoCategories,
-  fetchAdminCompanies,
-  fetchAdminContainerTypes,
+  fetchAllAdminAdditionalCharges,
+  fetchAllAdminCargoCategories,
+  fetchAllAdminCompanies,
+  fetchAllAdminContainerTypes,
   fetchAdminCustomerPricing,
   fetchAdminCustomerPricingStats,
   fetchAdminCustomerPricings,
-  fetchAdminLocations,
+  fetchAllAdminLocations,
   updateAdminCustomerPricing,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
@@ -114,17 +114,17 @@ export default function MasterCustomerPricingPage() {
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
-      fetchAdminCompanies({ perPage: 500 }),
-      fetchAdminLocations({ perPage: 500 }),
-      fetchAdminCargoCategories({ perPage: 200 }),
-      fetchAdminContainerTypes({ perPage: 200 }),
-      fetchAdminAdditionalCharges({ perPage: 200, status: "active" }),
-    ]).then(([cRes, lRes, catRes, ctRes, acRes]) => {
-      setCompanies(((cRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
-      setLocations(((lRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: `${r.code ?? ""} · ${r.name ?? r.id}`.trim() })));
-      setCategories(((catRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
-      setContainerTypes(((ctRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
-      setAdditionalCharges(((acRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
+      fetchAllAdminCompanies(),
+      fetchAllAdminLocations(),
+      fetchAllAdminCargoCategories(),
+      fetchAllAdminContainerTypes(),
+      fetchAllAdminAdditionalCharges({ status: "active" }),
+    ]).then(([companyRows, locationRows, catRows, ctRows, acRows]) => {
+      setCompanies(companyRows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
+      setLocations(locationRows.map((r) => ({ id: Number(r.id), label: `${r.code ?? ""} · ${r.name ?? r.id}`.trim() })));
+      setCategories(catRows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
+      setContainerTypes(ctRows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
+      setAdditionalCharges(acRows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
     });
   }, [authHydrated]);
 

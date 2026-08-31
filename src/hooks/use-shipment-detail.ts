@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   fetchAdminShipment,
-  fetchAdminContainerTypes,
+  fetchAllAdminContainerTypes,
   updateAdminShipment,
   updateAdminShipmentTracking,
   addAdminShipmentContainer,
@@ -119,10 +119,9 @@ export function useShipmentDetail(shipmentId: number) {
   useEffect(() => {
     void (async () => {
       try {
-        const r = await fetchAdminContainerTypes({ page: 1, perPage: 200 });
-        const p = r as { data?: Row[] };
-        setContainerTypes(p.data ?? []);
-        const first = p.data?.[0];
+        const rows = await fetchAllAdminContainerTypes();
+        setContainerTypes(rows as Row[]);
+        const first = rows[0];
         if (first?.id != null) setContTypeId(String(first.id));
       } catch {
         setContainerTypes([]);

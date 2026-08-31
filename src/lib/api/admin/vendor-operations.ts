@@ -134,9 +134,9 @@ export async function fetchAdminVendorPaymentReport(params?: VendorOpsQuery) {
 }
 
 export function adminVendorInvoiceReportExportUrl(params?: VendorOpsQuery): string {
-  return `/api/admin/reports/vendor-invoices/export${buildVendorOpsQuery(normalizeListParams(params))}`;
+  return `/admin/reports/vendor-invoices/export${buildVendorOpsQuery(normalizeListParams(params))}`;
 }
 
 export function adminVendorPaymentReportExportUrl(params?: VendorOpsQuery): string {
-  return `/api/admin/reports/vendor-payments/export${buildVendorOpsQuery(normalizeListParams(params))}`;
+  return `/admin/reports/vendor-payments/export${buildVendorOpsQuery(normalizeListParams(params))}`;
 }

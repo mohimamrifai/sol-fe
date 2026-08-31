@@ -436,6 +436,7 @@
     "exportCsv": "Export CSV",
     "exportExcel": "Export Excel",
     "exportPdf": "Export PDF",
+    "exportFailed": "Export failed. Please try again.",
     "reportData": "Report Data",
     "allCustomer": "All Customers",
     "allService": "All Services",

@@ -20,13 +20,12 @@ import {
 } from "@/components/ui/select";
 import {
   createAdminVendorService,
-  fetchAdminLocations,
-  fetchAdminServiceTypes,
-  fetchAdminTransportModes,
+  fetchAllAdminLocations,
+  fetchAllAdminServiceTypes,
+  fetchAllAdminTransportModes,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 import { toast } from "sonner";
 
@@ -68,15 +67,12 @@ export function VendorServiceDialog({
     void (async () => {
       setListsLoading(true);
       try {
-        const [tm, st, loc] = await Promise.all([
-          fetchAdminTransportModes({ perPage: 500 }),
-          fetchAdminServiceTypes({ perPage: 500 }),
-          fetchAdminLocations({ perPage: 500 }),
+        const [tmData, stData, locData] = await Promise.all([
+          fetchAllAdminTransportModes(),
+          fetchAllAdminServiceTypes(),
+          fetchAllAdminLocations(),
         ]);
         if (cancelled) return;
-        const tmData = (tm as LaravelPaginated<Record<string, unknown>>).data ?? [];
-        const stData = (st as LaravelPaginated<Record<string, unknown>>).data ?? [];
-        const locData = (loc as LaravelPaginated<Record<string, unknown>>).data ?? [];
         setTransportModes(
           tmData.map((r) => ({
             id: Number(r.id),

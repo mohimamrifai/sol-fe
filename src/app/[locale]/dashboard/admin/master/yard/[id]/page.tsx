@@ -12,9 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { MasterActiveBadge } from "@/components/shared/master-active-badge";
-import { deactivateAdminYard, fetchAdminStations, fetchAdminYard, updateAdminYard } from "@/lib/admin-api";
+import { deactivateAdminYard, fetchAllAdminStations, fetchAdminYard, updateAdminYard } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { Warehouse } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -59,8 +58,8 @@ export default function MasterYardDetailPage() {
 
   useEffect(() => {
     void refresh().catch(() => setDetail(null));
-    void fetchAdminStations({ perPage: 500, status: "active" }).then((res) => {
-      setStations(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((s) => ({
+    void fetchAllAdminStations({ status: "active" }).then((rows) => {
+      setStations(rows.map((s) => ({
         id: Number(s.id),
         label: `${s.code ?? ""} · ${s.name ?? s.id}`.trim(),
       })));

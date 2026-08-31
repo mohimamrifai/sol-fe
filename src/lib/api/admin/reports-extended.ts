@@ -27,7 +27,7 @@ export async function fetchAdminShipmentReport(params?: ReportQuery) {
 }
 
 export function adminShipmentReportExportUrl(params?: ReportQuery): string {
-  return `/api/admin/reports/shipments/export${buildReportQuery(normalizeListParams(params))}`;
+  return `/admin/reports/shipments/export${buildReportQuery(normalizeListParams(params))}`;
 }
 
 export async function fetchAdminBookingReport(params?: ReportQuery) {
@@ -37,7 +37,7 @@ export async function fetchAdminBookingReport(params?: ReportQuery) {
 }
 
 export function adminBookingReportExportUrl(params?: ReportQuery): string {
-  return `/api/admin/reports/bookings/export${buildReportQuery(normalizeListParams(params))}`;
+  return `/admin/reports/bookings/export${buildReportQuery(normalizeListParams(params))}`;
 }
 
 export async function fetchAdminCustomerInvoiceReport(params?: ReportQuery) {
@@ -47,7 +47,7 @@ export async function fetchAdminCustomerInvoiceReport(params?: ReportQuery) {
 }
 
 export function adminCustomerInvoiceReportExportUrl(params?: ReportQuery): string {
-  return `/api/admin/reports/customer-invoices/export${buildReportQuery(normalizeListParams(params))}`;
+  return `/admin/reports/customer-invoices/export${buildReportQuery(normalizeListParams(params))}`;
 }
 
 export async function fetchAdminCustomerPaymentReport(params?: ReportQuery) {
@@ -57,7 +57,7 @@ export async function fetchAdminCustomerPaymentReport(params?: ReportQuery) {
 }
 
 export function adminCustomerPaymentReportExportUrl(params?: ReportQuery): string {
-  return `/api/admin/reports/customer-payments/export${buildReportQuery(normalizeListParams(params))}`;
+  return `/admin/reports/customer-payments/export${buildReportQuery(normalizeListParams(params))}`;
 }
 
 export async function fetchAdminContainerReport(params?: ReportQuery) {
@@ -67,5 +67,5 @@ export async function fetchAdminContainerReport(params?: ReportQuery) {
 }
 
 export function adminContainerReportExportUrl(params?: ReportQuery): string {
-  return `/api/admin/reports/containers/export${buildReportQuery(normalizeListParams(params))}`;
+  return `/admin/reports/containers/export${buildReportQuery(normalizeListParams(params))}`;
 }

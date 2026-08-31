@@ -21,10 +21,10 @@ import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useVendorJobOrderStatusLabel } from "@/hooks/use-admin-status-labels";
 import {
-  fetchAdminLocations,
+  fetchAllAdminLocations,
   fetchAdminVendorJobOrders,
   fetchAdminVendorJobOrderStats,
-  fetchAdminVendors,
+  fetchAllAdminVendors,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
@@ -183,14 +183,14 @@ export default function AdminVendorJobOrdersPage() {
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
-      fetchAdminVendors({ perPage: 500 }),
-      fetchAdminLocations({ perPage: 500 }),
-    ]).then(([vRes, lRes]) => {
-      setVendors(((vRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+      fetchAllAdminVendors(),
+      fetchAllAdminLocations(),
+    ]).then(([vendorRows, locationRows]) => {
+      setVendors(vendorRows.map((v) => ({
         id: Number(v.id),
         label: String(v.name ?? v.code),
       })));
-      setLocations(((lRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((l) => ({
+      setLocations(locationRows.map((l) => ({
         id: Number(l.id),
         label: `${l.code ?? ""} · ${l.name ?? l.id}`.trim(),
       })));

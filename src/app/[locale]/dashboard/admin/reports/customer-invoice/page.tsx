@@ -13,7 +13,7 @@ import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
-import { ADMIN_REPORT_PER_PAGE, adminCustomerInvoiceReportExportUrl, fetchAdminCompanies, fetchAdminCustomerInvoiceReport } from "@/lib/admin-api";
+import { ADMIN_REPORT_PER_PAGE, adminCustomerInvoiceReportExportUrl, fetchAllAdminCompanies, fetchAdminCustomerInvoiceReport } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { formatIdr } from "@/lib/vendor-fsd-options";
@@ -53,7 +53,7 @@ export default function AdminCustomerInvoiceReportPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminCompanies({ perPage: 500 }).then((res) => setCompanies(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) }))));
+    void fetchAllAdminCompanies().then((rows) => setCompanies(rows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) }))));
   }, [authHydrated]);
 
   const companyOptions = useMemo(

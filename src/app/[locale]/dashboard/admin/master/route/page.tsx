@@ -26,7 +26,7 @@ import {
   deactivateAdminRoute,
   fetchAdminRouteStats,
   fetchAdminRoutes,
-  fetchAdminStations,
+  fetchAllAdminStations,
   updateAdminRoute,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
@@ -88,8 +88,8 @@ export default function MasterRoutePage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminStations({ perPage: 500, status: "active" }).then((res) => {
-      setStations(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((s) => ({
+    void fetchAllAdminStations({ status: "active" }).then((rows) => {
+      setStations(rows.map((s) => ({
         id: Number(s.id),
         label: `${s.code ?? ""} · ${s.name ?? s.id}`.trim(),
       })));

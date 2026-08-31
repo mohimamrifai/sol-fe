@@ -38,7 +38,7 @@ import {
   deactivateAdminPricing,
   fetchAdminPricingStats,
   fetchAdminPricings,
-  fetchAdminVendors,
+  fetchAllAdminVendors,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
@@ -138,8 +138,8 @@ export default function AdminVendorPricingPage() {
   const loadVendors = useCallback(async () => {
     if (!authHydrated) return;
     try {
-      const res = await fetchAdminVendors({ perPage: 500 });
-      setVendorOptions(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+      const rows = await fetchAllAdminVendors();
+      setVendorOptions(rows.map((v) => ({
         id: Number(v.id),
         label: String(v.name ?? v.code ?? v.id),
       })));

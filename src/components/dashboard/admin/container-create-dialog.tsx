@@ -13,9 +13,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { createAdminContainer, fetchAdminContainerTypes, fetchAdminYards } from "@/lib/admin-api";
+import { createAdminContainer, fetchAllAdminContainerTypes, fetchAllAdminYards } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -55,14 +54,14 @@ export function ContainerCreateDialog({ open, onOpenChange, onCreated }: Props) 
   useEffect(() => {
     if (!open) return;
     void Promise.all([
-      fetchAdminContainerTypes({ perPage: 200 }),
-      fetchAdminYards({ perPage: 200, status: "active" }),
-    ]).then(([typeRes, yardRes]) => {
-      setTypes(((typeRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((row) => ({
+      fetchAllAdminContainerTypes(),
+      fetchAllAdminYards({ status: "active" }),
+    ]).then(([typeRows, yardRows]) => {
+      setTypes(typeRows.map((row) => ({
         id: Number(row.id),
         label: String(row.name ?? row.code),
       })));
-      setYards(((yardRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((row) => ({
+      setYards(yardRows.map((row) => ({
         id: Number(row.id),
         label: `${row.code ?? ""} · ${row.name ?? row.id}`.trim(),
       })));

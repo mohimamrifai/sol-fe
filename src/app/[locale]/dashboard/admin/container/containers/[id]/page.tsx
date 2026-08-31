@@ -19,9 +19,8 @@ import {
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
-import { fetchAdminContainer, fetchAdminContainerTypes, updateAdminContainer } from "@/lib/admin-api";
+import { fetchAdminContainer, fetchAllAdminContainerTypes, updateAdminContainer } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { Container as ContainerIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -83,8 +82,8 @@ export default function AdminContainerDetailPage() {
 
   useEffect(() => {
     void refresh().catch(() => setDetail(null));
-    void fetchAdminContainerTypes({ perPage: 200 }).then((typeRes) => {
-      setTypes(((typeRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((row) => ({
+    void fetchAllAdminContainerTypes().then((rows) => {
+      setTypes(rows.map((row) => ({
         id: Number(row.id),
         label: String(row.name ?? row.code),
       })));

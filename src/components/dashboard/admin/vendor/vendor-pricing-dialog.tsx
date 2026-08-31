@@ -20,10 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SELECT_EMPTY_VALUE, fromSelectFieldValue, toSelectFieldValue } from "@/lib/select-field";
-import { createAdminVendorPricing, updateAdminPricing, fetchAdminContainerTypes } from "@/lib/admin-api";
+import { createAdminVendorPricing, updateAdminPricing, fetchAllAdminContainerTypes } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 import { toast } from "sonner";
 
@@ -93,9 +92,8 @@ export function VendorPricingDialog({
     void (async () => {
       setListsLoading(true);
       try {
-        const res = await fetchAdminContainerTypes({ perPage: 500 });
+        const data = await fetchAllAdminContainerTypes();
         if (cancelled) return;
-        const data = (res as LaravelPaginated<Record<string, unknown>>).data ?? [];
         setContainerTypes(
           data.map((r) => ({
             id: Number(r.id),

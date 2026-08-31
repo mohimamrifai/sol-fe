@@ -17,7 +17,7 @@ import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats
 import { ContainerCreateDialog } from "@/components/dashboard/admin/container-create-dialog";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { fetchAdminContainerStats, fetchAdminContainers, fetchAdminContainerTypes, fetchAdminVendors, fetchAdminYards } from "@/lib/admin-api";
+import { fetchAdminContainerStats, fetchAdminContainers, fetchAllAdminContainerTypes, fetchAllAdminVendors, fetchAllAdminYards } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { cn } from "@/lib/utils";
@@ -232,19 +232,19 @@ export default function AdminContainersPage() {
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
-      fetchAdminContainerTypes({ perPage: 200 }),
-      fetchAdminYards({ perPage: 200 }),
-      fetchAdminVendors({ perPage: 200 }),
-    ]).then(([typeRes, yardRes, vendorRes]) => {
-      setTypes(((typeRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+      fetchAllAdminContainerTypes(),
+      fetchAllAdminYards(),
+      fetchAllAdminVendors(),
+    ]).then(([typeRows, yardRows, vendorRows]) => {
+      setTypes(typeRows.map((r) => ({
         id: Number(r.id),
         label: String(r.name ?? r.code),
       })));
-      setYards(((yardRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+      setYards(yardRows.map((r) => ({
         id: Number(r.id),
         label: `${r.code ?? ""} · ${r.name ?? r.id}`.trim(),
       })));
-      setVendors(((vendorRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+      setVendors(vendorRows.map((r) => ({
         id: Number(r.id),
         label: String(r.name ?? r.code),
       })));

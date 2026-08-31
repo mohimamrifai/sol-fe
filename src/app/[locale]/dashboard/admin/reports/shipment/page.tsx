@@ -14,7 +14,7 @@ import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useShipmentStatusLabel } from "@/hooks/use-admin-status-labels";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
-import { adminShipmentReportExportUrl, ADMIN_REPORT_PER_PAGE, fetchAdminCompanies, fetchAdminShipmentReport, fetchAdminServiceTypes } from "@/lib/admin-api";
+import { adminShipmentReportExportUrl, ADMIN_REPORT_PER_PAGE, fetchAllAdminCompanies, fetchAdminShipmentReport, fetchAllAdminServiceTypes } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { BarChart3 } from "lucide-react";
@@ -62,9 +62,9 @@ export default function AdminShipmentReportPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void Promise.all([fetchAdminCompanies({ perPage: 500 }), fetchAdminServiceTypes({ perPage: 100 })]).then(([cRes, sRes]) => {
-      setCompanies(((cRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
-      setServiceTypes(((sRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
+    void Promise.all([fetchAllAdminCompanies(), fetchAllAdminServiceTypes()]).then(([companyRows, serviceRows]) => {
+      setCompanies(companyRows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
+      setServiceTypes(serviceRows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) })));
     });
   }, [authHydrated]);
 

@@ -11,7 +11,7 @@ import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { AdminReportExportButtons } from "@/components/dashboard/admin/shared/admin-report-export-buttons";
-import { ADMIN_REPORT_PER_PAGE, adminContainerReportExportUrl, fetchAdminContainerReport, fetchAdminVendors } from "@/lib/admin-api";
+import { ADMIN_REPORT_PER_PAGE, adminContainerReportExportUrl, fetchAdminContainerReport, fetchAllAdminVendors } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { BarChart3 } from "lucide-react";
@@ -53,7 +53,7 @@ export default function AdminContainerReportPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminVendors({ perPage: 500 }).then((res) => setVendors(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) }))));
+    void fetchAllAdminVendors().then((rows) => setVendors(rows.map((r) => ({ id: Number(r.id), label: String(r.name ?? r.code) }))));
   }, [authHydrated]);
 
   return (

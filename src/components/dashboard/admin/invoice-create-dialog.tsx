@@ -11,13 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import {
   createAdminInvoice,
-  fetchAdminEligibleShipments,
+  fetchAllAdminEligibleShipments,
   fetchAdminSystemSettings,
   previewAdminInvoiceLineItems,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { DIALOG_CREATE_HEADER_CLASS } from "@/lib/dialog-create-header";
 import { toast } from "sonner";
 import { InvoiceItemForm, type ItemLine, newLine } from "./invoice-create-dialog/invoice-item-form";
@@ -73,9 +72,8 @@ export function InvoiceCreateDialog({
     void (async () => {
       setListsLoading(true);
       try {
-        const shipRes = await fetchAdminEligibleShipments({ perPage: 200 });
+        const shipData = await fetchAllAdminEligibleShipments();
         if (cancelled) return;
-        const shipData = (shipRes as LaravelPaginated<Record<string, unknown>>).data ?? [];
         setShipments(
           shipData.map((r) => ({
             id: Number(r.id),

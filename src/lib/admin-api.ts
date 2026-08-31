@@ -12,5 +12,6 @@ export * from "./api/admin/proof-of-delivery";
 export * from "./api/admin/master-fsd";
 export * from "./api/admin/reports-extended";
 export * from "./api/admin/settings";
+export * from "./api/admin/fetch-all";
 
 export type { ListQueryParams } from "./list-query";

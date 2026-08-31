@@ -11,7 +11,7 @@ import { SearchableCombobox } from "@/components/searchable-combobox";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
-import { fetchAdminContainerMovements, fetchAdminContainers, fetchAdminShipments, fetchAdminYards } from "@/lib/admin-api";
+import { fetchAdminContainerMovements, fetchAllAdminContainers, fetchAllAdminShipments, fetchAllAdminYards } from "@/lib/admin-api";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { ArrowRightLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -117,19 +117,19 @@ export default function AdminContainerMovementPage() {
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
-      fetchAdminYards({ perPage: 200 }),
-      fetchAdminContainers({ perPage: 500 }),
-      fetchAdminShipments({ perPage: 500 }),
-    ]).then(([yardRes, containerRes, shipmentRes]) => {
-      setYards(((yardRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+      fetchAllAdminYards(),
+      fetchAllAdminContainers(),
+      fetchAllAdminShipments(),
+    ]).then(([yardRows, containerRows, shipmentRows]) => {
+      setYards(yardRows.map((r) => ({
         id: Number(r.id),
         label: `${r.code ?? ""} · ${r.name ?? r.id}`.trim(),
       })));
-      setContainers(((containerRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+      setContainers(containerRows.map((r) => ({
         id: Number(r.id),
         label: String(r.container_number ?? r.id),
       })));
-      setShipments(((shipmentRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+      setShipments(shipmentRows.map((r) => ({
         id: Number(r.id),
         label: String(r.shipment_number ?? r.id),
       })));

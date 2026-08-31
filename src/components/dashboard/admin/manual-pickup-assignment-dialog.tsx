@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { assignAdminOperationTaskVendor, fetchAdminOperationTasks, fetchAdminVendors } from "@/lib/admin-api";
+import { assignAdminOperationTaskVendor, fetchAdminOperationTasks, fetchAllAdminVendors } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { toast } from "sonner";
@@ -57,9 +57,9 @@ export function ManualPickupAssignmentDialog({
     void Promise.all([
       fetchAdminOperationTasks("pickup", { status: "waiting", perPage: 100 }),
       fetchAdminOperationTasks("pickup", { status: "in_progress", perPage: 100 }),
-      fetchAdminVendors({ perPage: 500 }),
+      fetchAllAdminVendors(),
     ])
-      .then(([waitingRes, inProgressRes, vendorRes]) => {
+      .then(([waitingRes, inProgressRes, vendorRows]) => {
         const waiting = ((waitingRes as LaravelPaginated<Record<string, unknown>>).data ?? []);
         const inProgress = ((inProgressRes as LaravelPaginated<Record<string, unknown>>).data ?? []);
         const merged = [...waiting, ...inProgress];
@@ -74,7 +74,7 @@ export function ManualPickupAssignmentDialog({
         }
         setTasks(Array.from(unique.values()));
         setVendors(
-          ((vendorRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+          vendorRows.map((v) => ({
             id: Number(v.id),
             label: String(v.name ?? v.code ?? v.id),
           }))

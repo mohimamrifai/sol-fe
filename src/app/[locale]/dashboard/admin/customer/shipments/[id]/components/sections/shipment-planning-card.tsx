@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  fetchAdminLocations,
-  fetchAdminTrainSchedules,
-  fetchAdminUsers,
+  fetchAllAdminLocations,
+  fetchAllAdminTrainSchedules,
+  fetchAllAdminUsers,
   updateAdminShipment,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
@@ -74,18 +74,16 @@ export function ShipmentPlanningCard({ shipmentId, data, canEdit, onSaved }: Pro
 
   useEffect(() => {
     void Promise.all([
-      fetchAdminUsers({ perPage: 200, userType: "internal" }),
-      fetchAdminTrainSchedules({ perPage: 200 }),
-      fetchAdminLocations({ perPage: 500, type: "hub" }),
+      fetchAllAdminUsers({ userType: "internal" }),
+      fetchAllAdminTrainSchedules(),
+      fetchAllAdminLocations({ type: "hub" }),
     ])
-      .then(([uRes, tRes, lRes]) => {
-        setUsers((((uRes as unknown) as { data?: Array<{ id: number; name: string }> }).data ?? []));
+      .then(([userRows, scheduleRows, locationRows]) => {
+        setUsers(userRows as Array<{ id: number; name: string }>);
         setTrainSchedules(
-          (((tRes as unknown) as {
-            data?: Array<{ id: number; code?: string; train_number?: string; route?: string; departure_at?: string }>;
-          }).data ?? [])
+          scheduleRows as Array<{ id: number; code?: string; train_number?: string; route?: string; departure_at?: string }>
         );
-        setYards((((lRes as unknown) as { data?: Array<{ id: number; name: string }> }).data ?? []));
+        setYards(locationRows as Array<{ id: number; name: string }>);
       })
       .catch(() => {});
   }, []);

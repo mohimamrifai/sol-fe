@@ -22,7 +22,7 @@ import { STATUS_FILTER_OPTIONS } from "@/components/shared/master-filters";
 import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { createAdminYard, deactivateAdminYard, fetchAdminStations, fetchAdminYardStats, fetchAdminYards, updateAdminYard } from "@/lib/admin-api";
+import { createAdminYard, deactivateAdminYard, fetchAllAdminStations, fetchAdminYardStats, fetchAdminYards, updateAdminYard } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
@@ -81,8 +81,8 @@ export default function MasterYardPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminStations({ perPage: 500, status: "active" }).then((res) => {
-      setStations(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((s) => ({ id: Number(s.id), label: `${s.code ?? ""} · ${s.name ?? s.id}`.trim() })));
+    void fetchAllAdminStations({ status: "active" }).then((rows) => {
+      setStations(rows.map((s) => ({ id: Number(s.id), label: `${s.code ?? ""} · ${s.name ?? s.id}`.trim() })));
     });
   }, [authHydrated]);
 

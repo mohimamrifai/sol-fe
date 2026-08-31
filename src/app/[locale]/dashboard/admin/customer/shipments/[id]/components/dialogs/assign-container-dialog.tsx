@@ -30,8 +30,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   assignAdminContainerSlot,
   fetchAdminAvailableContainers,
-  fetchAdminVendors,
-  fetchAdminYards,
+  fetchAllAdminVendors,
+  fetchAllAdminYards,
   registerAdminVendorContainer,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
@@ -124,16 +124,14 @@ export function AssignContainerDialog({
       setSelectedAsset(preselectedAsset);
       setMode("pick");
     }
-    void fetchAdminVendors({ perPage: 200 })
-      .then((res) => {
-        const list = (res.data as Array<Record<string, unknown>>) ?? [];
-        setVendors(list.map((v) => ({ id: Number(v.id), name: String(v.name ?? "") })));
+    void fetchAllAdminVendors()
+      .then((rows) => {
+        setVendors(rows.map((v) => ({ id: Number(v.id), name: String(v.name ?? "") })));
       })
       .catch(() => setVendors([]));
-    void fetchAdminYards({ perPage: 200, status: "active" })
-      .then((res) => {
-        const list = (res.data as Array<Record<string, unknown>>) ?? [];
-        setYards(list.map((y) => ({ id: Number(y.id), name: String(y.name ?? y.code ?? "") })));
+    void fetchAllAdminYards({ status: "active" })
+      .then((rows) => {
+        setYards(rows.map((y) => ({ id: Number(y.id), name: String(y.name ?? y.code ?? "") })));
       })
       .catch(() => setYards([]));
   }, [open, slot, isCustomerProvided, defaultYardId, preselectedAsset]);

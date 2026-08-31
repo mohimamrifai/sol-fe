@@ -16,14 +16,13 @@ import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import {
   cancelAdminTrainSchedule,
-  fetchAdminRoutes,
+  fetchAllAdminRoutes,
   fetchAdminTrainSchedule,
   updateAdminTrainSchedule,
 } from "@/lib/admin-api";
 import { BUSINESS_ENTITY_OPTIONS, TRAIN_SCHEDULE_STATUS_OPTIONS } from "@/lib/admin-fsd-options";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTimeId } from "@/lib/format";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { Train } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -97,8 +96,8 @@ export default function TrainScheduleDetailPage() {
 
   useEffect(() => {
     void refresh().catch(() => setDetail(null));
-    void fetchAdminRoutes({ perPage: 500, status: "active" }).then((res) => {
-      setRoutes(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+    void fetchAllAdminRoutes({ status: "active" }).then((rows) => {
+      setRoutes(rows.map((r) => ({
         id: Number(r.id),
         label: String(r.code ?? r.id),
       })));

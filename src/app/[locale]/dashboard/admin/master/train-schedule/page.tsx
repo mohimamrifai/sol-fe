@@ -23,7 +23,7 @@ import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   createAdminTrainSchedule,
-  fetchAdminRoutes,
+  fetchAllAdminRoutes,
   fetchAdminTrainScheduleStats,
   fetchAdminTrainSchedules,
 } from "@/lib/admin-api";
@@ -182,8 +182,8 @@ export default function MasterTrainSchedulePage() {
 
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminRoutes({ perPage: 500, status: "active" }).then((res) => {
-      setRoutes(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((r) => ({
+    void fetchAllAdminRoutes({ status: "active" }).then((rows) => {
+      setRoutes(rows.map((r) => ({
         id: Number(r.id),
         label: String(r.code ?? r.route ?? r.id),
       })));

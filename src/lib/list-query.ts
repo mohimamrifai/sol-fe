@@ -77,7 +77,7 @@ export type ListQueryParams = {
 export function buildListQuery(params?: ListQueryParams): string {
   const q = new URLSearchParams();
   if (params?.page != null && params.page > 0) q.set("page", String(params.page));
-  if (params?.perPage != null && params.perPage > 0) q.set("per_page", String(params.perPage));
+  if (params?.perPage != null && params.perPage > 0) q.set("per_page", String(capPerPage(params.perPage)));
   const s = params?.search?.trim();
   if (s) q.set("search", s);
   const st = params?.status?.trim();

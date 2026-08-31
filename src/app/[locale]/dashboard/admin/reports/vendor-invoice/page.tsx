@@ -17,7 +17,7 @@ import {
   ADMIN_REPORT_PER_PAGE,
   adminVendorInvoiceReportExportUrl,
   fetchAdminVendorInvoiceReport,
-  fetchAdminVendors,
+  fetchAllAdminVendors,
 } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
@@ -73,8 +73,8 @@ export default function AdminVendorInvoiceReportPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminVendors({ perPage: 500 }).then((res) => {
-      setVendors(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+    void fetchAllAdminVendors().then((rows) => {
+      setVendors(rows.map((v) => ({
         id: Number(v.id),
         label: String(v.name ?? v.code),
       })));

@@ -20,7 +20,7 @@ import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useVendorPaymentStatusLabel } from "@/hooks/use-admin-status-labels";
-import { fetchAdminVendorPayments, fetchAdminVendorPaymentStats, fetchAdminVendors } from "@/lib/admin-api";
+import { fetchAdminVendorPayments, fetchAdminVendorPaymentStats, fetchAllAdminVendors } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { formatIdr, VENDOR_PAYMENT_METHOD_OPTIONS } from "@/lib/vendor-fsd-options";
@@ -140,8 +140,8 @@ export default function AdminVendorPaymentsPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!authHydrated) return;
-    void fetchAdminVendors({ perPage: 500 }).then((res) => {
-      setVendors(((res as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+    void fetchAllAdminVendors().then((rows) => {
+      setVendors(rows.map((v) => ({
         id: Number(v.id),
         label: String(v.name ?? v.code),
       })));

@@ -31,7 +31,7 @@ import {
   fetchAdminVendorInvoiceEligibleJobOrders,
   fetchAdminVendorInvoices,
   fetchAdminVendorInvoiceStats,
-  fetchAdminVendors,
+  fetchAllAdminVendors,
   receiveAdminVendorInvoice,
 } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
@@ -188,14 +188,14 @@ export default function AdminVendorInvoicesPage() {
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
-      fetchAdminVendors({ perPage: 500 }),
-      fetchAdminVendors({ perPage: 500, status: "active" }),
-    ]).then(([allRes, activeRes]) => {
-      setVendors(((allRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+      fetchAllAdminVendors(),
+      fetchAllAdminVendors({ status: "active" }),
+    ]).then(([allRows, activeRows]) => {
+      setVendors(allRows.map((v) => ({
         id: Number(v.id),
         label: String(v.name),
       })));
-      setActiveVendors(((activeRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+      setActiveVendors(activeRows.map((v) => ({
         id: Number(v.id),
         label: String(v.name),
       })));

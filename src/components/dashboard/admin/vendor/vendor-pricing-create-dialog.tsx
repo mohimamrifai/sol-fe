@@ -31,10 +31,9 @@ import {
   serviceCategoryLabel,
   vehicleTypeLabel,
 } from "@/lib/vendor-fsd-options";
-import { createAdminPricing, fetchAdminContainerTypes, fetchAdminLocations, fetchAdminVendors } from "@/lib/admin-api";
+import { createAdminPricing, fetchAllAdminContainerTypes, fetchAllAdminLocations, fetchAllAdminVendors } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { toast } from "sonner";
 
 export function VendorPricingCreateDialog({
@@ -87,21 +86,21 @@ export function VendorPricingCreateDialog({
     void (async () => {
       setLoadingLists(true);
       try {
-        const [vRes, lRes, cRes] = await Promise.all([
-          fetchAdminVendors({ perPage: 500 }),
-          fetchAdminLocations({ perPage: 500 }),
-          fetchAdminContainerTypes({ perPage: 500 }),
+        const [vendorRows, locationRows, containerRows] = await Promise.all([
+          fetchAllAdminVendors(),
+          fetchAllAdminLocations(),
+          fetchAllAdminContainerTypes(),
         ]);
         if (cancelled) return;
-        setVendors(((vRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+        setVendors(vendorRows.map((v) => ({
           id: Number(v.id),
           label: String(v.name ?? v.code ?? v.id),
         })));
-        setLocations(((lRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((l) => ({
+        setLocations(locationRows.map((l) => ({
           id: Number(l.id),
           label: `${l.code ?? ""} · ${l.name ?? l.id}`.trim(),
         })));
-        setContainerTypes(((cRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((c) => ({
+        setContainerTypes(containerRows.map((c) => ({
           id: Number(c.id),
           label: [c.name, c.size].filter(Boolean).join(" · ") || String(c.id),
         })));

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { fetchAdminUsers, updateAdminCompany } from "@/lib/admin-api";
+import { fetchAllAdminUsers, updateAdminCompany } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
 
@@ -33,8 +33,8 @@ export function CustomerReviewSection({ companyId, detail, canEdit, onSaved }: P
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void fetchAdminUsers({ perPage: 200, userType: "internal" }).then((res) => {
-      setStaff((res.data as Record<string, unknown>[]) ?? []);
+    void fetchAllAdminUsers({ userType: "internal" }).then((rows) => {
+      setStaff(rows);
     }).catch(() => setStaff([]));
   }, []);
 

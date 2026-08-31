@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
-  fetchAdminCompanies,
-  fetchAdminLocations,
-  fetchAdminServiceTypes,
+  fetchAllAdminCompanies,
+  fetchAllAdminLocations,
+  fetchAllAdminServiceTypes,
 } from "@/lib/admin-api";
-import type { LaravelPaginated } from "@/lib/types-api";
 
 export type ListMasterOption = { id: number; label: string };
 
@@ -16,8 +15,6 @@ export type AdminListMasters = {
   locations: ListMasterOption[];
   serviceTypes: ListMasterOption[];
 };
-
-const PER_PAGE = 500;
 
 function mapCompany(row: Record<string, unknown>): ListMasterOption {
   return { id: Number(row.id), label: String(row.name ?? row.id) };
@@ -48,22 +45,19 @@ export function useAdminListMasters(opts?: { includeServiceTypes?: boolean }): A
       setLoading(true);
       try {
         const tasks: Promise<void>[] = [
-          fetchAdminCompanies({ page: 1, perPage: PER_PAGE, status: "active" }).then((res) => {
+          fetchAllAdminCompanies({ status: "active" }).then((rows) => {
             if (cancelled) return;
-            const rows = ((res as LaravelPaginated<Record<string, unknown>>).data ?? []) as Record<string, unknown>[];
             setCompanies(rows.map(mapCompany));
           }),
-          fetchAdminLocations({ page: 1, perPage: PER_PAGE, status: "active" }).then((res) => {
+          fetchAllAdminLocations({ status: "active" }).then((rows) => {
             if (cancelled) return;
-            const rows = ((res as LaravelPaginated<Record<string, unknown>>).data ?? []) as Record<string, unknown>[];
             setLocations(rows.map(mapLocation));
           }),
         ];
         if (includeServiceTypes) {
           tasks.push(
-            fetchAdminServiceTypes({ page: 1, perPage: PER_PAGE, status: "active" }).then((res) => {
+            fetchAllAdminServiceTypes({ status: "active" }).then((rows) => {
               if (cancelled) return;
-              const rows = ((res as LaravelPaginated<Record<string, unknown>>).data ?? []) as Record<string, unknown>[];
               setServiceTypes(rows.map(mapServiceType));
             })
           );

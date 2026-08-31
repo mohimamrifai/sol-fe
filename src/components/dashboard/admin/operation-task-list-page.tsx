@@ -16,7 +16,7 @@ import { actionsCellClass, actionsHeadClass, ADMIN_LIST_PAGE_CLASS } from "@/com
 import { AdminStatsCards } from "@/components/dashboard/admin/shared/admin-stats-cards";
 import { useAuthPersistHydrated } from "@/hooks/use-auth-hydrated";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { fetchAdminLocations, fetchAdminOperationTasks, fetchAdminOperationTaskStats, fetchAdminVendors } from "@/lib/admin-api";
+import { fetchAllAdminLocations, fetchAdminOperationTasks, fetchAdminOperationTaskStats, fetchAllAdminVendors } from "@/lib/admin-api";
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { cn } from "@/lib/utils";
@@ -160,14 +160,14 @@ export function OperationTaskListPage({
   useEffect(() => {
     if (!authHydrated) return;
     void Promise.all([
-      fetchAdminVendors({ perPage: 500 }),
-      fetchAdminLocations({ perPage: 500 }),
-    ]).then(([vRes, lRes]) => {
-      setVendors(((vRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((v) => ({
+      fetchAllAdminVendors(),
+      fetchAllAdminLocations(),
+    ]).then(([vendorRows, locationRows]) => {
+      setVendors(vendorRows.map((v) => ({
         id: Number(v.id),
         label: String(v.name ?? v.code),
       })));
-      setLocations(((lRes as LaravelPaginated<Record<string, unknown>>).data ?? []).map((l) => ({
+      setLocations(locationRows.map((l) => ({
         id: Number(l.id),
         label: `${l.code ?? ""} · ${l.name ?? l.id}`.trim(),
       })));

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchAdminVendorVehicleTypes, fetchAdminVendors, updateAdminShipment } from "@/lib/admin-api";
+import { fetchAdminVendorVehicleTypes, fetchAllAdminVendors, updateAdminShipment } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { toast } from "sonner";
@@ -86,9 +86,8 @@ export function ShipmentTransportCard({ shipmentId, coverage, data, canEdit, onS
   const [deliveryRemark, setDeliveryRemark] = useState("");
 
   useEffect(() => {
-    void fetchAdminVendors({ perPage: 200 })
-      .then((res) => {
-        const rows = (res.data as Record<string, unknown>[]) ?? [];
+    void fetchAllAdminVendors()
+      .then((rows) => {
         setVendors(rows.map((r) => ({ id: Number(r.id), name: String(r.name ?? ""), code: r.code ? String(r.code) : undefined })));
       })
       .catch(() => setVendors([]));
