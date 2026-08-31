@@ -36,6 +36,23 @@ export function resolveBookingDisplayStatus(booking: {
   return converted ? "converted" : normalizedStatus;
 }
 
+/** FSD admin: Draft, Submitted, and Confirmed stay editable until convert to shipment. */
+export function canAdminEditBooking(booking: {
+  status?: string | null;
+  shipment_exists?: boolean;
+  has_shipment?: boolean;
+  shipment_id?: number | string | null;
+}): boolean {
+  const st = String(booking.status ?? "").toLowerCase();
+  if (st === "rejected" || st === "cancelled") return false;
+  const converted =
+    booking.shipment_exists === true ||
+    booking.has_shipment === true ||
+    booking.shipment_id != null;
+  if (converted) return false;
+  return st === "draft" || st === "submitted" || st === "approved" || st === "confirmed" || st === "under_review";
+}
+
 export function bookingStatusBadgeClass(status: string): string {
   const key = status.toLowerCase().replace(/\s+/g, "_");
   switch (key) {

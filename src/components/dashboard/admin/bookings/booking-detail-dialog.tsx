@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import { bookingStatusBadgeClass, bookingStatusLabelFromApi, canAdminEditBooking } from "@/lib/booking-status";
 import type { BookingDetail } from "./types";
 
 interface BookingDetailDialogProps {
@@ -46,7 +46,7 @@ export function BookingDetailDialog({
   onSave,
 }: BookingDetailDialogProps) {
   const editable = useMemo(
-    () => canEdit && !!data && data.status !== "cancelled",
+    () => canEdit && !!data && canAdminEditBooking(data),
     [canEdit, data]
   );
   const [isEditMode, setIsEditMode] = useState(false);

@@ -45,7 +45,7 @@ import { hasFeatureAccess } from "@/lib/feature-access";
 import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const BOOKING_STATUS_KEYS = ["draft", "submitted", "under_review", "approved", "rejected"] as const;
+const BOOKING_STATUS_KEYS = ["draft", "submitted", "confirmed", "rejected", "cancelled"] as const;
 const SHIPMENT_STATUS_KEYS = [
   "planning",
   "ready_operation",

@@ -40,9 +40,9 @@
     "bookingStatus": {
       "draft": "Draft",
       "submitted": "Submitted",
-      "under_review": "Under Review",
-      "approved": "Approved",
-      "rejected": "Rejected"
+      "confirmed": "Confirmed",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
     },
     "shipmentStatus": {
       "planning": "Planning",

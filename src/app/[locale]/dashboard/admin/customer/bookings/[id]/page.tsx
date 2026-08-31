@@ -22,6 +22,7 @@ import { BookingRejectDialog } from "@/components/dashboard/admin/bookings/booki
 import type { BookingDetail } from "@/components/dashboard/admin/bookings/types";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { canAdminEditBooking } from "@/lib/booking-status";
 
 export default function AdminBookingDetailPage() {
   const params = useParams();
@@ -75,12 +76,15 @@ export default function AdminBookingDetailPage() {
 
     if (isRejected || isCancelled) return [];
 
-    if (st === "draft") {
+    if (data && canAdminEditBooking(data)) {
       actions.push({
         label: t("actions.edit"),
         variant: "outline",
         onClick: () => setEditOpen(true),
       });
+    }
+
+    if (st === "draft") {
       actions.push({
         label: t("actions.submit"),
         onClick: () =>
@@ -104,11 +108,6 @@ export default function AdminBookingDetailPage() {
 
     if (isSubmitted) {
       actions.push({
-        label: t("actions.edit"),
-        variant: "outline",
-        onClick: () => setEditOpen(true),
-      });
-      actions.push({
         label: t("actions.confirm"),
         onClick: () =>
           void confirmAdminBooking(id).then(() => {
@@ -124,11 +123,6 @@ export default function AdminBookingDetailPage() {
     }
 
     if (isConfirmed && !hasShipment) {
-      actions.push({
-        label: t("actions.edit"),
-        variant: "outline",
-        onClick: () => setEditOpen(true),
-      });
       actions.push({
         label: t("actions.convert"),
         onClick: () =>

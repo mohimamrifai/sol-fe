@@ -15,9 +15,9 @@ const SHIPMENT_FSD_FILTER: Record<string, string> = {
 const BOOKING_FSD_FILTER: Record<string, string> = {
   draft: "draft",
   submitted: "submitted",
-  under_review: "under_review",
-  approved: "confirmed",
+  confirmed: "confirmed",
   rejected: "rejected",
+  cancelled: "cancelled",
 };
 
 const CONTAINER_STATUS_FILTER: Record<string, string> = {

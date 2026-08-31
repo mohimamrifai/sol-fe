@@ -40,9 +40,9 @@
     "bookingStatus": {
       "draft": "Draft",
       "submitted": "Diajukan",
-      "under_review": "Dalam Review",
-      "approved": "Approved",
-      "rejected": "Ditolak"
+      "confirmed": "Terkonfirmasi",
+      "rejected": "Ditolak",
+      "cancelled": "Dibatalkan"
     },
     "shipmentStatus": {
       "planning": "Perencanaan",
