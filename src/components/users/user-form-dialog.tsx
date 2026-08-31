@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ApiError } from "@/lib/api-client";
 import { firstLaravelError } from "@/lib/laravel-errors";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-customer-users-form";
-import { fetchCustomerLocations } from "@/lib/customer-api";
+import { fetchAllCustomerLocations } from "@/lib/customer-api";
 import type { UserRow } from "./user-table";
 
 export interface UserFormDialogProps {
@@ -115,10 +115,9 @@ export function UserFormDialog({ open, onOpenChange, row }: UserFormDialogProps)
     if (!open) return;
     let cancelled = false;
     setLoadingLocations(true);
-    fetchCustomerLocations({ status: "active", perPage: 500 })
-      .then((res) => {
+    fetchAllCustomerLocations({ status: "active" })
+      .then((rows) => {
         if (cancelled) return;
-        const rows = res?.data ?? [];
         setLocationOptions(
           rows.map((l) => ({ value: String(l.id), label: (l.name as string) ?? `Location #${l.id}` }))
         );

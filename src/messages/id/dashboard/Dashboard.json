@@ -131,7 +131,8 @@
         "draft": "Draft",
         "submitted": "Diajukan",
         "approved": "Disetujui",
-        "rejected": "Ditolak"
+        "rejected": "Ditolak",
+        "cancelled": "Dibatalkan"
       },
       "shipment": {
         "created": "Dibuat",

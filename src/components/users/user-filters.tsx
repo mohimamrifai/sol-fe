@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { fetchCustomerLocations } from "@/lib/customer-api";
+import { fetchAllCustomerLocations } from "@/lib/customer-api";
 
 export interface UserFiltersValue {
   search: string;
@@ -48,10 +48,9 @@ export function UserFilters({ value, onChange }: Props) {
   React.useEffect(() => {
     let cancelled = false;
     setLoadingLocations(true);
-    fetchCustomerLocations({ status: "active", perPage: 500 })
-      .then((res) => {
+    fetchAllCustomerLocations({ status: "active" })
+      .then((rows) => {
         if (cancelled) return;
-        const rows = res?.data ?? [];
         setLocationOptions(
           rows.map((l) => ({ value: String(l.id), label: (l.name as string) ?? `Location #${l.id}` }))
         );

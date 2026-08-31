@@ -34,8 +34,9 @@ import {
   submitCustomerBooking,
   uploadCustomerBookingAttachment,
 } from "@/lib/customer-api";
-import { SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
-import { resolveShipperCompanyName } from "@/lib/booking-party";
+import { SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, resolveBookingDisplayStatus } from "@/lib/booking-status";
+import { useCustomerBookingStatusLabel } from "@/hooks/use-customer-booking-status-label";
+import { resolveShipperCompanyName, resolveCustomerLocationName } from "@/lib/booking-party";
 import { formatIdr, formatRelative, formatShortDate } from "@/components/dashboard/format";
 import { ApiError } from "@/lib/api-client";
 import { useRouter } from "@/i18n/routing";
@@ -146,6 +147,7 @@ export default function CustomerBookingDetailPage() {
   const tReject = useTranslations("Bookings.detail.rejection");
   const tCancellation = useTranslations("Bookings.detail.cancellation");
   const tCommon = useTranslations("Bookings");
+  const bookingStatusLabel = useCustomerBookingStatusLabel();
 
   const [cancelOpen, setCancelOpen] = useState(false);
   const [deleteAttachmentId, setDeleteAttachmentId] = useState<number | null>(null);
@@ -279,6 +281,7 @@ export default function CustomerBookingDetailPage() {
   const data = (detailQuery.data as { data?: BookingDetail }).data ?? (detailQuery.data as unknown as BookingDetail);
   const activities = ((activitiesQuery.data as { data?: Activity[] } | undefined)?.data ?? []) as Activity[];
   const actions = new Set(data.available_actions ?? []);
+  const displayStatus = resolveBookingDisplayStatus(data);
 
   const handleCancelSubmit = () => {
     setCancelError(null);
@@ -317,8 +320,8 @@ export default function CustomerBookingDetailPage() {
             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-zinc-600">
               <span className="text-[11px] uppercase tracking-wider text-zinc-500">Booking #</span>
               <span className="font-mono text-xs text-zinc-700">{data.booking_number}</span>
-              <Badge className={bookingStatusBadgeClass(data.status)} variant="secondary">
-                {bookingStatusLabelFromApi(data.status)}
+              <Badge className={bookingStatusBadgeClass(displayStatus)} variant="secondary">
+                {bookingStatusLabel(displayStatus)}
               </Badge>
               <span className="text-zinc-300">·</span>
               <span className="text-xs text-zinc-500">
@@ -563,15 +566,19 @@ function DetailSkeleton() {
 }
 
 function BookingInfoGrid({ data, t, locale }: { data: BookingDetail; t: ReturnType<typeof useTranslations>; locale: string }) {
+  const bookingStatusLabel = useCustomerBookingStatusLabel();
+  const displayStatus = resolveBookingDisplayStatus(data);
+
   return (
     <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <InfoRow label={t("bookingNumber")} value={<span className="font-mono text-xs">{data.booking_number}</span>} />
-      <InfoRow label={t("status")} value={<Badge className={bookingStatusBadgeClass(data.status)} variant="secondary">{bookingStatusLabelFromApi(data.status)}</Badge>} />
+      <InfoRow label={t("status")} value={<Badge className={bookingStatusBadgeClass(displayStatus)} variant="secondary">{bookingStatusLabel(displayStatus)}</Badge>} />
       <InfoRow label={t("createdAt")} value={data.created_at ? formatShortDate(data.created_at, locale) : "—"} />
       <InfoRow label={t("departureDate")} value={data.departure_date ? formatShortDate(data.departure_date, locale) : "—"} />
       <InfoRow label={t("shipmentCoverage")} value={data.shipment_coverage ? SHIPMENT_COVERAGE_LABELS[data.shipment_coverage] ?? data.shipment_coverage : "—"} />
       <InfoRow label={`${t("shipper")} (${t("phone")})`} value={data.shipper_phone ?? "—"} />
-      <InfoRow label={t("shipper")} value={resolveShipperCompanyName(data) || "—"} />
+      <InfoRow label={t("customerLocation")} value={resolveCustomerLocationName(data) || "—"} />
+      <InfoRow label={t("shipperCompany")} value={resolveShipperCompanyName(data) || "—"} />
       <InfoRow label={t("address")} value={data.shipper_address ?? "—"} fullWidth />
       <InfoRow label={`${t("consignee")} (${t("phone")})`} value={data.consignee_phone ?? "—"} />
       <InfoRow label={t("consignee")} value={data.consignee_name ?? "—"} />

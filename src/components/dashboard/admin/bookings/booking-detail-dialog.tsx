@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { bookingStatusBadgeClass, bookingStatusLabelFromApi, canAdminEditBooking } from "@/lib/booking-status";
+import { bookingStatusBadgeClass, canAdminEditBooking, resolveBookingDisplayStatus } from "@/lib/booking-status";
+import { useBookingStatusLabel } from "@/hooks/use-admin-status-labels";
 import { resolveShipperCompanyName } from "@/lib/booking-party";
 import type { BookingDetail } from "./types";
 
@@ -46,6 +47,7 @@ export function BookingDetailDialog({
   saving = false,
   onSave,
 }: BookingDetailDialogProps) {
+  const bookingStatusLabel = useBookingStatusLabel();
   const editable = useMemo(
     () => canEdit && !!data && canAdminEditBooking(data),
     [canEdit, data]
@@ -97,8 +99,8 @@ export function BookingDetailDialog({
               <DialogDescription>ID: {data?.booking_number}</DialogDescription>
             </div>
             {data && (
-              <Badge className={bookingStatusBadgeClass(data.status)}>
-                {bookingStatusLabelFromApi(data.status)}
+              <Badge className={bookingStatusBadgeClass(resolveBookingDisplayStatus(data))}>
+                {bookingStatusLabel(resolveBookingDisplayStatus(data))}
               </Badge>
             )}
           </div>

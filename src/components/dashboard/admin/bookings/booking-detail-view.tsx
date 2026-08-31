@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import {
   bookingStatusBadgeClass,
-  bookingStatusLabelFromApi,
   resolveBookingDisplayStatus,
 } from "@/lib/booking-status";
+import { useBookingStatusLabel } from "@/hooks/use-admin-status-labels";
 import { cn } from "@/lib/utils";
 import {
   resolveShipperCompanyName,
@@ -114,6 +114,7 @@ export function BookingDetailView({ data, loading }: Props) {
   const t = useTranslations("AdminBookings");
   const td = useTranslations("AdminBookings.detailPage");
   const tCoverage = useTranslations("AdminBookings.coverageOptions");
+  const bookingStatusLabel = useBookingStatusLabel();
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">{td("loading")}</p>;
@@ -167,7 +168,7 @@ export function BookingDetailView({ data, loading }: Props) {
         <div>
           <p className="text-xs text-muted-foreground">{t("columns.status")}</p>
           <Badge variant="outline" className={bookingStatusBadgeClass(displayStatus)}>
-            {bookingStatusLabelFromApi(displayStatus)}
+            {bookingStatusLabel(displayStatus)}
           </Badge>
         </div>
         <div>
@@ -202,6 +203,7 @@ export function BookingDetailView({ data, loading }: Props) {
         <CardContent className="grid gap-4 text-sm sm:grid-cols-2">
           <div>
             <p className="font-medium">{td("shipperLabel")}</p>
+            {partyLine(td("customerLocation"), resolveCustomerLocationName(data))}
             {partyLine(td("companyName"), resolveShipperCompanyName(data))}
             {partyLine(td("picName"), String(shipperSnap?.pic_name ?? ""))}
             {partyLine(td("picEmail"), String(shipperSnap?.pic_email ?? ""))}

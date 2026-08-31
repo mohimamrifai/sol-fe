@@ -1,4 +1,5 @@
 import { apiFetch } from "./api-client";
+import { capPerPage } from "./list-query";
 import type { LaravelPaginated } from "./types-api";
 
 /** Master data & estimasi untuk pengunjung (tanpa token). */
@@ -8,7 +9,7 @@ export async function fetchPublicMasterLocations() {
 
 export async function fetchPublicMasterLocationsWithQuery(input?: { type?: string; perPage?: number; search?: string }) {
   const qs = new URLSearchParams();
-  qs.set("per_page", String(input?.perPage ?? 500));
+  qs.set("per_page", String(capPerPage(input?.perPage)));
   if (input?.type) qs.set("type", input.type);
   if (input?.search) qs.set("search", input.search);
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(

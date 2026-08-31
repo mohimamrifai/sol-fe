@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
-  fetchCustomerMasterLocations,
+  fetchAllCustomerMasterLocations,
+  fetchAllCustomerLocations,
   fetchCustomerMasterTransportModes,
   fetchCustomerMasterServiceTypes,
   fetchCustomerMasterContainerTypes,
@@ -12,7 +13,6 @@ import {
   fetchCustomerMasterCargoCategories,
   fetchCustomerMasterDgClasses,
   fetchCustomerMasterShipmentCoverages,
-  fetchCustomerLocations,
   estimateBookingPrice,
   createCustomerBookingMultipart,
   updateCustomerBooking,
@@ -23,7 +23,6 @@ import {
   resolveShipperCompanyName,
   resolveShipperLocationId,
 } from "@/lib/booking-party";
-import type { LaravelPaginated } from "@/lib/types-api";
 import { useAuthStore } from "@/lib/store";
 
 export type Loc = { id: number; name: string; code?: string };
@@ -234,18 +233,18 @@ export function useBookingForm(opts?: { editId?: number }) {
     let active = true;
     (async () => {
       try {
-        const [locRes, mRes, ctRes, asRes, ccRes, dgRes, covRes, clRes] = await Promise.all([
-          fetchCustomerMasterLocations({ type: "station" }),
+        const [locRows, mRes, ctRes, asRes, ccRes, dgRes, covRes, clRows] = await Promise.all([
+          fetchAllCustomerMasterLocations({ type: "station" }),
           fetchCustomerMasterTransportModes(),
           fetchCustomerMasterContainerTypes(),
           fetchCustomerMasterAdditionalServices(),
           fetchCustomerMasterCargoCategories(),
           fetchCustomerMasterDgClasses(),
           fetchCustomerMasterShipmentCoverages(),
-          fetchCustomerLocations({ status: "active", perPage: 500 }),
+          fetchAllCustomerLocations({ status: "active" }),
         ]);
         if (!active) return;
-        setLocations(((locRes as LaravelPaginated<Loc>).data ?? []) as Loc[]);
+        setLocations(locRows as Loc[]);
         const rawModes = (mRes as { data: TM[] }).data ?? [];
         setModes(rawModes);
         setContainerTypes(((ctRes as { data: CT[] }).data ?? []) as CT[]);
@@ -255,7 +254,7 @@ export function useBookingForm(opts?: { editId?: number }) {
         const rawCoverages = (covRes as { data: Coverage[] }).data ?? [];
         setCoverages(rawCoverages);
         if (rawCoverages[0]?.value && !rebookId && !editId) setShipmentCoverage(String(rawCoverages[0].value));
-        setCustomerLocations(((clRes as LaravelPaginated<CustomerLoc>).data ?? []) as CustomerLoc[]);
+        setCustomerLocations(clRows as CustomerLoc[]);
         if (rawModes[0]?.id && !rebookId && !editId) setModeId(String(rawModes[0].id));
 
         // Pre-fill from an existing booking — rebook (clone for a new booking) or edit (mutate existing).
@@ -423,6 +422,14 @@ export function useBookingForm(opts?: { editId?: number }) {
       });
     }
   }, [serviceTypeId, addServices, isFCL, isLCL]);
+
+  // Shipper company = logged-in customer company (FSD: autofill readonly, not location name).
+  useEffect(() => {
+    if (rebookId || editId) return;
+    if (userCompany?.name) {
+      setShipperName(userCompany.name);
+    }
+  }, [userCompany?.name, rebookId, editId]);
 
   // Shipper same as account
   useEffect(() => {

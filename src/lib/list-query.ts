@@ -1,3 +1,5 @@
+import type { LaravelPaginated } from "./types-api";
+
 /** Query params for Laravel paginated list endpoints */
 export type ListQueryParams = {
   page?: number;
@@ -149,8 +151,31 @@ export function rowNumber(page: number, perPage: number, index: number): number 
   return (page - 1) * perPage + index + 1;
 }
 
+/** Laravel list endpoints commonly cap `per_page` at 100. */
+export const API_MAX_PER_PAGE = 100;
+
+export function capPerPage(perPage?: number): number {
+  const n = perPage ?? API_MAX_PER_PAGE;
+  return Math.min(Math.max(n, 1), API_MAX_PER_PAGE);
+}
+
 export function normalizeListParams(input?: number | ListQueryParams): ListQueryParams | undefined {
   if (input == null) return undefined;
-  if (typeof input === "number") return { perPage: input };
-  return input;
+  if (typeof input === "number") return { perPage: capPerPage(input) };
+  return input?.perPage != null ? { ...input, perPage: capPerPage(input.perPage) } : input;
+}
+
+export async function fetchAllListPages<T>(
+  fetchPage: (page: number, perPage: number) => Promise<LaravelPaginated<T>>,
+  perPage: number = API_MAX_PER_PAGE
+): Promise<T[]> {
+  const size = capPerPage(perPage);
+  const first = await fetchPage(1, size);
+  const rows = [...(first.data ?? [])];
+  const lastPage = first.last_page ?? 1;
+  for (let page = 2; page <= lastPage; page += 1) {
+    const next = await fetchPage(page, size);
+    rows.push(...(next.data ?? []));
+  }
+  return rows;
 }

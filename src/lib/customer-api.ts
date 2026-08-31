@@ -1,5 +1,11 @@
 import { apiFetch, apiFetchBlob, type BlobDownloadProgress } from "./api-client";
-import { buildListQuery, normalizeListParams, type ListQueryParams } from "./list-query";
+import {
+  buildListQuery,
+  capPerPage,
+  fetchAllListPages,
+  normalizeListParams,
+  type ListQueryParams,
+} from "./list-query";
 import type { LaravelPaginated } from "./types-api";
 import type {
   PaymentDetail,
@@ -138,14 +144,26 @@ export async function fetchCustomerBookingStats() {
   );
 }
 
-export async function fetchCustomerMasterLocations(input?: { type?: string; perPage?: number; search?: string }) {
+export async function fetchCustomerMasterLocations(input?: {
+  type?: string;
+  perPage?: number;
+  search?: string;
+  page?: number;
+}) {
   const qs = new URLSearchParams();
-  qs.set("per_page", String(input?.perPage ?? 500));
+  qs.set("per_page", String(capPerPage(input?.perPage)));
+  if (input?.page) qs.set("page", String(input.page));
   if (input?.type) qs.set("type", input.type);
   if (input?.search) qs.set("search", input.search);
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(
     `/customer/master/locations?${qs.toString()}`,
     { method: "GET" }
+  );
+}
+
+export async function fetchAllCustomerMasterLocations(input?: { type?: string; search?: string }) {
+  return fetchAllListPages<Record<string, unknown>>((page, perPage) =>
+    fetchCustomerMasterLocations({ ...input, page, perPage })
   );
 }
 
@@ -399,6 +417,12 @@ export async function fetchCustomerLocations(input?: number | ListQueryParams) {
   return apiFetch<LaravelPaginated<Record<string, unknown>>>(
     `/customer/locations${buildListQuery(params)}`,
     { method: "GET" }
+  );
+}
+
+export async function fetchAllCustomerLocations(params?: Omit<ListQueryParams, "page" | "perPage">) {
+  return fetchAllListPages<Record<string, unknown>>((page, perPage) =>
+    fetchCustomerLocations({ ...params, page, perPage })
   );
 }
 

@@ -11,7 +11,8 @@ import {
   fetchCustomerBookingStats,
   fetchCustomerMasterServiceTypes,
 } from "@/lib/customer-api";
-import { BOOKING_STATUS_KEYS, SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import { BOOKING_STATUS_KEYS, SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, resolveBookingDisplayStatus } from "@/lib/booking-status";
+import { useCustomerBookingStatusLabel } from "@/hooks/use-customer-booking-status-label";
 import { formatShortDate } from "@/components/dashboard/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ const ALL = "__all__";
 
 export default function CustomerBookingsListPage() {
   const t = useTranslations("Bookings");
+  const bookingStatusLabel = useCustomerBookingStatusLabel();
   const router = useRouter();
   const pathname = usePathname();
   const search = useNextSearchParams();
@@ -142,9 +144,9 @@ export default function CustomerBookingsListPage() {
   const statusOptions: ComboboxOption[] = useMemo(
     () => [
       { value: ALL, label: t("filter.allStatus") },
-      ...BOOKING_STATUS_KEYS.map((k) => ({ value: k, label: bookingStatusLabelFromApi(k) })),
+      ...BOOKING_STATUS_KEYS.map((k) => ({ value: k, label: bookingStatusLabel(k) })),
     ],
-    [t],
+    [t, bookingStatusLabel],
   );
   const serviceTypeOptions: ComboboxOption[] = useMemo(
     () => [
@@ -367,9 +369,9 @@ export default function CustomerBookingsListPage() {
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={bookingStatusBadgeClass(row.status)}
+                      className={bookingStatusBadgeClass(resolveBookingDisplayStatus(row))}
                     >
-                      {bookingStatusLabelFromApi(row.status)}
+                      {bookingStatusLabel(resolveBookingDisplayStatus(row))}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">

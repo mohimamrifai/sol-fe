@@ -47,6 +47,14 @@
       "approved": "Approved",
       "rejected": "Rejected"
     },
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "converted": "Converted to Shipment"
+    },
     "coverage": {
       "port_to_port": "Port to Port",
       "door_to_port": "Door to Port",
@@ -290,6 +298,8 @@
         "createdAt": "Created At",
         "departureDate": "Departure Date",
         "shipmentCoverage": "Shipment Coverage",
+        "customerLocation": "Customer Location",
+        "shipperCompany": "Shipper Company",
         "shipper": "Shipper",
         "consignee": "Consignee",
         "phone": "Phone",

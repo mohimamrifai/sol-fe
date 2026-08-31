@@ -47,6 +47,14 @@
       "approved": "Disetujui",
       "rejected": "Ditolak"
     },
+    "status": {
+      "draft": "Draft",
+      "submitted": "Diajukan",
+      "approved": "Disetujui",
+      "rejected": "Ditolak",
+      "cancelled": "Dibatalkan",
+      "converted": "Dikonversi ke Shipment"
+    },
     "coverage": {
       "port_to_port": "Port to Port",
       "door_to_port": "Door to Port",
@@ -290,6 +298,8 @@
         "createdAt": "Dibuat Pada",
         "departureDate": "Tanggal Keberangkatan",
         "shipmentCoverage": "Shipment Coverage",
+        "customerLocation": "Customer Location",
+        "shipperCompany": "Shipper Company",
         "shipper": "Shipper (Pengirim)",
         "consignee": "Consignee (Penerima)",
         "phone": "Telepon",

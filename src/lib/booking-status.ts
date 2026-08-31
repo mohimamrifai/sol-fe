@@ -10,6 +10,7 @@ const BOOKING_LABELS: Record<string, string> = {
   converted: "Converted to Shipment",
 };
 
+/** Admin UI label for backend booking status (`approved` → Confirmed per FSD). Prefer `useBookingStatusLabel()` in components. */
 export function bookingStatusLabelFromApi(status: string): string {
   const k = status.toLowerCase();
   return BOOKING_LABELS[k] ?? status;

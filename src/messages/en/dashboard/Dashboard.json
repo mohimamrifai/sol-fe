@@ -131,7 +131,8 @@
         "draft": "Draft",
         "submitted": "Submitted",
         "approved": "Approved",
-        "rejected": "Rejected"
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
       },
       "shipment": {
         "created": "Created",
