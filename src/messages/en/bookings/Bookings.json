@@ -279,6 +279,10 @@
         "title": "Rejection Reason",
         "titleShort": "Reason"
       },
+      "cancellation": {
+        "title": "Cancellation Reason",
+        "titleShort": "Reason"
+      },
       "section1": {
         "title": "Booking Information",
         "bookingNumber": "Booking Number",

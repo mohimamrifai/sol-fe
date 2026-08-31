@@ -308,13 +308,15 @@ export function BookingDetailDialog({
                 </div>
               )}
 
-              {/* Cancellation Reason (Notes) */}
-              {data.status === "cancelled" && data.notes && (
+              {/* Cancellation Reason */}
+              {data.status === "cancelled" && (data.cancellation_reason || data.notes) && (
                 <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">
                     Catatan Pembatalan
                   </p>
-                  <p className="text-sm text-zinc-700 whitespace-pre-line">{data.notes}</p>
+                  <p className="text-sm text-zinc-700 whitespace-pre-line">
+                    {data.cancellation_reason ?? data.notes}
+                  </p>
                 </div>
               )}
             </div>

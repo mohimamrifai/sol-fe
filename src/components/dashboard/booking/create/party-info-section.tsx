@@ -153,7 +153,9 @@ export function PartyInfoSection({
     const shouldAutofill = isShipper || destinationType === "customer_location";
     if (!shouldAutofill) return;
 
-    setCompany(loc.name);
+    if (!isShipper) {
+      setCompany(loc.name);
+    }
     if (loc.address) setAddress(loc.address);
     const mobile = loc.pic_mobile || loc.phone || "";
     if (mobile) {

@@ -74,6 +74,7 @@ export type BookingDetail = {
   }>;
   notes?: string;
   rejection_reason?: string;
+  cancellation_reason?: string;
   estimated_price?: string | number;
   price_breakdown?: {
     freight?: number;

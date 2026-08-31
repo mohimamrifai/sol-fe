@@ -1,0 +1,15 @@
+{
+  "Common": {
+    "error": {
+      "title": "Terjadi kesalahan",
+      "description": "Terjadi kesalahan yang tidak terduga. Silakan coba lagi atau kembali.",
+      "back": "Kembali",
+      "retry": "Coba lagi"
+    },
+    "notFound": {
+      "title": "Halaman tidak ditemukan",
+      "description": "Halaman yang Anda cari tidak ada atau telah dipindahkan.",
+      "home": "Kembali ke dashboard"
+    }
+  }
+}

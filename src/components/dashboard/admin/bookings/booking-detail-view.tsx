@@ -9,6 +9,9 @@ import {
   resolveBookingDisplayStatus,
 } from "@/lib/booking-status";
 import { cn } from "@/lib/utils";
+import {
+  resolveShipperCompanyName,
+} from "@/lib/booking-party";
 import type { BookingDetail } from "./types";
 import { useTranslations } from "next-intl";
 
@@ -124,6 +127,7 @@ export function BookingDetailView({ data, loading }: Props) {
   const breakdown = (data as BookingDetail & { price_breakdown?: Breakdown }).price_breakdown;
   const currentStep = stepIndex(data);
   const displayStatus = resolveBookingDisplayStatus(data);
+  const st = (data.status ?? "").toLowerCase();
   const customerLocation =
     (data as BookingDetail & { shipper_location?: { name?: string }; shipperLocation?: { name?: string } }).shipper_location?.name ??
     (data as BookingDetail & { shipperLocation?: { name?: string } }).shipperLocation?.name ??
@@ -145,6 +149,18 @@ export function BookingDetailView({ data, loading }: Props) {
 
   return (
     <div className="space-y-4">
+      {st === "rejected" && data.rejection_reason ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-red-600">Alasan Penolakan</p>
+          <p className="text-sm text-red-700">{data.rejection_reason}</p>
+        </div>
+      ) : null}
+      {st === "cancelled" && data.cancellation_reason ? (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Catatan Pembatalan</p>
+          <p className="whitespace-pre-line text-sm text-zinc-700">{data.cancellation_reason}</p>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-muted/20 p-4">
         <div>
           <p className="text-xs text-muted-foreground">{t("columns.bookingNo")}</p>
@@ -188,7 +204,7 @@ export function BookingDetailView({ data, loading }: Props) {
         <CardContent className="grid gap-4 text-sm sm:grid-cols-2">
           <div>
             <p className="font-medium">{td("shipperLabel")}</p>
-            {partyLine(td("companyName"), data.shipper_name ?? "")}
+            {partyLine(td("companyName"), resolveShipperCompanyName(data))}
             {partyLine(td("picName"), String(shipperSnap?.pic_name ?? ""))}
             {partyLine(td("picEmail"), String(shipperSnap?.pic_email ?? ""))}
             {partyLine(td("picMobile"), String(shipperSnap?.pic_mobile ?? data.shipper_phone ?? ""))}

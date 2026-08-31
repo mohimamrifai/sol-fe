@@ -279,6 +279,10 @@
         "title": "Alasan Penolakan",
         "titleShort": "Alasan"
       },
+      "cancellation": {
+        "title": "Alasan Pembatalan",
+        "titleShort": "Alasan"
+      },
       "section1": {
         "title": "Informasi Booking",
         "bookingNumber": "Nomor Booking",

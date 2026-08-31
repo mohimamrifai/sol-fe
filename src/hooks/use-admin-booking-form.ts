@@ -51,7 +51,7 @@ export type EstimateBreakdown = {
   total?: number;
 };
 
-const PER_PAGE = 1000;
+const PER_PAGE = 100;
 const FCL_MANDATORY_CODES = ["FREE_STORAGE_FCL", "LOLO", "CONTAINER_RENT"];
 const LCL_MANDATORY_CODES = ["FREE_STORAGE_LCL"];
 const COVERAGE_ADDON_CODES = ["PICKUP", "DELIVERY"] as const;
@@ -243,6 +243,12 @@ export function useAdminBookingForm() {
   const selectedCargoCategory = cargoCats.find((c) => String(c.id) === cargoCategoryId);
   const showTemp = selectedCargoCategory?.requires_temperature;
   const showProject = selectedCargoCategory?.is_project_cargo;
+
+  useEffect(() => {
+    if (selectedCompany?.name) {
+      setShipperName(selectedCompany.name);
+    }
+  }, [companyId, selectedCompany?.name]);
 
   useEffect(() => {
     setIsDg(selectedCargoCategory?.code === "DG");

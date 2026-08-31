@@ -39,6 +39,11 @@ import {
   mapPackageRowsForApi,
 } from "@/lib/admin-booking-payload";
 import { PartyInfoSection } from "@/components/dashboard/booking/create/party-info-section";
+import {
+  resolveBookingCompanyId,
+  resolveShipperCompanyName,
+  resolveShipperLocationId,
+} from "@/lib/booking-party";
 import { CargoDetailSection } from "@/components/dashboard/booking/create/cargo-detail-section";
 import { AttachmentSection } from "@/components/dashboard/booking/create/attachment-section";
 import type { ContainerRow, PackageRow } from "@/hooks/use-booking-form";
@@ -206,10 +211,10 @@ export function BookingEditDialog({
     setDepartureDate(data.departure_date ? String(data.departure_date).slice(0, 10) : "");
     setCargo(data.cargo_description ?? "");
     setCargoCategoryId(data.cargo_category_id ? String(data.cargo_category_id) : (data.cargoCategory?.id ? String(data.cargoCategory.id) : (data.cargo_category?.id ? String(data.cargo_category.id) : "")));
-    setShipperName(data.shipper_name ?? "");
+    setShipperName(resolveShipperCompanyName(data));
     setShipperAddress(data.shipper_address ?? "");
     setShipperPhone(data.shipper_phone ?? "");
-    setShipperLocationId(data.shipper_location_id ? String(data.shipper_location_id) : "");
+    setShipperLocationId(resolveShipperLocationId(data));
     const shipperSnap = (data as BookingDetail & { shipper_snapshot?: Record<string, unknown> }).shipper_snapshot;
     setShipperPicName(String(shipperSnap?.pic_name ?? ""));
     setShipperPicEmail(String(shipperSnap?.pic_email ?? ""));
@@ -295,19 +300,20 @@ export function BookingEditDialog({
   }, [open, data]);
 
   useEffect(() => {
-    if (!open || !data?.company_id) {
+    const companyId = resolveBookingCompanyId(data);
+    if (!open || !companyId) {
       setCustomerLocations([]);
       return;
     }
     let cancelled = false;
-    void fetchAdminCompanyLocations(Number(data.company_id), { page: 1, perPage: 500, status: "active" }).then((res) => {
+    void fetchAdminCompanyLocations(companyId, { page: 1, perPage: 100, status: "active" }).then((res) => {
       if (cancelled) return;
       setCustomerLocations(((res as LaravelPaginated<CustomerLoc>).data ?? []) as CustomerLoc[]);
     });
     return () => {
       cancelled = true;
     };
-  }, [open, data?.company_id]);
+  }, [open, data]);
 
   const selectedService = serviceTypes.find((s) => String(s.id) === serviceTypeId);
 

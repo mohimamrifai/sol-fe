@@ -19,6 +19,10 @@ import {
   fetchCustomerBookingDetail,
 } from "@/lib/customer-api";
 import { ApiError } from "@/lib/api-client";
+import {
+  resolveShipperCompanyName,
+  resolveShipperLocationId,
+} from "@/lib/booking-party";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { useAuthStore } from "@/lib/store";
 
@@ -282,10 +286,10 @@ export function useBookingForm(opts?: { editId?: number }) {
             setCargo(String(bd.cargo_description ?? ""));
             setCargoCategoryId(bd.cargo_category_id ? String(bd.cargo_category_id) : "");
 
-            setShipperName(String(bd.shipper_name ?? ""));
+            setShipperName(resolveShipperCompanyName(bd as Parameters<typeof resolveShipperCompanyName>[0]));
             setShipperAddress(String(bd.shipper_address ?? ""));
             setShipperPhone(String(bd.shipper_phone ?? ""));
-            setShipperLocationId(bd.shipper_location_id ? String(bd.shipper_location_id) : "");
+            setShipperLocationId(resolveShipperLocationId(bd as Parameters<typeof resolveShipperLocationId>[0]));
 
             const shipperSnapshot = bd.shipper_snapshot as Record<string, unknown> | null | undefined;
             if (shipperSnapshot) {

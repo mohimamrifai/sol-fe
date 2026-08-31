@@ -55,6 +55,7 @@ type BookingDetail = {
   consignee_phone?: string | null;
   notes?: string | null;
   rejection_reason?: string | null;
+  cancellation_reason?: string | null;
   estimated_price?: number | string | null;
   cost_breakdown?: {
     freight?: number;
@@ -142,6 +143,7 @@ export default function CustomerBookingDetailPage() {
   const tCancel = useTranslations("Bookings.cancelDialog");
   const tAction = useTranslations("Bookings.detail.actions");
   const tReject = useTranslations("Bookings.detail.rejection");
+  const tCancellation = useTranslations("Bookings.detail.cancellation");
   const tCommon = useTranslations("Bookings");
 
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -382,6 +384,18 @@ export default function CustomerBookingDetailPage() {
               <div>
                 <p className="text-sm font-semibold text-red-700">{tReject("title")}</p>
                 <p className="mt-1 whitespace-pre-line text-sm text-red-700/90">{data.rejection_reason}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {data.status === "cancelled" && data.cancellation_reason ? (
+          <Card className="border-red-200 bg-red-50/50 shadow-[0_1px_2px_0_rgb(0_0_0/0.04)]">
+            <CardContent className="flex items-start gap-3 p-4">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+              <div>
+                <p className="text-sm font-semibold text-red-700">{tCancellation("title")}</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-red-700/90">{data.cancellation_reason}</p>
               </div>
             </CardContent>
           </Card>
