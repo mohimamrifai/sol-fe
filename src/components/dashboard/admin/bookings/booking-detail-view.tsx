@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   resolveShipperCompanyName,
+  resolveCustomerLocationName,
 } from "@/lib/booking-party";
 import type { BookingDetail } from "./types";
 import { useTranslations } from "next-intl";
@@ -128,10 +129,7 @@ export function BookingDetailView({ data, loading }: Props) {
   const currentStep = stepIndex(data);
   const displayStatus = resolveBookingDisplayStatus(data);
   const st = (data.status ?? "").toLowerCase();
-  const customerLocation =
-    (data as BookingDetail & { shipper_location?: { name?: string }; shipperLocation?: { name?: string } }).shipper_location?.name ??
-    (data as BookingDetail & { shipperLocation?: { name?: string } }).shipperLocation?.name ??
-    "—";
+  const customerLocation = resolveCustomerLocationName(data) || "—";
 
   const coverageLabel = (v?: string | null) => {
     if (!v) return "—";

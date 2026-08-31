@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { bookingStatusBadgeClass, bookingStatusLabelFromApi, canAdminEditBooking } from "@/lib/booking-status";
+import { resolveShipperCompanyName } from "@/lib/booking-party";
 import type { BookingDetail } from "./types";
 
 interface BookingDetailDialogProps {
@@ -63,7 +64,7 @@ export function BookingDetailDialog({
     if (!data) return;
     setDepartureDate(data.departure_date ? String(data.departure_date).slice(0, 10) : "");
     setCargoDescription(data.cargo_description ?? "");
-    setShipperName(data.shipper_name ?? "");
+    setShipperName(resolveShipperCompanyName(data));
     setShipperAddress(data.shipper_address ?? "");
     setShipperPhone(data.shipper_phone ?? "");
     setConsigneeName(data.consignee_name ?? "");
@@ -252,7 +253,7 @@ export function BookingDetailDialog({
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm font-semibold">{data.shipper_name}</p>
+                      <p className="text-sm font-semibold">{resolveShipperCompanyName(data)}</p>
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         {data.shipper_address}
                       </p>

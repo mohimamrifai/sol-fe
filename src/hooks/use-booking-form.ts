@@ -619,6 +619,7 @@ export function useBookingForm(opts?: { editId?: number }) {
       shipper_phone: shipperPhone || null,
       shipper_location_id: shipperLocationId ? Number(shipperLocationId) : null,
       shipper_snapshot: {
+        location_name: customerLocations.find((l) => String(l.id) === shipperLocationId)?.name ?? null,
         company: shipperName || null,
         pic_name: shipperPicName || null,
         pic_email: shipperPicEmail || null,

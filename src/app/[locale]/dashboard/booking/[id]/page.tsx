@@ -35,6 +35,7 @@ import {
   uploadCustomerBookingAttachment,
 } from "@/lib/customer-api";
 import { SHIPMENT_COVERAGE_LABELS, bookingStatusBadgeClass, bookingStatusLabelFromApi } from "@/lib/booking-status";
+import { resolveShipperCompanyName } from "@/lib/booking-party";
 import { formatIdr, formatRelative, formatShortDate } from "@/components/dashboard/format";
 import { ApiError } from "@/lib/api-client";
 import { useRouter } from "@/i18n/routing";
@@ -570,7 +571,7 @@ function BookingInfoGrid({ data, t, locale }: { data: BookingDetail; t: ReturnTy
       <InfoRow label={t("departureDate")} value={data.departure_date ? formatShortDate(data.departure_date, locale) : "—"} />
       <InfoRow label={t("shipmentCoverage")} value={data.shipment_coverage ? SHIPMENT_COVERAGE_LABELS[data.shipment_coverage] ?? data.shipment_coverage : "—"} />
       <InfoRow label={`${t("shipper")} (${t("phone")})`} value={data.shipper_phone ?? "—"} />
-      <InfoRow label={t("shipper")} value={data.shipper_name ?? "—"} />
+      <InfoRow label={t("shipper")} value={resolveShipperCompanyName(data) || "—"} />
       <InfoRow label={t("address")} value={data.shipper_address ?? "—"} fullWidth />
       <InfoRow label={`${t("consignee")} (${t("phone")})`} value={data.consignee_phone ?? "—"} />
       <InfoRow label={t("consignee")} value={data.consignee_name ?? "—"} />
