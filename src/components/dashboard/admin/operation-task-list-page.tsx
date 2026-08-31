@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,8 +20,9 @@ import { fetchAdminLocations, fetchAdminOperationTasks, fetchAdminOperationTaskS
 import { rowNumber } from "@/lib/list-query";
 import type { LaravelPaginated } from "@/lib/types-api";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Ban, CheckCircle2, Clock, Eye, MoreHorizontal, PlayCircle, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, Clock, Eye, MoreHorizontal, PlayCircle, Truck, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { ManualPickupAssignmentDialog } from "@/components/dashboard/admin/manual-pickup-assignment-dialog";
 
 const PER_PAGE = 10;
 const STATUS_OPTIONS = ["waiting", "in_progress", "completed", "cancelled"] as const;
@@ -38,9 +40,17 @@ type Props = {
   description: string;
   basePath: string;
   icon: LucideIcon;
+  enableManualAssignment?: boolean;
 };
 
-export function OperationTaskListPage({ operationType, title, description, basePath, icon: Icon }: Props) {
+export function OperationTaskListPage({
+  operationType,
+  title,
+  description,
+  basePath,
+  icon: Icon,
+  enableManualAssignment = false,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const authHydrated = useAuthPersistHydrated();
@@ -61,6 +71,9 @@ export function OperationTaskListPage({ operationType, title, description, baseP
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignTaskId, setAssignTaskId] = useState<number | null>(null);
+  const [assignTaskLabel, setAssignTaskLabel] = useState("");
 
   useEffect(() => {
     const date = searchParams.get("date");
@@ -171,7 +184,23 @@ export function OperationTaskListPage({ operationType, title, description, baseP
 
   return (
     <div className={ADMIN_LIST_PAGE_CLASS}>
-      <AdminPageHeader icon={Icon} title={title} description={description} />
+      <AdminPageHeader
+        icon={Icon}
+        title={title}
+        description={description}
+        actions={
+          enableManualAssignment ? (
+            <Button variant="outline" onClick={() => {
+              setAssignTaskId(null);
+              setAssignTaskLabel("");
+              setAssignOpen(true);
+            }}>
+              <Truck className="mr-2 h-4 w-4" />
+              {t("manualAssignment.button")}
+            </Button>
+          ) : null
+        }
+      />
 
       <AdminStatsCards className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" cards={statCards} />
 
@@ -274,6 +303,18 @@ export function OperationTaskListPage({ operationType, title, description, baseP
                               <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`${basePath}/${r.id}`)}>
                                 <Eye className="h-4 w-4" /> {tc("actions.viewDetail")}
                               </DropdownMenuItem>
+                              {operationType === "pickup" && ["waiting", "in_progress"].includes(String(r.status ?? "")) ? (
+                                <DropdownMenuItem
+                                  className="cursor-pointer"
+                                  onClick={() => {
+                                    setAssignTaskId(Number(r.id));
+                                    setAssignTaskLabel(String(r.shipment_number ?? r.id));
+                                    setAssignOpen(true);
+                                  }}
+                                >
+                                  <Truck className="h-4 w-4" /> {t("manualAssignment.rowAction")}
+                                </DropdownMenuItem>
+                              ) : null}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -294,6 +335,16 @@ export function OperationTaskListPage({ operationType, title, description, baseP
           )}
         </CardContent>
       </Card>
+
+      {operationType === "pickup" ? (
+        <ManualPickupAssignmentDialog
+          open={assignOpen}
+          onOpenChange={setAssignOpen}
+          taskId={assignTaskId}
+          taskLabel={assignTaskLabel}
+          onSuccess={() => void load()}
+        />
+      ) : null}
     </div>
   );
 }

@@ -27,9 +27,10 @@ import { ApiError } from "@/lib/api-client";
 import { AdminActivityLogSection } from "@/components/dashboard/admin/shared/admin-activity-log-section";
 import { ADMIN_LIST_PAGE_CLASS } from "@/components/dashboard/admin/shared/admin-list-table-styles";
 import { AdminPageHeader } from "@/components/dashboard/admin/shared/admin-page-header";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { ManualPickupAssignmentDialog } from "@/components/dashboard/admin/manual-pickup-assignment-dialog";
 
 function ReadonlyField({ label, value }: { label: string; value: string }) {
   return (
@@ -61,6 +62,7 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const refresh = async () => {
     const res = await fetchAdminOperationTask(taskId);
@@ -141,6 +143,12 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
         description={String(detail.shipment_number ?? "")}
         actions={
           <div className="flex flex-wrap gap-2">
+            {detail.can_reassign_vendor ? (
+              <Button variant="outline" onClick={() => setAssignOpen(true)}>
+                <Truck className="mr-2 h-4 w-4" />
+                {t("manualAssignment.reassign")}
+              </Button>
+            ) : null}
             {detail.can_start ? (
               <Button disabled={busy} onClick={() => void runAction("start")}>{t("actions.start")}</Button>
             ) : null}
@@ -299,6 +307,14 @@ export function OperationTaskDetailPage({ taskId, basePath, title }: Props) {
 
         <AdminActivityLogSection entries={activityLog} />
       </div>
+
+      <ManualPickupAssignmentDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        taskId={taskId}
+        taskLabel={String(detail.shipment_number ?? "")}
+        onSuccess={() => void refresh()}
+      />
     </div>
   );
 }

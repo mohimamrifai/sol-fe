@@ -142,6 +142,21 @@
       "uploadDocument": "Unggah Dokumen",
       "documentUploaded": "Dokumen diunggah."
     },
+    "manualAssignment": {
+      "button": "Manual Pickup Assignment",
+      "rowAction": "Assign Ulang Vendor",
+      "reassign": "Assign Ulang Vendor",
+      "title": "Manual Pickup Assignment",
+      "description": "Pilih tugas pickup dan vendor untuk assign ulang (FSD Operations).",
+      "pickupTask": "Tugas Pickup",
+      "selectTask": "Pilih shipment pickup",
+      "vendor": "Vendor Pickup",
+      "selectVendor": "Pilih vendor",
+      "submit": "Assign Vendor",
+      "validation": "Pilih tugas pickup dan vendor.",
+      "success": "Vendor pickup berhasil di-assign ulang.",
+      "failed": "Gagal assign ulang vendor."
+    },
     "detail": {
       "taskInfo": "Informasi Tugas",
       "shipmentInfo": "Informasi Shipment",

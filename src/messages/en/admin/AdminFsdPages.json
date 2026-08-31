@@ -142,6 +142,21 @@
       "uploadDocument": "Upload Document",
       "documentUploaded": "Document uploaded."
     },
+    "manualAssignment": {
+      "button": "Manual Pickup Assignment",
+      "rowAction": "Re-assign Vendor",
+      "reassign": "Re-assign Vendor",
+      "title": "Manual Pickup Assignment",
+      "description": "Select a pickup task and vendor to re-assign (FSD Operations).",
+      "pickupTask": "Pickup Task",
+      "selectTask": "Select pickup shipment",
+      "vendor": "Pickup Vendor",
+      "selectVendor": "Select vendor",
+      "submit": "Assign Vendor",
+      "validation": "Select a pickup task and vendor.",
+      "success": "Pickup vendor re-assigned successfully.",
+      "failed": "Failed to re-assign vendor."
+    },
     "detail": {
       "taskInfo": "Task Information",
       "shipmentInfo": "Shipment Information",

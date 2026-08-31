@@ -18,6 +18,7 @@ export default function AdminPickupOperationsPage() {
       description={t("pickupDesc")}
       basePath={`/${locale}/dashboard/admin/operations/pickup`}
       icon={Package}
+      enableManualAssignment
     />
   );
 }

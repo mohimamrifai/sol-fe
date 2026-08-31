@@ -49,3 +49,10 @@ export async function uploadAdminOperationTaskDocument(id: number, file: File, d
   if (documentType) form.append("document_type", documentType);
   return apiFetch(`/admin/operation-tasks/${id}/documents`, { method: "POST", body: form });
 }
+
+export async function assignAdminOperationTaskVendor(taskId: number, vendorId: number) {
+  return apiFetch(`/admin/operation-tasks/${taskId}/assign-vendor`, {
+    method: "POST",
+    body: JSON.stringify({ vendor_id: vendorId }),
+  });
+}
